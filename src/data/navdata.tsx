@@ -1,7 +1,7 @@
 import { LayoutDashboard, Users, Settings } from "lucide-react";
 
 export const navItems = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Users", href: "/dashboard/users", icon: Users },
-  { name: "Settings", href: "/dashboard/settings", icon: Settings },
+  { name: "Track Order", href: "/TrackOrder", icon: LayoutDashboard },
+  { name: "Wishlist", href: "/Wishlist", icon: Users },
+  { name: "Cart", href: "/Cart", icon: Settings },
 ];
