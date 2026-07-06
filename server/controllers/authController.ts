@@ -35,6 +35,28 @@ export class AuthController {
     sendResponse(res, { statusCode: 200, message: result.message });
   });
 
+  static sendPhoneVerification = catchAsync(async (req: Request, res: Response) => {
+    const { phone } = req.body;
+    if (!phone) {
+      sendResponse(res, { statusCode: 400, message: 'Phone is required' });
+      return;
+    }
+
+    const result = await AuthService.sendPhoneVerification(phone);
+    sendResponse(res, { statusCode: 200, message: result.message });
+  });
+
+  static verifyPhone = catchAsync(async (req: Request, res: Response) => {
+    const { token } = req.body;
+    if (!token) {
+      sendResponse(res, { statusCode: 400, message: 'Token is required' });
+      return;
+    }
+
+    const result = await AuthService.verifyPhone(token);
+    sendResponse(res, { statusCode: 200, message: result.message });
+  });
+
   static login = catchAsync(async (req: Request, res: Response) => {
     const { email, password } = req.body;
     if (!email || !password) {

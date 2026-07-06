@@ -37,6 +37,8 @@ model User {
   resetPasswordExpires DateTime?
   emailVerificationToken   String?
   emailVerificationExpires DateTime?
+  phoneVerificationToken   String?
+  phoneVerificationExpires DateTime?
   refreshToken         String?
   deletedAt            DateTime?
 
