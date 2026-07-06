@@ -18,4 +18,11 @@ export class RoleService {
       select: safeRoleSelect,
     });
   });
+
+  static getRoleById = catchServiceAsync(async (id: number) => {
+    return prisma.role.findUnique({
+      where: { id },
+      select: safeRoleSelect,
+    });
+  });
 }

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { UserService } from '../services/userService';
+import { RoleService } from '../services/roleService';
 import { catchAsync } from '../utils/catchAsync';
 import { sendResponse } from '../utils/sendResponse';
 
@@ -15,11 +16,16 @@ const isValidDate = (value: unknown) => {
   return !Number.isNaN(parsedDate.getTime());
 };
 
-const validateUserPayload = (payload: Record<string, unknown>) => {
+const validateUserPayload = async (payload: Record<string, unknown>) => {
   if (payload.roleId !== undefined && payload.roleId !== null && payload.roleId !== '') {
     const parsedRoleId = Number(payload.roleId);
     if (!Number.isInteger(parsedRoleId) || parsedRoleId < 1) {
       return 'Invalid roleId value';
+    }
+
+    const role = await RoleService.getRoleById(parsedRoleId);
+    if (!role) {
+      return 'Role not found';
     }
   }
 
@@ -80,7 +86,7 @@ export class UserController {
       return;
     }
 
-    const validationError = validateUserPayload(req.body as Record<string, unknown>);
+    const validationError = await validateUserPayload(req.body as Record<string, unknown>);
     if (validationError) {
       sendResponse(res, {
         statusCode: 400,
@@ -115,7 +121,7 @@ export class UserController {
       return;
     }
 
-    const validationError = validateUserPayload(req.body as Record<string, unknown>);
+    const validationError = await validateUserPayload(req.body as Record<string, unknown>);
     if (validationError) {
       sendResponse(res, {
         statusCode: 400,
