@@ -34,11 +34,17 @@ const safeUserSelect = {
 
 export class UserService {
   static getAllUsers = catchServiceAsync(async () => {
-    return prisma.user.findMany({ select: safeUserSelect });
+    return prisma.user.findMany({
+      where: { deletedAt: null },
+      select: safeUserSelect,
+    });
   });
 
   static getUserById = catchServiceAsync(async (id: number) => {
-    return prisma.user.findUnique({ where: { id }, select: safeUserSelect });
+    return prisma.user.findFirst({
+      where: { id, deletedAt: null },
+      select: safeUserSelect,
+    });
   });
 
   static createUser = catchServiceAsync(async (data: Prisma.UserCreateInput) => {
@@ -65,10 +71,21 @@ export class UserService {
   });
 
   static updateUser = catchServiceAsync(async (id: number, data: Prisma.UserUpdateInput) => {
-    return prisma.user.update({ where: { id }, data, select: safeUserSelect });
+    return prisma.user.update({
+      where: { id },
+      data,
+      select: safeUserSelect,
+    });
   });
 
   static deleteUser = catchServiceAsync(async (id: number) => {
-    return prisma.user.delete({ where: { id } });
+    return prisma.user.update({
+      where: { id },
+      data: {
+        deletedAt: new Date(),
+        status: 'deleted',
+      },
+      select: safeUserSelect,
+    });
   });
 }
