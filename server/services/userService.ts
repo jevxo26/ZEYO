@@ -71,9 +71,38 @@ export class UserService {
   });
 
   static updateUser = catchServiceAsync(async (id: number, data: Prisma.UserUpdateInput) => {
+    const updateData = data as Prisma.UserUpdateInput & {
+      name?: string;
+      firstName?: string;
+      lastName?: string;
+      fullName?: string;
+      password?: string;
+    };
+
+    const firstName = typeof updateData.firstName === 'string' ? updateData.firstName.trim() : undefined;
+    const lastName = typeof updateData.lastName === 'string' ? updateData.lastName.trim() : undefined;
+    const fullNameFromParts = [firstName, lastName].filter(Boolean).join(' ').trim();
+    const fullName = typeof updateData.fullName === 'string'
+      ? updateData.fullName.trim()
+      : fullNameFromParts || (typeof updateData.name === 'string' ? updateData.name.trim() : undefined);
+    const name = typeof updateData.name === 'string'
+      ? updateData.name.trim()
+      : fullName || fullNameFromParts;
+
+    const dataToSave: Prisma.UserUpdateInput = {
+      ...data,
+      ...(name ? { name } : {}),
+      ...(typeof updateData.firstName === 'string' ? { firstName } : {}),
+      ...(typeof updateData.lastName === 'string' ? { lastName } : {}),
+      ...(fullName ? { fullName } : {}),
+      ...(typeof updateData.password === 'string'
+        ? { password: await bcrypt.hash(updateData.password, 10) }
+        : {}),
+    };
+
     return prisma.user.update({
       where: { id },
-      data,
+      data: dataToSave,
       select: safeUserSelect,
     });
   });

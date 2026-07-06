@@ -3,6 +3,34 @@ import { UserService } from '../services/userService';
 import { catchAsync } from '../utils/catchAsync';
 import { sendResponse } from '../utils/sendResponse';
 
+const allowedStatuses = ['active', 'inactive', 'suspended', 'deleted'];
+const allowedGenders = ['male', 'female', 'other', 'prefer_not_to_say'];
+
+const isValidDate = (value: unknown) => {
+  if (value === undefined || value === null || value === '') {
+    return true;
+  }
+
+  const parsedDate = new Date(value as string);
+  return !Number.isNaN(parsedDate.getTime());
+};
+
+const validateUserPayload = (payload: Record<string, unknown>) => {
+  if (payload.status && !allowedStatuses.includes(String(payload.status))) {
+    return 'Invalid status value';
+  }
+
+  if (payload.gender && !allowedGenders.includes(String(payload.gender))) {
+    return 'Invalid gender value';
+  }
+
+  if (!isValidDate(payload.dateOfBirth)) {
+    return 'Invalid dateOfBirth value';
+  }
+
+  return null;
+};
+
 export class UserController {
   static getAllUsers = catchAsync(async (req: Request, res: Response) => {
     const users = await UserService.getAllUsers();
@@ -45,6 +73,15 @@ export class UserController {
       return;
     }
 
+    const validationError = validateUserPayload(req.body as Record<string, unknown>);
+    if (validationError) {
+      sendResponse(res, {
+        statusCode: 400,
+        message: validationError,
+      });
+      return;
+    }
+
     const user = await UserService.createUser(req.body);
     sendResponse(res, {
       statusCode: 201,
@@ -67,6 +104,15 @@ export class UserController {
       sendResponse(res, {
         statusCode: 400,
         message: 'Update data is required',
+      });
+      return;
+    }
+
+    const validationError = validateUserPayload(req.body as Record<string, unknown>);
+    if (validationError) {
+      sendResponse(res, {
+        statusCode: 400,
+        message: validationError,
       });
       return;
     }
