@@ -16,6 +16,13 @@ const isValidDate = (value: unknown) => {
 };
 
 const validateUserPayload = (payload: Record<string, unknown>) => {
+  if (payload.roleId !== undefined && payload.roleId !== null && payload.roleId !== '') {
+    const parsedRoleId = Number(payload.roleId);
+    if (!Number.isInteger(parsedRoleId) || parsedRoleId < 1) {
+      return 'Invalid roleId value';
+    }
+  }
+
   if (payload.status && !allowedStatuses.includes(String(payload.status))) {
     return 'Invalid status value';
   }

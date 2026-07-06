@@ -25,6 +25,15 @@ const safeUserSelect = {
   provider: true,
   providerId: true,
   role: true,
+  userRole: {
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  },
   issueDate: true,
   loginLog: true,
   deletedAt: true,
