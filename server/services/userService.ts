@@ -57,6 +57,7 @@ export class UserService {
   });
 
   static createUser = catchServiceAsync(async (data: Prisma.UserCreateInput) => {
+    const createData = data as Prisma.UserCreateInput & { roleId?: number | null };
     const firstName = data.firstName?.toString().trim();
     const lastName = data.lastName?.toString().trim();
     const fullNameFromParts = [firstName, lastName].filter(Boolean).join(' ').trim();
@@ -74,6 +75,9 @@ export class UserService {
       firstName: firstName || null,
       lastName: lastName || null,
       password: data.password ? await bcrypt.hash(data.password.toString(), 10) : undefined,
+      userRole: createData.roleId
+        ? { connect: { id: Number(createData.roleId) } }
+        : { connect: { name: 'employee' } },
     };
 
     return prisma.user.create({ data: dataToSave, select: safeUserSelect });
@@ -86,6 +90,7 @@ export class UserService {
       lastName?: string;
       fullName?: string;
       password?: string;
+      roleId?: number | null;
     };
 
     const firstName = typeof updateData.firstName === 'string' ? updateData.firstName.trim() : undefined;
@@ -106,6 +111,9 @@ export class UserService {
       ...(fullName ? { fullName } : {}),
       ...(typeof updateData.password === 'string'
         ? { password: await bcrypt.hash(updateData.password, 10) }
+        : {}),
+      ...(updateData.roleId !== undefined && updateData.roleId !== null
+        ? { userRole: { connect: { id: Number(updateData.roleId) } } }
         : {}),
     };
 
