@@ -35,6 +35,8 @@ model User {
   
   resetPasswordToken   String?
   resetPasswordExpires DateTime?
+  emailVerificationToken   String?
+  emailVerificationExpires DateTime?
   refreshToken         String?
   deletedAt            DateTime?
 
