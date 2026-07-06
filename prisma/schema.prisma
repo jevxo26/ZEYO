@@ -31,6 +31,7 @@ model User {
   role      String   @default("employee")
   issueDate DateTime @default(now())
   loginLog  Json?    // Can store array of login timestamps or IP addresses
+  userRole  Role?    @relation(fields: [roleId], references: [id], onDelete: SetNull)
   
   resetPasswordToken   String?
   resetPasswordExpires DateTime?
@@ -39,4 +40,13 @@ model User {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Role {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
