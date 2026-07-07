@@ -1,3 +1,4 @@
+"use client";
 import { logout, restoreUser } from "@/store/slices/authSlice";
 import { useAppDispatch } from "@/store/store";
 import { useEffect } from "react";
