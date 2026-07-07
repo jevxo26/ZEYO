@@ -11,7 +11,8 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import SocialLogin from "../SocialLogin";
-
+import { useAppDispatch } from "@/store/store";
+import { setCredentials } from "@/store/slices/authSlice";
 const schema = yup.object().shape({
   name: yup.string().required("Name is required").min(2, "Name must be at least 2 characters"),
   email: yup.string().email("Invalid email format").required("Email is required"),
@@ -27,7 +28,7 @@ type FormData = yup.InferType<typeof schema>;
 export function SignUpForm() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-
+const dispatch = useAppDispatch();
   const {
     register,
     handleSubmit,
@@ -49,11 +50,30 @@ export function SignUpForm() {
 
       const result = await response.json();
 
-      if (response.ok) {
+      if (!response.ok || result.success === false) {
+        toast.error(result.message || result.error || "Failed to create account");
+        return;
+      }
+      if (result.data?.token) {
+        dispatch(setCredentials({ user: result.data.user, token: result.data.token }));
         toast.success("Account created successfully!");
-        router.push("/login");
+        router.push("/dashboard");
+        return;
+      }
+      const loginRes = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: data.email, password: data.password }),
+      });
+      const loginResult = await loginRes.json();
+
+      if (loginRes.ok && loginResult.data?.token) {
+        dispatch(setCredentials({ user: loginResult.data.user, token: loginResult.data.token }));
+        toast.success("Account created successfully!");
+        router.push("/dashboard");
       } else {
-        toast.error(result.message || "Failed to create account");
+        toast.success("Account created! Please log in.");
+        router.push("/login");
       }
     } catch (error) {
       toast.error("An error occurred during sign up");
