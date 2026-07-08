@@ -23,6 +23,13 @@ export class AuthService {
       dataToSave.password = await bcrypt.hash(data.password, saltRounds);
     }
 
+    if (dataToSave.dateOfBirth) {
+    dataToSave.dateOfBirth = new Date(dataToSave.dateOfBirth as any);
+  }
+
+
+
+
     const user = await prisma.user.create({
       data: dataToSave,
     });
@@ -68,13 +75,13 @@ export class AuthService {
 
     const token = jwt.sign(
       { userId: user.id, email: user.email },
-      process.env.JWT_SECRET || 'fallback_secret',
-      { expiresIn: (process.env.JWT_EXPIRES_IN || '30d') as any }
+      process.env.JWT_SECRET || 'EvenTo_access_secret_2026_change_this',
+      { expiresIn: (process.env.JWT_EXPIRES_IN || '1d') as any }
     );
 
     const refreshToken = jwt.sign(
       { userId: user.id },
-      process.env.JWT_REFRESH_SECRET || 'refresh_secret',
+      process.env.JWT_REFRESH_SECRET || 'your_jwt_refresh_secret',
       { expiresIn: (process.env.JWT_REFRESH_EXPIRES_IN || '7d') as any }
     );
 
