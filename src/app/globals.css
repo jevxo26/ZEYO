@@ -65,17 +65,7 @@
   }
   66% {
     transform: translate(-20px, 20px) scale(0.9);
-  }
-  100% {
-    transform: translate(0px, 0px) scale(1);
-  }
-}
-
-:root {
-  /* Beautiful Light Theme - Soft and Premium */
-  --background: oklch(0.985 0.002 247.8);
-  --foreground: oklch(0.145 0 0);
-  
+  }   
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);

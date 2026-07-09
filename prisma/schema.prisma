@@ -4,32 +4,35 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url= env(process.env.DATABASE_URL)
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  phone     String?
-  password  String?
-  provider  String   @default("local")
-  providerId String? @unique
-  role      String   @default("employee")
-  issueDate DateTime @default(now())
-  loginLog  Json?    // Can store array of login timestamps or IP addresses
+  id                 Int          @id @default(autoincrement())
+  name               String
+  email              String       @unique
+  phone              String?
+  password           String?
+  provider           String       @default("local")
+  providerId         String?      @unique
+  role               String       @default("employee")
+  issueDate          DateTime     @default(now())
+  loginLog           Json?        // Can store array of login timestamps or IP addresses
   
   resetPasswordToken   String?
   resetPasswordExpires DateTime?
   refreshToken         String?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  // Relation link to profile
+  profile   UserProfile?
+
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
 }
 
 model UserProfile {
   id                String   @id @default(uuid())
-  userId            String   @unique
+  userId            Int      @unique // Changed from String to Int to match User.id
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   occupation        String?
   companyName       String?
@@ -39,7 +42,7 @@ model UserProfile {
   facebook          String?
   instagram         String?
   linkedin          String?
-preferredLanguage String   @default("bn")    
+  preferredLanguage String   @default("bn")    
   preferredCurrency String   @default("BDT")   
   timezone          String   @default("Asia/Dhaka")
   createdAt         DateTime @default(now())
