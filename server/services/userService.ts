@@ -1,4 +1,4 @@
-import { PrismaClient, Prisma } from '@prisma/client';
+import { PrismaClient, Prisma, UserProfile } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { catchServiceAsync } from '../utils/catchServiceAsync';
 
@@ -41,6 +41,7 @@ const safeUserSelect = {
   updatedAt: true,
 } as const;
 
+
 export class UserService {
   static getAllUsers = catchServiceAsync(async () => {
     return prisma.user.findMany({
@@ -49,7 +50,7 @@ export class UserService {
     });
   });
 
-  static getUserById = catchServiceAsync(async (id: number) => {
+  static getUserById = catchServiceAsync(async (id: string) => {
     return prisma.user.findFirst({
       where: { id, deletedAt: null },
       select: safeUserSelect,
@@ -83,7 +84,7 @@ export class UserService {
     return prisma.user.create({ data: dataToSave, select: safeUserSelect });
   });
 
-  static updateUser = catchServiceAsync(async (id: number, data: Prisma.UserUpdateInput) => {
+  static updateUser = catchServiceAsync(async (id: string, data: Prisma.UserUpdateInput) => {
     const updateData = data as Prisma.UserUpdateInput & {
       name?: string;
       firstName?: string;
@@ -124,7 +125,7 @@ export class UserService {
     });
   });
 
-  static deleteUser = catchServiceAsync(async (id: number) => {
+  static deleteUser = catchServiceAsync(async (id: string) => {
     return prisma.user.update({
       where: { id },
       data: {
@@ -134,4 +135,23 @@ export class UserService {
       select: safeUserSelect,
     });
   });
-}
+
+
+   static getUserProfile = catchServiceAsync(async (userId: number) => {
+    return prisma.userProfile.findUnique({
+      where: { userId },
+    });
+  });
+  static upsertUserProfile = catchServiceAsync(async (userId: number, data: Partial<UserProfile>) => {
+    return prisma.userProfile.upsert({
+      where: { userId },
+      update: data,
+      create: {
+        ...data,
+        userId,
+      },
+    });
+  });
+};
+
+

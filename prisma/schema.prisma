@@ -8,31 +8,29 @@ datasource db {
 }
 
 model User {
-  id                 Int          @id @default(autoincrement())
-  name               String
-  email              String       @unique
-  phone              String?
-  password           String?
-  provider           String       @default("local")
-  providerId         String?      @unique
-  role               String       @default("employee")
-  issueDate          DateTime     @default(now())
-  loginLog           Json?        // Can store array of login timestamps or IP addresses
-  
+  id         Int      @id @default(autoincrement())
+  name       String
+  email      String   @unique
+  phone      String?
+  password   String?
+  provider   String   @default("local")
+  providerId String?  @unique
+  role       String   @default("employee")
+  issueDate  DateTime @default(now())
+  loginLog   Json?
+
   resetPasswordToken   String?
   resetPasswordExpires DateTime?
   refreshToken         String?
 
-  // Relation link to profile
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
   profile   UserProfile?
-
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
 }
 
 model UserProfile {
   id                String   @id @default(uuid())
-  userId            Int      @unique // Changed from String to Int to match User.id
+  userId            Int      @unique
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   occupation        String?
   companyName       String?
@@ -42,8 +40,8 @@ model UserProfile {
   facebook          String?
   instagram         String?
   linkedin          String?
-  preferredLanguage String   @default("bn")    
-  preferredCurrency String   @default("BDT")   
+  preferredLanguage String   @default("bn")
+  preferredCurrency String   @default("BDT")
   timezone          String   @default("Asia/Dhaka")
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
