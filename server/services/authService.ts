@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { catchServiceAsync } from '../utils/catchServiceAsync';
 import { sendTemplateEmail } from './emailService';
+import { sendSMS } from './smsService';
 
 const prisma = new PrismaClient();
 
@@ -38,6 +39,130 @@ export class AuthService {
     return userWithoutPassword;
   });
 
+  static sendEmailVerification = catchServiceAsync(async (email: string) => {
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    if (user.emailVerified) {
+      return { message: 'Email already verified' };
+    }
+
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const hashedVerificationToken = crypto.createHash('sha256').update(verificationToken).digest('hex');
+    const emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        emailVerificationToken: hashedVerificationToken,
+        emailVerificationExpires,
+      },
+    });
+
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const verificationLink = `${frontendUrl}/verify-email?token=${verificationToken}`;
+
+    await sendTemplateEmail(
+      user.email,
+      'Verify Your Email',
+      'emailVerification',
+      {
+        name: user.name,
+        appName: 'My App',
+        verificationLink,
+        year: new Date().getFullYear(),
+      }
+    );
+
+    return { message: 'Verification email sent' };
+  });
+
+  static verifyEmail = catchServiceAsync(async (token: string) => {
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    const user = await prisma.user.findFirst({
+      where: {
+        emailVerificationToken: hashedToken,
+        emailVerificationExpires: { gt: new Date() },
+      },
+    });
+
+    if (!user) {
+      throw new Error('Token is invalid or has expired');
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        emailVerified: true,
+        isVerified: true,
+        emailVerificationToken: null,
+        emailVerificationExpires: null,
+      },
+    });
+
+    return { message: 'Email verified successfully' };
+  });
+
+  static sendPhoneVerification = catchServiceAsync(async (phone: string) => {
+    const user = await prisma.user.findFirst({ where: { phone } });
+    if (!user) {
+      throw new Error('User not found');
+    }
+
+    if (user.phoneVerified) {
+      return { message: 'Phone already verified' };
+    }
+
+    const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedVerificationCode = crypto.createHash('sha256').update(verificationCode).digest('hex');
+    const phoneVerificationExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        phoneVerificationToken: hashedVerificationCode,
+        phoneVerificationExpires,
+      },
+    });
+
+    await sendSMS(
+      phone,
+      `Your My App verification code is ${verificationCode}. It expires in 10 minutes.`
+    );
+
+    return { message: 'Verification code sent to phone' };
+  });
+
+  static verifyPhone = catchServiceAsync(async (token: string) => {
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    const user = await prisma.user.findFirst({
+      where: {
+        phoneVerificationToken: hashedToken,
+        phoneVerificationExpires: { gt: new Date() },
+      },
+    });
+
+    if (!user) {
+      throw new Error('Token is invalid or has expired');
+    }
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        phoneVerified: true,
+        isVerified: true,
+        phoneVerificationToken: null,
+        phoneVerificationExpires: null,
+      },
+    });
+
+    return { message: 'Phone verified successfully' };
+  });
+
   static getMe = catchServiceAsync(async (userId: number) => {
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -47,6 +172,9 @@ export class AuthService {
         email: true,
         phone: true,
         role: true,
+        emailVerified: true,
+        phoneVerified: true,
+        isVerified: true,
         issueDate: true,
         createdAt: true,
         updatedAt: true
