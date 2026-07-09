@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url= env("DATABASE_URL")
+  url= env(process.env.DATABASE_URL)
 }
 
 model User {
@@ -39,9 +39,9 @@ model UserProfile {
   facebook          String?
   instagram         String?
   linkedin          String?
-  preferredLanguage String   @default("en")
-  preferredCurrency String   @default("USD")
-  timezone          String   @default("UTC")
+preferredLanguage String   @default("bn")    
+  preferredCurrency String   @default("BDT")   
+  timezone          String   @default("Asia/Dhaka")
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 }
