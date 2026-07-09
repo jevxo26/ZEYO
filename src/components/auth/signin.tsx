@@ -11,7 +11,8 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import SocialLogin from "../SocialLogin";
-
+import { setCredentials } from "@/store/slices/authSlice";
+import { useAppDispatch } from "@/store/store";
 const schema = yup.object().shape({
   email: yup.string().email("Invalid email format").required("Email is required"),
   password: yup.string().required("Password is required"),
@@ -22,6 +23,7 @@ type FormData = yup.InferType<typeof schema>;
 export function SignInForm() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+const dispatch = useAppDispatch();
 
   const {
     register,
@@ -31,32 +33,28 @@ export function SignInForm() {
     resolver: yupResolver(schema),
   });
 
-  const onSubmit = async (data: FormData) => {
+    const onSubmit = async (data: FormData) => {
     setIsLoading(true);
     try {
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        toast.success("Signed in successfully!");
-        // Store token or handle session
-        // localStorage.setItem("token", result.data.token);
-        router.push("/dashboard");
-      } else {
-        toast.error(result.message || "Failed to sign in");
-      }
-    } catch (error) {
-      toast.error("An error occurred during sign in");
-      console.error(error);
-    } finally {
+        body: JSON.stringify(data),});
+        const result = await response.json();
+if (!response.ok || result.success === false) {
+  toast.error(result.message || result.error || "Failed to sign in");
+        return;}
+dispatch(setCredentials({ user: result.data.user, token: result.data.token }));
+toast.success("Signed in successfully!");
+router.push("/dashboard");} 
+catch (error) {
+toast.error("An error occurred during sign in");
+console.error(error);} 
+finally {
       setIsLoading(false);
     }
   };
+
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full">

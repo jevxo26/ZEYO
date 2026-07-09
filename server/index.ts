@@ -23,7 +23,10 @@ app.prepare().then(async () => {
 
   // Middleware
   server.use(cors());
-  server.use(helmet({ contentSecurityPolicy: false })); // Disable CSP in dev if needed, or configure properly
+  server.use(helmet({
+  contentSecurityPolicy: false,
+  crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
+})); // Disable CSP in dev if needed, or configure properly
   server.use(morgan('[:date[iso]] :method :url :status :response-time ms - :res[content-length]', {
     skip: (req) => req.url.startsWith('/_next/') || req.url.includes('favicon.ico')
   }));

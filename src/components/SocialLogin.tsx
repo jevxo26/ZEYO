@@ -3,8 +3,14 @@
 import React from 'react';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props';
+import { useRouter } from 'next/navigation';
+import { useAppDispatch } from '@/store/store';
+import { setCredentials } from '@/store/slices/authSlice';
+import { toast } from 'sonner';
 
 export default function SocialLogin() {
+  const router=useRouter();
+  const dispatch=useAppDispatch();
   const handleGoogleSuccess = async (credentialResponse: any) => {
     try {
       const res = await fetch('/api/auth/social-login/google', {
@@ -14,16 +20,19 @@ export default function SocialLogin() {
       });
       const data = await res.json();
       if (data.success) {
-        console.log('Google login success:', data);
+        dispatch(setCredentials({user:data.data.user,token:data.data.token}))
+        toast.success('Logged in with Google');
+        router.push('/dashboard')}
+        else{
+toast.error(data.error || 'google login failed');}}
+catch(err){
+  console.error('error during google signin',err);
+  toast.error('Something Went Wrong With Google SignIn')
+} }
+
+        
         // Handle successful login (e.g., store token, redirect)
         // localStorage.setItem('token', data.data.token);
-      } else {
-        console.error('Google login failed:', data.error);
-      }
-    } catch (err) {
-      console.error('Error during Google login', err);
-    }
-  };
 
   const handleFacebookResponse = async (response: any) => {
     if (response.accessToken) {
@@ -35,20 +44,22 @@ export default function SocialLogin() {
         });
         const data = await res.json();
         if (data.success) {
-          console.log('Facebook login success:', data);
-          // Handle successful login (e.g., store token, redirect)
-          // localStorage.setItem('token', data.data.token);
-        } else {
-          console.error('Facebook login failed:', data.error);
-        }
-      } catch (err) {
-        console.error('Error during Facebook login', err);
-      }
-    } else {
-      console.error('Facebook login failed: No access token');
-    }
-  };
+          dispatch(setCredentials({user:data.data.user,token:data.data.token}))
+          toast.success('Logged in with Facebook');
+          router.push('/dashboard');}
+          else{
+            toast.error(data.error || 'Facebook Login Failed');
+          }}catch(err){
+            console.error('Error during facebook login',err);
+            toast.error('Something went wrong with facebook signin');
+          }}
+          else{
+            toast.error('Facebook Login Failed:No access token')
+          }};
 
+         
+         
+       
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
   const facebookAppId = process.env.NEXT_PUBLIC_FACEBOOK_APP_ID || '';
 
@@ -70,6 +81,7 @@ export default function SocialLogin() {
               onSuccess={handleGoogleSuccess}
               onError={() => {
                 console.error('Google Login Failed');
+                toast.error('Google login failed');
               }}
               useOneTap
             />
