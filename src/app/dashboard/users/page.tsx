@@ -14,6 +14,8 @@ import { Pencil, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import { EditUserModal } from "@/app/dashboard/users/EditUserModal"
 
+import { useRouter } from "next/navigation"
+
 type User = {
   id: number
   name: string
@@ -26,6 +28,7 @@ type User = {
 }
 
 export default function UsersPage() {
+  const router = useRouter()
   const [users, setUsers] = React.useState<User[]>([])
   const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
@@ -82,7 +85,9 @@ export default function UsersPage() {
       console.error(err)
     }
   }
-
+function goToUserDetails(user: User) {
+    router.push(`/dashboard/users/${user.id}`)
+  }
   if (loading) return <p className="p-4 text-sm text-muted-foreground">Loading users...</p>
   if (error) return <p className="p-4 text-sm text-red-500">{error}</p>
 
@@ -110,15 +115,17 @@ export default function UsersPage() {
             </TableRow>
           ) : (
             users.map((user) => (
-              <TableRow key={user.id}>
-                <TableCell>{user.name}</TableCell>
+              <TableRow key={user.id}
+                onClick={() => goToUserDetails(user)} 
+                className="cursor-pointer hover:bg-muted/50">
+                <TableCell>  {user.name}</TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell>{user.phone ?? "—"}</TableCell>
                 <TableCell>{user.role}</TableCell>
                 <TableCell>{user.status}</TableCell>
                 <TableCell>{user.isVerified ? "Yes" : "No"}</TableCell>
                 <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
-                <TableCell className="text-right space-x-2">
+                <TableCell className="text-right space-x-2" onClick={(e) => e.stopPropagation()}>
                   <Button
                     variant="ghost"
                     size="icon"
