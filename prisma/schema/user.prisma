@@ -1,0 +1,70 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// User Model
+// Core authentication and identity model.
+// Relations: Role (many-to-one), UserProfile (one-to-one), UserAddress (one-to-many)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model User {
+  id            Int       @id @default(autoincrement())
+
+  // ── Identity ──────────────────────────────────────────────────────────────
+  name          String
+  firstName     String?
+  lastName      String?
+  fullName      String?
+  email         String    @unique
+  phone         String?
+  password      String?
+  profileImage  String?
+  dateOfBirth   DateTime?
+  gender        String?
+
+  // ── Role & Status ──────────────────────────────────────────────────────────
+  // `role` (string) is the quick-access role slug (e.g. "admin", "employee")
+  // `userRole` (FK) is the normalised Role relation — keep both in sync
+  role          String    @default("employee")
+  roleId        Int?
+  userRole      Role?     @relation(fields: [roleId], references: [id], onDelete: SetNull)
+  status        String    @default("active")
+
+  // ── Verification Flags ─────────────────────────────────────────────────────
+  isVerified      Boolean @default(false)
+  emailVerified   Boolean @default(false)
+  phoneVerified   Boolean @default(false)
+
+  // ── Activity Tracking ──────────────────────────────────────────────────────
+  lastLoginAt     DateTime?
+  lastActiveAt    DateTime?
+  issueDate       DateTime  @default(now())
+  loginLog        Json?     // Array of ISO timestamp strings, capped at 50 entries
+
+  // ── OAuth / Social Login ───────────────────────────────────────────────────
+  provider        String    @default("local")
+  providerId      String?   @unique
+
+  // ── Security Tokens (hashed, never stored plain) ───────────────────────────
+  resetPasswordToken        String?
+  resetPasswordExpires      DateTime?
+  emailVerificationToken    String?
+  emailVerificationExpires  DateTime?
+  phoneVerificationToken    String?
+  phoneVerificationExpires  DateTime?
+  refreshToken              String?
+
+  // ── Soft Delete ────────────────────────────────────────────────────────────
+  deletedAt       DateTime?
+
+  // ── Relations ──────────────────────────────────────────────────────────────
+  profile         UserProfile?
+  addresses       UserAddress[]
+
+  // ── Timestamps ─────────────────────────────────────────────────────────────
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // ── Indexes (for fast token lookups during verification flows) ─────────────
+  @@index([resetPasswordToken])
+  @@index([emailVerificationToken])
+  @@index([phoneVerificationToken])
+  @@index([deletedAt])
+}
