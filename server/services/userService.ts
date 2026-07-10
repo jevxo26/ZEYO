@@ -1,9 +1,10 @@
-import { PrismaClient, Prisma, UserProfile } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { catchServiceAsync } from '../utils/catchServiceAsync';
 
 const prisma = new PrismaClient();
 
+// Safe user select — never exposes password or sensitive token fields
 const safeUserSelect = {
   id: true,
   name: true,
@@ -50,9 +51,13 @@ export class UserService {
     });
   });
 
+  // id comes in as string from req.params — parse to Int for Prisma
   static getUserById = catchServiceAsync(async (id: string) => {
+    const numericId = parseInt(id, 10);
+    if (isNaN(numericId)) throw new Error('Invalid user id');
+
     return prisma.user.findFirst({
-      where: { id, deletedAt: null },
+      where: { id: numericId, deletedAt: null },
       select: safeUserSelect,
     });
   });
@@ -81,10 +86,23 @@ export class UserService {
         : { connect: { name: 'employee' } },
     };
 
-    return prisma.user.create({ data: dataToSave, select: safeUserSelect });
+    const user = await prisma.user.create({ data: dataToSave, select: safeUserSelect });
+
+    // Auto-create empty UserProfile for new users created via admin panel
+    try {
+      await prisma.userProfile.create({ data: { userId: user.id } });
+    } catch {
+      // Profile may already exist — ignore duplicate
+    }
+
+    return user;
   });
 
+  // id comes in as string from req.params — parse to Int for Prisma
   static updateUser = catchServiceAsync(async (id: string, data: Prisma.UserUpdateInput) => {
+    const numericId = parseInt(id, 10);
+    if (isNaN(numericId)) throw new Error('Invalid user id');
+
     const updateData = data as Prisma.UserUpdateInput & {
       name?: string;
       firstName?: string;
@@ -119,15 +137,19 @@ export class UserService {
     };
 
     return prisma.user.update({
-      where: { id },
+      where: { id: numericId },
       data: dataToSave,
       select: safeUserSelect,
     });
   });
 
+  // Soft delete — sets deletedAt and status='deleted'
   static deleteUser = catchServiceAsync(async (id: string) => {
+    const numericId = parseInt(id, 10);
+    if (isNaN(numericId)) throw new Error('Invalid user id');
+
     return prisma.user.update({
-      where: { id },
+      where: { id: numericId },
       data: {
         deletedAt: new Date(),
         status: 'deleted',
@@ -136,22 +158,22 @@ export class UserService {
     });
   });
 
-
-   static getUserProfile = catchServiceAsync(async (userId: number) => {
+  static getUserProfile = catchServiceAsync(async (userId: number) => {
     return prisma.userProfile.findUnique({
       where: { userId },
     });
   });
-  static upsertUserProfile = catchServiceAsync(async (userId: number, data: Partial<UserProfile>) => {
+
+  static upsertUserProfile = catchServiceAsync(async (userId: number, data: Record<string, unknown>) => {
+    // Omit any relational fields; only keep plain profile scalar fields
+    const { user: _user, id: _id, userId: _uid, createdAt: _ca, updatedAt: _ua, ...safeData } = data as any;
     return prisma.userProfile.upsert({
       where: { userId },
-      update: data,
+      update: safeData as Prisma.UserProfileUpdateInput,
       create: {
-        ...data,
+        ...(safeData as Prisma.UserProfileUncheckedCreateInput),
         userId,
       },
     });
   });
-};
-
-
+}

@@ -8,6 +8,13 @@ import { sendSMS } from './smsService';
 
 const prisma = new PrismaClient();
 
+// Single source of truth for JWT secrets — consistent across sign & verify
+const JWT_SECRET = process.env.JWT_SECRET || 'ZEYO_access_secret_2026_please_change_in_production';
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'ZEYO_refresh_secret_2026_please_change_in_production';
+const JWT_EXPIRES_IN = (process.env.JWT_EXPIRES_IN || '1d') as string;
+const JWT_REFRESH_EXPIRES_IN = (process.env.JWT_REFRESH_EXPIRES_IN || '7d') as string;
+const LOGIN_LOG_MAX_ENTRIES = 50;
+
 export class AuthService {
   static registerUser = catchServiceAsync(async (data: Prisma.UserCreateInput) => {
     const existingUser = await prisma.user.findUnique({
@@ -20,19 +27,20 @@ export class AuthService {
 
     const dataToSave = { ...data };
     if (data.password) {
-      const saltRounds = 10;
-      dataToSave.password = await bcrypt.hash(data.password, saltRounds);
+      dataToSave.password = await bcrypt.hash(data.password as string, 10);
     }
 
     if (dataToSave.dateOfBirth) {
-    dataToSave.dateOfBirth = new Date(dataToSave.dateOfBirth as any);
-  }
-
-
-
+      dataToSave.dateOfBirth = new Date(dataToSave.dateOfBirth as any);
+    }
 
     const user = await prisma.user.create({
       data: dataToSave,
+    });
+
+    // Auto-create an empty UserProfile for new users
+    await prisma.userProfile.create({
+      data: { userId: user.id },
     });
 
     const { password, ...userWithoutPassword } = user;
@@ -70,7 +78,7 @@ export class AuthService {
       'emailVerification',
       {
         name: user.name,
-        appName: 'My App',
+        appName: process.env.FROM_NAME || 'ZEYO',
         verificationLink,
         year: new Date().getFullYear(),
       }
@@ -130,7 +138,7 @@ export class AuthService {
 
     await sendSMS(
       phone,
-      `Your My App verification code is ${verificationCode}. It expires in 10 minutes.`
+      `Your ${process.env.FROM_NAME || 'ZEYO'} verification code is ${verificationCode}. It expires in 10 minutes.`
     );
 
     return { message: 'Verification code sent to phone' };
@@ -163,22 +171,33 @@ export class AuthService {
     return { message: 'Phone verified successfully' };
   });
 
-  static getMe = catchServiceAsync(async (userId: string) => {
+  // userId is Int (matches User.id SERIAL in DB)
+  static getMe = catchServiceAsync(async (userId: number) => {
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
         name: true,
+        firstName: true,
+        lastName: true,
+        fullName: true,
         email: true,
         phone: true,
+        profileImage: true,
         role: true,
+        roleId: true,
+        userRole: {
+          select: { id: true, name: true, description: true },
+        },
         emailVerified: true,
         phoneVerified: true,
         isVerified: true,
+        status: true,
+        provider: true,
         issueDate: true,
         createdAt: true,
-        updatedAt: true
-      }
+        updatedAt: true,
+      },
     });
     return user;
   });
@@ -201,19 +220,20 @@ export class AuthService {
       throw new Error('Invalid email or password');
     }
 
+    // Sign access token — userId is Int
     const token = jwt.sign(
-      { userId: user.id, email: user.email },
-      process.env.JWT_SECRET || 'EvenTo_access_secret_2026_change_this',
-      { expiresIn: (process.env.JWT_EXPIRES_IN || '1d') as any }
+      { userId: user.id, email: user.email, role: user.role },
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN as any }
     );
 
     const refreshToken = jwt.sign(
       { userId: user.id },
-      process.env.JWT_REFRESH_SECRET || 'your_jwt_refresh_secret',
-      { expiresIn: (process.env.JWT_REFRESH_EXPIRES_IN || '7d') as any }
+      JWT_REFRESH_SECRET,
+      { expiresIn: JWT_REFRESH_EXPIRES_IN as any }
     );
 
-    // Update login log (store current timestamp)
+    // Cap login log to last LOGIN_LOG_MAX_ENTRIES entries
     let loginLog: string[] = [];
     if (user.loginLog) {
       if (Array.isArray(user.loginLog)) {
@@ -222,16 +242,19 @@ export class AuthService {
         try {
           loginLog = JSON.parse(user.loginLog);
         } catch (e) {
-          // Ignore parse errors
+          // Ignore parse errors — start fresh
+          loginLog = [];
         }
       }
     }
-
     loginLog.push(new Date().toISOString());
+    if (loginLog.length > LOGIN_LOG_MAX_ENTRIES) {
+      loginLog = loginLog.slice(-LOGIN_LOG_MAX_ENTRIES);
+    }
 
     await prisma.user.update({
       where: { id: user.id },
-      data: { loginLog, refreshToken },
+      data: { loginLog, refreshToken, lastLoginAt: new Date(), lastActiveAt: new Date() },
     });
 
     const { password, resetPasswordToken, resetPasswordExpires, ...userWithoutPassword } = user;
@@ -244,8 +267,10 @@ export class AuthService {
 
   static forgotPassword = catchServiceAsync(async (email: string) => {
     const user = await prisma.user.findUnique({ where: { email } });
+
+    // Security: always return success to avoid leaking whether the email exists
     if (!user) {
-      throw new Error('User not found');
+      return { message: 'If this email is registered, you will receive a reset link.' };
     }
 
     const resetToken = crypto.randomBytes(32).toString('hex');
@@ -264,10 +289,15 @@ export class AuthService {
       user.email,
       'Password Reset Request',
       'passwordReset',
-      { name: user.name, appName: 'My App', resetLink: resetUrl, year: new Date().getFullYear() }
+      {
+        name: user.name,
+        appName: process.env.FROM_NAME || 'ZEYO',
+        resetLink: resetUrl,
+        year: new Date().getFullYear(),
+      }
     );
 
-    return { message: 'Password reset link sent to email' };
+    return { message: 'If this email is registered, you will receive a reset link.' };
   });
 
   static resetPassword = catchServiceAsync(async (token: string, newPassword: string) => {
@@ -284,8 +314,7 @@ export class AuthService {
       throw new Error('Token is invalid or has expired');
     }
 
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     await prisma.user.update({
       where: { id: user.id },
@@ -305,8 +334,8 @@ export class AuthService {
     }
 
     try {
-      const decoded: any = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || 'refresh_secret');
-      
+      const decoded: any = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
+
       const user = await prisma.user.findFirst({
         where: { id: decoded.userId, refreshToken },
       });
@@ -316,9 +345,9 @@ export class AuthService {
       }
 
       const newAccessToken = jwt.sign(
-        { userId: user.id, email: user.email },
-        process.env.JWT_SECRET || 'fallback_secret',
-        { expiresIn: (process.env.JWT_EXPIRES_IN || '30d') as any }
+        { userId: user.id, email: user.email, role: user.role },
+        JWT_SECRET,
+        { expiresIn: JWT_EXPIRES_IN as any }
       );
 
       return { token: newAccessToken };
@@ -327,7 +356,8 @@ export class AuthService {
     }
   });
 
-  static logoutUser = catchServiceAsync(async (userId: string) => {
+  // userId is Int (matches User.id SERIAL in DB)
+  static logoutUser = catchServiceAsync(async (userId: number) => {
     await prisma.user.update({
       where: { id: userId },
       data: { refreshToken: null },

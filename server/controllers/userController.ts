@@ -1,9 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request, Response } from 'express';
 import { UserService } from '../services/userService';
 import { RoleService } from '../services/roleService';
 import { catchAsync } from '../utils/catchAsync';
 import { sendResponse } from '../utils/sendResponse';
+import { AuthRequest } from '../middlewares/authMiddleware';
 
 const allowedStatuses = ['active', 'inactive', 'suspended', 'deleted'];
 const allowedGenders = ['male', 'female', 'other', 'prefer_not_to_say'];
@@ -12,7 +12,6 @@ const isValidDate = (value: unknown) => {
   if (value === undefined || value === null || value === '') {
     return true;
   }
-
   const parsedDate = new Date(value as string);
   return !Number.isNaN(parsedDate.getTime());
 };
@@ -55,44 +54,29 @@ export class UserController {
   });
 
   static getUserById = catchAsync(async (req: Request, res: Response) => {
-    const id = req.params.id as string;
+    const id = req.params['id'] as string;
     if (!id) {
-      sendResponse(res, {
-        statusCode: 400,
-        message: 'Invalid user id',
-      });
+      sendResponse(res, { statusCode: 400, message: 'Invalid user id' });
       return;
     }
 
     const user = await UserService.getUserById(id);
     if (user) {
-      sendResponse(res, {
-        statusCode: 200,
-        data: user,
-      });
+      sendResponse(res, { statusCode: 200, data: user });
     } else {
-      sendResponse(res, {
-        statusCode: 404,
-        message: 'User not found',
-      });
+      sendResponse(res, { statusCode: 404, message: 'User not found' });
     }
   });
 
   static createUser = catchAsync(async (req: Request, res: Response) => {
     if (!req.body || !req.body.email) {
-      sendResponse(res, {
-        statusCode: 400,
-        message: 'Email is required',
-      });
+      sendResponse(res, { statusCode: 400, message: 'Email is required' });
       return;
     }
 
     const validationError = await validateUserPayload(req.body as Record<string, unknown>);
     if (validationError) {
-      sendResponse(res, {
-        statusCode: 400,
-        message: validationError,
-      });
+      sendResponse(res, { statusCode: 400, message: validationError });
       return;
     }
 
@@ -105,29 +89,20 @@ export class UserController {
   });
 
   static updateUser = catchAsync(async (req: Request, res: Response) => {
-    const id = req.params.id as string;
+    const id = req.params['id'] as string;
     if (!id) {
-      sendResponse(res, {
-        statusCode: 400,
-        message: 'Invalid user id',
-      });
+      sendResponse(res, { statusCode: 400, message: 'Invalid user id' });
       return;
     }
 
     if (!req.body || Object.keys(req.body).length === 0) {
-      sendResponse(res, {
-        statusCode: 400,
-        message: 'Update data is required',
-      });
+      sendResponse(res, { statusCode: 400, message: 'Update data is required' });
       return;
     }
 
     const validationError = await validateUserPayload(req.body as Record<string, unknown>);
     if (validationError) {
-      sendResponse(res, {
-        statusCode: 400,
-        message: validationError,
-      });
+      sendResponse(res, { statusCode: 400, message: validationError });
       return;
     }
 
@@ -140,39 +115,30 @@ export class UserController {
   });
 
   static deleteUser = catchAsync(async (req: Request, res: Response) => {
-    const id = req.params.id as string;
+    const id = req.params['id'] as string;
     if (!id) {
-      sendResponse(res, {
-        statusCode: 400,
-        message: 'Invalid user id',
-      });
+      sendResponse(res, { statusCode: 400, message: 'Invalid user id' });
       return;
     }
 
     await UserService.deleteUser(id);
-    sendResponse(res, {
-      statusCode: 200,
-      message: 'User deleted successfully',
-    });
+    sendResponse(res, { statusCode: 200, message: 'User deleted successfully' });
   });
 
-  static getUserProfile = catchAsync(async (req: Request, res: Response) => {
-    const userId = parseInt((req as any).user?.userId, 10);
-    if (!userId || Number.isNaN(userId)) {
+  static getUserProfile = catchAsync(async (req: AuthRequest, res: Response) => {
+    const userId = parseInt(String(req.user?.userId), 10);
+    if (!userId || isNaN(userId)) {
       sendResponse(res, { statusCode: 401, message: 'Unauthorized' });
       return;
     }
 
     const profile = await UserService.getUserProfile(userId);
-    sendResponse(res, {
-      statusCode: 200,
-      data: profile || {},
-    });
+    sendResponse(res, { statusCode: 200, data: profile || {} });
   });
 
-  static updateUserProfile = catchAsync(async (req: Request, res: Response) => {
-    const userId = parseInt((req as any).user?.userId, 10);
-    if (!userId || Number.isNaN(userId)) {
+  static updateUserProfile = catchAsync(async (req: AuthRequest, res: Response) => {
+    const userId = parseInt(String(req.user?.userId), 10);
+    if (!userId || isNaN(userId)) {
       sendResponse(res, { statusCode: 401, message: 'Unauthorized' });
       return;
     }
@@ -190,4 +156,3 @@ export class UserController {
     });
   });
 }
-
