@@ -163,7 +163,7 @@ export class AuthService {
     return { message: 'Phone verified successfully' };
   });
 
-  static getMe = catchServiceAsync(async (userId: number) => {
+  static getMe = catchServiceAsync(async (userId: string) => {
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -327,7 +327,7 @@ export class AuthService {
     }
   });
 
-  static logoutUser = catchServiceAsync(async (userId: number) => {
+  static logoutUser = catchServiceAsync(async (userId: string) => {
     await prisma.user.update({
       where: { id: userId },
       data: { refreshToken: null },

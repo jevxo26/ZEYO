@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request, Response } from 'express';
 import { UserService } from '../services/userService';
 import { RoleService } from '../services/roleService';
@@ -54,8 +55,8 @@ export class UserController {
   });
 
   static getUserById = catchAsync(async (req: Request, res: Response) => {
-    const id = parseInt(req.params.id as string, 10);
-    if (Number.isNaN(id)) {
+    const id = req.params.id as string;
+    if (!id) {
       sendResponse(res, {
         statusCode: 400,
         message: 'Invalid user id',
@@ -104,8 +105,8 @@ export class UserController {
   });
 
   static updateUser = catchAsync(async (req: Request, res: Response) => {
-    const id = parseInt(req.params.id as string, 10);
-    if (Number.isNaN(id)) {
+    const id = req.params.id as string;
+    if (!id) {
       sendResponse(res, {
         statusCode: 400,
         message: 'Invalid user id',
@@ -139,8 +140,8 @@ export class UserController {
   });
 
   static deleteUser = catchAsync(async (req: Request, res: Response) => {
-    const id = parseInt(req.params.id as string, 10);
-    if (Number.isNaN(id)) {
+    const id = req.params.id as string;
+    if (!id) {
       sendResponse(res, {
         statusCode: 400,
         message: 'Invalid user id',
@@ -154,4 +155,39 @@ export class UserController {
       message: 'User deleted successfully',
     });
   });
+
+  static getUserProfile = catchAsync(async (req: Request, res: Response) => {
+    const userId = parseInt((req as any).user?.userId, 10);
+    if (!userId || Number.isNaN(userId)) {
+      sendResponse(res, { statusCode: 401, message: 'Unauthorized' });
+      return;
+    }
+
+    const profile = await UserService.getUserProfile(userId);
+    sendResponse(res, {
+      statusCode: 200,
+      data: profile || {},
+    });
+  });
+
+  static updateUserProfile = catchAsync(async (req: Request, res: Response) => {
+    const userId = parseInt((req as any).user?.userId, 10);
+    if (!userId || Number.isNaN(userId)) {
+      sendResponse(res, { statusCode: 401, message: 'Unauthorized' });
+      return;
+    }
+
+    if (!req.body || Object.keys(req.body).length === 0) {
+      sendResponse(res, { statusCode: 400, message: 'Update data is required' });
+      return;
+    }
+
+    const profile = await UserService.upsertUserProfile(userId, req.body);
+    sendResponse(res, {
+      statusCode: 200,
+      message: 'Profile updated successfully',
+      data: profile,
+    });
+  });
 }
+
