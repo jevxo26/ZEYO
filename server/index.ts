@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import next from 'next';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -6,10 +6,13 @@ import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import { PrismaClient } from '@prisma/client';
 import path from 'path';
-import userRoutes from './routes/userRoutes';
-import authRoutes from './routes/authRoutes';
+import userRoutes from './routes/authentication/userRoutes';
+import authRoutes from './routes/authentication/authRoutes';
 import uploadRoutes from './routes/uploadRoutes';
 import roleRoutes from './routes/roleRoutes';
+import meRoutes from './routes/authentication/meRoutes';
+import adminRoutes from './routes/authentication/adminRoutes';
+
 const prisma = new PrismaClient();
 
 const dev = process.env.NODE_ENV !== 'production';
@@ -18,66 +21,98 @@ const handle = app.getRequestHandler();
 
 const port = process.env.PORT || 3000;
 
+// Build allowed origins from env — supports comma-separated list
+const getAllowedOrigins = (): string[] => {
+  const origins = process.env.ALLOWED_ORIGINS || 'http://localhost:3000';
+  return origins.split(',').map((o) => o.trim()).filter(Boolean);
+};
+
 app.prepare().then(async () => {
   const server = express();
 
-  // Middleware
-  server.use(cors());
+  // ─── Security Middleware ────────────────────────────────────────────────
   server.use(helmet({
-  contentSecurityPolicy: false,
-  crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
-})); // Disable CSP in dev if needed, or configure properly
-  server.use(morgan('[:date[iso]] :method :url :status :response-time ms - :res[content-length]', {
-    skip: (req) => req.url.startsWith('/_next/') || req.url.includes('favicon.ico')
+    contentSecurityPolicy: dev ? false : undefined, // Disable CSP only in dev
+    crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
   }));
+
+  server.use(cors({
+    origin: (origin, callback) => {
+      const allowedOrigins = getAllowedOrigins();
+      // Allow requests with no origin (e.g. curl, mobile apps) in development
+      if (!origin || dev || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS: Origin '${origin}' is not allowed`));
+      }
+    },
+    credentials: true, // Allow cookies (needed for refreshToken cookie)
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  }));
+
+  // ─── Logging ────────────────────────────────────────────────────────────
+  server.use(morgan('[:date[iso]] :method :url :status :response-time ms - :res[content-length]', {
+    skip: (req) => req.url.startsWith('/_next/') || req.url.includes('favicon.ico'),
+  }));
+
+  // ─── Body Parsing ───────────────────────────────────────────────────────
   server.use(express.json());
+  server.use(express.urlencoded({ extended: true })); // Needed for form submissions
   server.use(cookieParser());
 
-  // Database Connection using Prisma
+  // ─── Database Connection ────────────────────────────────────────────────
   try {
     await prisma.$connect();
-    console.log('Prisma connected to the database successfully!');
+    console.log('✅ Prisma connected to the database successfully!');
   } catch (err) {
-    console.error('Error connecting to the database with Prisma:', err);
+    console.error('❌ Error connecting to the database with Prisma:', err);
   }
 
-  // API Routes
+  // ─── Health Check ───────────────────────────────────────────────────────
   server.get('/api/health', (req: Request, res: Response) => {
     res.json({ status: 'ok', timestamp: new Date() });
   });
 
+  // ─── API Routes ─────────────────────────────────────────────────────────
   server.use('/api/users', userRoutes);
   server.use('/api/auth', authRoutes);
   server.use('/api/upload', uploadRoutes);
   server.use('/api/roles', roleRoutes);
+  server.use('/api/me', meRoutes);        // Authenticated user self-service
+  server.use('/api/admin', adminRoutes);  // Admin-only management routes
 
-  // Serve uploaded files statically
+  // ─── Static Uploads ─────────────────────────────────────────────────────
   server.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
 
-  // Let Next.js handle all other routes
-  server.use((req: Request, res: Response) => {
-    return handle(req, res);
-  });
+  // ─── Global Error Handler ────────────────────────────────────────────────
+  // IMPORTANT: Must be registered BEFORE the Next.js catch-all handler.
+  // Express error handlers require exactly 4 parameters (err, req, res, next).
+  server.use((err: any, req: Request, res: Response, next: NextFunction) => {
+    console.error('[Global Error]', err);
 
-  // Global Error Handler
-  server.use((err: any, req: Request, res: Response, next: express.NextFunction) => {
-    console.error(err);
-    
     let statusCode = err.statusCode || 500;
     if (err.message === 'User already exists with this email') statusCode = 409;
     if (err.message === 'Invalid email or password') statusCode = 401;
     if (err.message === 'Unauthorized') statusCode = 401;
-    
+    if (err.message?.startsWith('CORS:')) statusCode = 403;
+
     const message = err.message || 'Internal Server Error';
-    res.status(statusCode).json({ 
+    res.status(statusCode).json({
       success: false,
-      message: message,
-      data: null
+      message,
+      data: null,
     });
   });
 
+  // ─── Next.js Catch-all ──────────────────────────────────────────────────
+  // Must be LAST — handles all non-API routes (pages, static assets, etc.)
+  server.use((req: Request, res: Response) => {
+    return handle(req, res);
+  });
+
   server.listen(port, () => {
-    console.log(`> Ready on http://localhost:${port}`);
+    console.log(`🚀 Ready on http://localhost:${port}`);
   });
 }).catch((err) => {
   console.error('Error starting server', err);

@@ -1,7 +1,9 @@
-const { config } = require('dotenv');
-config();
+import { defineConfig } from 'prisma/config';
+import * as dotenv from 'dotenv';
 
-module.exports = {
-  schema: 'prisma/schema.prisma',
-  seed: 'ts-node prisma/seed.ts',
-};
+// Load .env manually since prisma.config.ts intercepts environment loading
+dotenv.config();
+
+export default defineConfig({
+  schema: 'prisma/schema',
+});

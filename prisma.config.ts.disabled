@@ -1,0 +1,7 @@
+const { config } = require('dotenv');
+config();
+
+module.exports = {
+  schema: 'prisma/schema.prisma',
+  seed: 'ts-node prisma/seed.ts',
+};

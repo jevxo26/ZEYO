@@ -48,6 +48,11 @@ model User {
 
   createdAt                 DateTime     @default(now())
   updatedAt                 DateTime     @updatedAt
+
+  @@index([resetPasswordToken])
+  @@index([emailVerificationToken])
+  @@index([phoneVerificationToken])
+  @@index([deletedAt])
 }
 
 model Role {

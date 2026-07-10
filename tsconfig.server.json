@@ -1,12 +1,20 @@
 {
-  "extends": "./tsconfig.json",
   "compilerOptions": {
+    "target": "ES2017",
     "module": "commonjs",
+    "moduleResolution": "node",
+    "lib": ["es2017"],
     "outDir": "dist",
+    "rootDir": ".",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
     "noEmit": false,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "isolatedModules": false
+    "isolatedModules": false,
+    "incremental": false
   },
-  "include": ["server/**/*.ts"]
+  "include": ["server/**/*.ts", "prisma/**/*.ts"]
 }

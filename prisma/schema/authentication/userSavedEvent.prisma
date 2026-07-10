@@ -1,0 +1,30 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// UserSavedEvent Model
+// Stores user's event drafts, wish-list items, or planned events.
+// Distinct from actual booked events — this is pre-booking intent.
+// NOTE: eventTypeId references a future EventType model.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model UserSavedEvent {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+
+  // ── Event Snapshot ─────────────────────────────────────────────────────────
+  eventTypeId     Int?     // FK → EventType (pending)
+  title           String
+  estimatedBudget Float?
+  guestCount      Int?
+
+  // ── Status ─────────────────────────────────────────────────────────────────
+  status          String   @default("draft") // draft | planned | booked | cancelled
+
+  // ── Relations ──────────────────────────────────────────────────────────────
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // ── Timestamps ─────────────────────────────────────────────────────────────
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@index([status])
+}

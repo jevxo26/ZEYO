@@ -1,0 +1,36 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// UserDevice Model
+// Tracks physical devices a user has used to log in.
+// One user can have many devices (mobile, tablet, desktop, etc.)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model UserDevice {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+
+  // ── Device Info ────────────────────────────────────────────────────────────
+  deviceName      String?           // e.g. "John's iPhone"
+  deviceType      String?           // mobile | tablet | desktop | other
+  deviceModel     String?           // e.g. "iPhone 15 Pro"
+  operatingSystem String?           // e.g. "iOS 17.4"
+  browser         String?           // e.g. "Safari 17"
+  ipAddress       String?
+  deviceToken     String?           // FCM/APNs push token
+
+  // ── Status ─────────────────────────────────────────────────────────────────
+  lastLoginAt     DateTime?
+  status          String   @default("active") // active | inactive | blocked
+
+  // ── Relations ──────────────────────────────────────────────────────────────
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessions        UserSession[]
+  loginHistories  UserLoginHistory[]
+  activities      UserActivity[]
+
+  // ── Timestamps ─────────────────────────────────────────────────────────────
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+  @@index([deviceToken])
+}

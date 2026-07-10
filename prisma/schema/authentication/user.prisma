@@ -1,0 +1,100 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// User Model
+// Core authentication and identity model.
+// All other user-related models relate back to this.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model User {
+  id            Int       @id @default(autoincrement())
+
+  // ── Identity ───────────────────────────────────────────────────────────────
+  name          String
+  firstName     String?
+  lastName      String?
+  fullName      String?
+  email         String    @unique
+  phone         String?
+  password      String?
+  profileImage  String?
+  dateOfBirth   DateTime?
+  gender        String?
+
+  // ── Role & Status ──────────────────────────────────────────────────────────
+  // `role` (string) = quick-access slug (e.g. "admin", "employee")
+  // `userRole` (FK) = normalised Role relation — keep both in sync
+  role          String    @default("employee")
+  roleId        Int?
+  userRole      Role?     @relation(fields: [roleId], references: [id], onDelete: SetNull)
+  status        String    @default("active") // active | inactive | suspended | deleted
+
+  // ── Verification Flags ─────────────────────────────────────────────────────
+  isVerified      Boolean @default(false)
+  emailVerified   Boolean @default(false)
+  phoneVerified   Boolean @default(false)
+
+  // ── Activity ───────────────────────────────────────────────────────────────
+  lastLoginAt     DateTime?
+  lastActiveAt    DateTime?
+  issueDate       DateTime  @default(now())
+
+  // ── OAuth / Social Login ───────────────────────────────────────────────────
+  provider        String    @default("local")
+  providerId      String?   @unique
+
+  // ── Legacy Auth Tokens (kept for backward compat — prefer UserToken/UserSession) ──
+  // TODO: migrate to UserToken + UserSession models and remove these fields
+  loginLog                  Json?
+  resetPasswordToken        String?
+  resetPasswordExpires      DateTime?
+  emailVerificationToken    String?
+  emailVerificationExpires  DateTime?
+  phoneVerificationToken    String?
+  phoneVerificationExpires  DateTime?
+  refreshToken              String?
+
+  // ── Soft Delete ────────────────────────────────────────────────────────────
+  deletedAt       DateTime?
+
+  // ── One-to-One Relations ───────────────────────────────────────────────────
+  profile                  UserProfile?
+  notificationSetting      UserNotificationSetting?
+  security                 UserSecurity?
+  preference               UserPreference?
+
+  // ── One-to-Many Relations ──────────────────────────────────────────────────
+  addresses                UserAddress[]
+  devices                  UserDevice[]
+  sessions                 UserSession[]
+  tokens                   UserToken[]
+  otps                     UserOTP[]
+  loginHistories           UserLoginHistory[]
+  favoriteZones            UserFavoriteZone[]
+  savedEvents              UserSavedEvent[]
+  activities               UserActivity[]
+  attachments              UserAttachment[]
+  agreements               UserAgreement[]
+  consents                 UserConsent[]
+  identityVerifications    UserIdentityVerification[]
+
+  // ── Self-referencing Relations (named to avoid Prisma ambiguity) ───────────
+  // UserSupportTicket: tickets created by this user
+  supportTickets           UserSupportTicket[]  @relation("UserTickets")
+  // UserSupportTicket: tickets assigned to this admin user
+  assignedTickets          UserSupportTicket[]  @relation("AdminTickets")
+  // UserStatusHistory: status change records for this user
+  statusHistories          UserStatusHistory[]  @relation("UserStatusLogs")
+  // UserStatusHistory: status changes made BY this admin user
+  adminStatusChanges       UserStatusHistory[]  @relation("AdminStatusChanges")
+
+  // ── Timestamps ─────────────────────────────────────────────────────────────
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // ── Indexes ────────────────────────────────────────────────────────────────
+  @@index([resetPasswordToken])
+  @@index([emailVerificationToken])
+  @@index([phoneVerificationToken])
+  @@index([deletedAt])
+  @@index([status])
+  @@index([role])
+}

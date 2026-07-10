@@ -38,6 +38,10 @@
     "app/dashboard/components/txt"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "server",
+    "prisma.config.ts",
+    "**/*.test.ts",
+    "**/*.spec.ts"
   ]
 }

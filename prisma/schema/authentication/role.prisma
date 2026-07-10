@@ -1,0 +1,17 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Role Model
+// Simple lookup table for user roles (admin, manager, employee, etc.)
+// Referenced by User via roleId FK.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Role {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+
+  // Relations
+  users       User[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

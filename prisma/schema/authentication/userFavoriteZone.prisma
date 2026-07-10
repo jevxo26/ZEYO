@@ -1,0 +1,23 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// UserFavoriteZone Model
+// Junction table for users bookmarking/favoriting zones.
+// One user can favorite many zones.
+// NOTE: zoneId references a future Zone model.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model UserFavoriteZone {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  zoneId    Int      // FK → Zone (pending — no FK constraint yet)
+
+  // ── Relations ──────────────────────────────────────────────────────────────
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // ── Timestamps ─────────────────────────────────────────────────────────────
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, zoneId]) // A user can only favorite a zone once
+  @@index([userId])
+  @@index([zoneId])
+}

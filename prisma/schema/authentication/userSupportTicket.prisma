@@ -1,0 +1,34 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// UserSupportTicket Model
+// Customer support tickets raised by users.
+// Can be assigned to an admin user (assignedAdminId → User).
+// ─────────────────────────────────────────────────────────────────────────────
+
+model UserSupportTicket {
+  id               Int       @id @default(autoincrement())
+  userId           Int
+  assignedAdminId  Int?      // FK → User (must have admin/manager role)
+
+  // ── Ticket Info ────────────────────────────────────────────────────────────
+  ticketNumber     String    @unique  // Auto-generated e.g. "TKT-20260711-0001"
+  subject          String
+  description      String    @db.Text
+  priority         String    @default("medium") // low | medium | high | urgent
+  status           String    @default("open")   // open | in_progress | resolved | closed | cancelled
+
+  // ── Resolution ─────────────────────────────────────────────────────────────
+  resolvedAt       DateTime?
+
+  // ── Relations ──────────────────────────────────────────────────────────────
+  user             User      @relation("UserTickets",  fields: [userId],          references: [id], onDelete: Cascade)
+  assignedAdmin    User?     @relation("AdminTickets", fields: [assignedAdminId], references: [id], onDelete: SetNull)
+
+  // ── Timestamps ─────────────────────────────────────────────────────────────
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([assignedAdminId])
+  @@index([status, priority])
+  @@index([ticketNumber])
+}

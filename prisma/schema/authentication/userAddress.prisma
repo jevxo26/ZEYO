@@ -1,0 +1,48 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// UserAddress Model
+// Stores multiple saved addresses per user (shipping, billing, etc.)
+// One user can have many addresses. One can be marked as default.
+//
+// NOTE: countryId, divisionId, districtId, cityId, areaId, zoneId are raw
+// integer references to a future location lookup table. When location models
+// are added to the schema, add FK relations here.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model UserAddress {
+  id     Int  @id @default(autoincrement())
+  userId Int
+
+  // ── Relation ───────────────────────────────────────────────────────────────
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // ── Label & Receiver Info ──────────────────────────────────────────────────
+  label         String? // e.g. "Home", "Office"
+  receiverName  String
+  receiverPhone String
+
+  // ── Location IDs (raw refs — no FK yet, future location models pending) ────
+  countryId  Int
+  divisionId Int?
+  districtId Int?
+  cityId     Int?
+  areaId     Int?
+  zoneId     Int?
+
+  // ── Address Text ───────────────────────────────────────────────────────────
+  addressLine1 String
+  addressLine2 String?
+  postalCode   String?
+
+  // ── Geo Coordinates ────────────────────────────────────────────────────────
+  latitude  Float?
+  longitude Float?
+
+  // ── Flags ──────────────────────────────────────────────────────────────────
+  isDefault Boolean @default(false)
+
+  // ── Timestamps ─────────────────────────────────────────────────────────────
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}

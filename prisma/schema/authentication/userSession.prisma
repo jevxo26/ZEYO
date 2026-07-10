@@ -1,0 +1,36 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// UserSession Model
+// Tracks active and historical login sessions per device.
+// Replaces raw refreshToken storage on the User model for multi-device support.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model UserSession {
+  id           Int       @id @default(autoincrement())
+  userId       Int
+  deviceId     Int?
+
+  // ── Token Pair ─────────────────────────────────────────────────────────────
+  accessToken  String    @db.Text
+  refreshToken String    @db.Text
+
+  // ── Session Metadata ────────────────────────────────────────────────────────
+  ipAddress    String?
+  loginTime    DateTime  @default(now())
+  logoutTime   DateTime?
+  expiresAt    DateTime
+
+  // ── Status ─────────────────────────────────────────────────────────────────
+  status       String    @default("active") // active | expired | logged_out | revoked
+
+  // ── Relations ──────────────────────────────────────────────────────────────
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  device       UserDevice? @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+
+  // ── Timestamps ─────────────────────────────────────────────────────────────
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([refreshToken])
+  @@index([status])
+}

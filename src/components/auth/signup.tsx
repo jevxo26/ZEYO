@@ -31,11 +31,14 @@ const schema = yup.object({
     .string()
     .required("Confirm Password is required")
     .oneOf([yup.ref("password")], "Passwords must match"),
-
-  profileImage: yup.mixed<FileList>().notRequired(),
 });
 
-type FormData = yup.InferType<typeof schema>;
+// profileImage has no validation rules so it is excluded from the schema.
+// Adding it to FormData as a separate optional field keeps useForm<FormData>
+// compatible with yupResolver without causing a Resolver<T> type conflict.
+type FormData = yup.InferType<typeof schema> & {
+  profileImage?: FileList;
+};
 
 export function SignUpForm() {
   const [isLoading, setIsLoading] = useState(false);

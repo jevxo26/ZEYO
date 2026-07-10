@@ -7,7 +7,12 @@
     "build": "next build && tsc --project tsconfig.server.json",
     "start": "NODE_ENV=production node dist/server/index.js",
     "lint": "eslint",
-    "seed": "prisma db seed"
+    "seed": "prisma db seed --schema=prisma/schema",
+    "db:generate": "prisma generate --schema=prisma/schema",
+    "db:migrate": "prisma migrate dev --schema=prisma/schema",
+    "db:migrate:prod": "prisma migrate deploy --schema=prisma/schema",
+    "db:studio": "prisma studio --schema=prisma/schema",
+    "db:validate": "prisma validate --schema=prisma/schema"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
