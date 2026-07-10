@@ -1,13 +1,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // User Model
 // Core authentication and identity model.
-// Relations: Role (many-to-one), UserProfile (one-to-one), UserAddress (one-to-many)
+// All other user-related models relate back to this.
 // ─────────────────────────────────────────────────────────────────────────────
 
 model User {
   id            Int       @id @default(autoincrement())
 
-  // ── Identity ──────────────────────────────────────────────────────────────
+  // ── Identity ───────────────────────────────────────────────────────────────
   name          String
   firstName     String?
   lastName      String?
@@ -20,29 +20,30 @@ model User {
   gender        String?
 
   // ── Role & Status ──────────────────────────────────────────────────────────
-  // `role` (string) is the quick-access role slug (e.g. "admin", "employee")
-  // `userRole` (FK) is the normalised Role relation — keep both in sync
+  // `role` (string) = quick-access slug (e.g. "admin", "employee")
+  // `userRole` (FK) = normalised Role relation — keep both in sync
   role          String    @default("employee")
   roleId        Int?
   userRole      Role?     @relation(fields: [roleId], references: [id], onDelete: SetNull)
-  status        String    @default("active")
+  status        String    @default("active") // active | inactive | suspended | deleted
 
   // ── Verification Flags ─────────────────────────────────────────────────────
   isVerified      Boolean @default(false)
   emailVerified   Boolean @default(false)
   phoneVerified   Boolean @default(false)
 
-  // ── Activity Tracking ──────────────────────────────────────────────────────
+  // ── Activity ───────────────────────────────────────────────────────────────
   lastLoginAt     DateTime?
   lastActiveAt    DateTime?
   issueDate       DateTime  @default(now())
-  loginLog        Json?     // Array of ISO timestamp strings, capped at 50 entries
 
   // ── OAuth / Social Login ───────────────────────────────────────────────────
   provider        String    @default("local")
   providerId      String?   @unique
 
-  // ── Security Tokens (hashed, never stored plain) ───────────────────────────
+  // ── Legacy Auth Tokens (kept for backward compat — prefer UserToken/UserSession) ──
+  // TODO: migrate to UserToken + UserSession models and remove these fields
+  loginLog                  Json?
   resetPasswordToken        String?
   resetPasswordExpires      DateTime?
   emailVerificationToken    String?
@@ -54,17 +55,46 @@ model User {
   // ── Soft Delete ────────────────────────────────────────────────────────────
   deletedAt       DateTime?
 
-  // ── Relations ──────────────────────────────────────────────────────────────
-  profile         UserProfile?
-  addresses       UserAddress[]
+  // ── One-to-One Relations ───────────────────────────────────────────────────
+  profile                  UserProfile?
+  notificationSetting      UserNotificationSetting?
+  security                 UserSecurity?
+  preference               UserPreference?
+
+  // ── One-to-Many Relations ──────────────────────────────────────────────────
+  addresses                UserAddress[]
+  devices                  UserDevice[]
+  sessions                 UserSession[]
+  tokens                   UserToken[]
+  otps                     UserOTP[]
+  loginHistories           UserLoginHistory[]
+  favoriteZones            UserFavoriteZone[]
+  savedEvents              UserSavedEvent[]
+  activities               UserActivity[]
+  attachments              UserAttachment[]
+  agreements               UserAgreement[]
+  consents                 UserConsent[]
+  identityVerifications    UserIdentityVerification[]
+
+  // ── Self-referencing Relations (named to avoid Prisma ambiguity) ───────────
+  // UserSupportTicket: tickets created by this user
+  supportTickets           UserSupportTicket[]  @relation("UserTickets")
+  // UserSupportTicket: tickets assigned to this admin user
+  assignedTickets          UserSupportTicket[]  @relation("AdminTickets")
+  // UserStatusHistory: status change records for this user
+  statusHistories          UserStatusHistory[]  @relation("UserStatusLogs")
+  // UserStatusHistory: status changes made BY this admin user
+  adminStatusChanges       UserStatusHistory[]  @relation("AdminStatusChanges")
 
   // ── Timestamps ─────────────────────────────────────────────────────────────
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  // ── Indexes (for fast token lookups during verification flows) ─────────────
+  // ── Indexes ────────────────────────────────────────────────────────────────
   @@index([resetPasswordToken])
   @@index([emailVerificationToken])
   @@index([phoneVerificationToken])
   @@index([deletedAt])
+  @@index([status])
+  @@index([role])
 }

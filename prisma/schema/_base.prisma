@@ -2,6 +2,10 @@
 // Prisma Generator & Datasource Configuration
 // All models live in their own files inside this /schema folder.
 // Prisma merges all *.prisma files in this directory automatically.
+//
+// Folder structure:
+//   prisma/schema/              ← all *.prisma model files
+//   prisma/schema/migrations/   ← migration history (moved here from prisma/migrations/)
 // ─────────────────────────────────────────────────────────────────────────────
 
 generator client {

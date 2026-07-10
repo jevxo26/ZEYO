@@ -10,6 +10,8 @@ import userRoutes from './routes/userRoutes';
 import authRoutes from './routes/authRoutes';
 import uploadRoutes from './routes/uploadRoutes';
 import roleRoutes from './routes/roleRoutes';
+import meRoutes from './routes/meRoutes';
+import adminRoutes from './routes/adminRoutes';
 
 const prisma = new PrismaClient();
 
@@ -77,6 +79,8 @@ app.prepare().then(async () => {
   server.use('/api/auth', authRoutes);
   server.use('/api/upload', uploadRoutes);
   server.use('/api/roles', roleRoutes);
+  server.use('/api/me', meRoutes);        // Authenticated user self-service
+  server.use('/api/admin', adminRoutes);  // Admin-only management routes
 
   // ─── Static Uploads ─────────────────────────────────────────────────────
   server.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));

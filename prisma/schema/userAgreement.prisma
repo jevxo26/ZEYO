@@ -1,0 +1,27 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// UserAgreement Model
+// Records when a user accepted a legal agreement (ToS, Privacy Policy, etc.)
+// Immutable — each acceptance is a new record. Never updated or deleted.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model UserAgreement {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+
+  // ── Agreement Info ─────────────────────────────────────────────────────────
+  agreementType String   // terms_of_service | privacy_policy | refund_policy | vendor_agreement
+  version       String   // e.g. "v1.2", "2026-01-01"
+
+  // ── Acceptance Proof ───────────────────────────────────────────────────────
+  acceptedAt    DateTime @default(now())
+  ipAddress     String?  // For legal audit trail
+
+  // ── Relations ──────────────────────────────────────────────────────────────
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // ── Timestamps ─────────────────────────────────────────────────────────────
+  createdAt     DateTime @default(now())
+
+  @@index([userId])
+  @@index([agreementType, version])
+}

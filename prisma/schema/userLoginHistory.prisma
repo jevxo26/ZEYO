@@ -1,0 +1,35 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// UserLoginHistory Model
+// Immutable audit log of every login/logout event.
+// Replaces the loginLog JSON array on the User model.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model UserLoginHistory {
+  id              Int       @id @default(autoincrement())
+  userId          Int
+  deviceId        Int?
+
+  // ── Location & Network ─────────────────────────────────────────────────────
+  ipAddress       String?
+  browser         String?
+  operatingSystem String?
+  country         String?
+  city            String?
+
+  // ── Login Info ─────────────────────────────────────────────────────────────
+  loginMethod     String?   // email | phone | google | facebook | otp | magic_link
+  loginStatus     String    // success | failed | blocked | suspended
+
+  // ── Timestamps ─────────────────────────────────────────────────────────────
+  loginAt         DateTime  @default(now())
+  logoutAt        DateTime?
+  createdAt       DateTime  @default(now())
+
+  // ── Relations ──────────────────────────────────────────────────────────────
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  device          UserDevice? @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([loginAt])
+  @@index([loginStatus])
+}

@@ -1,0 +1,30 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// UserActivity Model
+// Immutable audit log of user actions within the app.
+// Used for analytics, security monitoring, and customer support.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model UserActivity {
+  id           Int       @id @default(autoincrement())
+  userId       Int
+  deviceId     Int?
+
+  // ── Activity Data ──────────────────────────────────────────────────────────
+  activityType String    // login | logout | profile_update | password_change |
+                         // address_add | event_save | zone_favorite | upload |
+                         // ticket_create | consent_accept | verification_submit | etc.
+  description  String?   // Human-readable detail
+  ipAddress    String?
+  metadata     Json?     // Any extra structured data (e.g. changed fields)
+
+  // ── Relations ──────────────────────────────────────────────────────────────
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  device       UserDevice? @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+
+  // ── Timestamp (no updatedAt — activities are immutable) ────────────────────
+  createdAt    DateTime  @default(now())
+
+  @@index([userId])
+  @@index([activityType])
+  @@index([createdAt])
+}
