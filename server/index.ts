@@ -6,12 +6,12 @@ import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import { PrismaClient } from '@prisma/client';
 import path from 'path';
-import userRoutes from './routes/userRoutes';
-import authRoutes from './routes/authRoutes';
+import userRoutes from './routes/authentication/userRoutes';
+import authRoutes from './routes/authentication/authRoutes';
 import uploadRoutes from './routes/uploadRoutes';
 import roleRoutes from './routes/roleRoutes';
-import meRoutes from './routes/meRoutes';
-import adminRoutes from './routes/adminRoutes';
+import meRoutes from './routes/authentication/meRoutes';
+import adminRoutes from './routes/authentication/adminRoutes';
 
 const prisma = new PrismaClient();
 
