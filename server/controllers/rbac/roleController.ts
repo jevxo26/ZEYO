@@ -23,7 +23,7 @@ export class RbacRoleController {
 
   // GET /api/rbac/roles/code/:code
   static getByCode = catchAsync(async (req: Request, res: Response) => {
-    const role = await RbacRoleService.getByCode(req.params.code.toUpperCase());
+    const role = await RbacRoleService.getByCode(String(req.params.code).toUpperCase());
     if (!role) {
       return res.status(404).json({ success: false, message: 'Role not found', data: null });
     }
