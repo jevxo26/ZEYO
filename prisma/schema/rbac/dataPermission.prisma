@@ -1,0 +1,31 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// DataPermission Model
+// Controls what subset of data a role can see via dynamic filters.
+// e.g. Finance Manager can only view transactions where status = 'completed',
+// or Zone Manager can only read data where zoneId = scopedZoneId.
+// filterType: field_filter | status_filter | date_range | custom
+// filterValue: JSON string encoding the filter criteria
+// ─────────────────────────────────────────────────────────────────────────────
+
+model DataPermission {
+  id          Int      @id @default(autoincrement())
+
+  roleId      Int
+
+  // ── Filter Definition ──────────────────────────────────────────────────────
+  dataType    String             // transaction | booking | vendor | user | …
+  filterType  String             // field_filter | status_filter | date_range | custom
+  filterValue String             // JSON-encoded filter criteria
+
+  // ── Timestamps ─────────────────────────────────────────────────────────────
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // ── Relations ──────────────────────────────────────────────────────────────
+  role        Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  // ── Indexes ────────────────────────────────────────────────────────────────
+  @@index([roleId])
+  @@index([dataType])
+  @@index([filterType])
+}

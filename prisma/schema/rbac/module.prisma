@@ -1,0 +1,32 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Module Model
+// Represents a functional area of the application (e.g. User Management,
+// Booking Management). Permissions are grouped under Modules.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Module {
+  id           Int      @id @default(autoincrement())
+
+  // ── Identity ───────────────────────────────────────────────────────────────
+  name         String   @unique
+  code         String   @unique   // e.g. USER_MANAGEMENT, BOOKING_MANAGEMENT
+  icon         String?            // icon name / URL for UI rendering
+  displayOrder Int      @default(0)
+  description  String?
+
+  // ── Status ─────────────────────────────────────────────────────────────────
+  status       String   @default("active") // active | inactive
+
+  // ── Timestamps ─────────────────────────────────────────────────────────────
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // ── Relations ──────────────────────────────────────────────────────────────
+  permissions       Permission[]
+  modulePermissions ModulePermission[]
+
+  // ── Indexes ────────────────────────────────────────────────────────────────
+  @@index([code])
+  @@index([status])
+  @@index([displayOrder])
+}

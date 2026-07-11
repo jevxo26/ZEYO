@@ -1,0 +1,30 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// RoleScope Model
+// Constrains a role's effective reach to a specific resource scope.
+// e.g. Zone Manager scoped to a particular zone, or a regional admin.
+// scopeType: zone | vendor | region | city | global
+// scopeValue: the ID of the scoped resource (as string for flexibility)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model RoleScope {
+  id          Int      @id @default(autoincrement())
+
+  roleId      Int
+
+  // ── Scope Definition ───────────────────────────────────────────────────────
+  scopeType   String             // zone | vendor | region | city | global
+  scopeValue  String             // ID or identifier of the scoped resource
+  description String?
+
+  // ── Timestamps ─────────────────────────────────────────────────────────────
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // ── Relations ──────────────────────────────────────────────────────────────
+  role        Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  // ── Indexes ────────────────────────────────────────────────────────────────
+  @@index([roleId])
+  @@index([scopeType])
+  @@index([scopeValue])
+}

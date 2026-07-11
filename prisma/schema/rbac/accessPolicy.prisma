@@ -1,0 +1,26 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// AccessPolicy Model
+// High-level policy definitions that can be associated with roles or users.
+// Policies encode business rules (e.g. "deny all after 10pm", "allow only
+// verified vendors"). policyType: allow | deny | conditional
+// ─────────────────────────────────────────────────────────────────────────────
+
+model AccessPolicy {
+  id          Int      @id @default(autoincrement())
+
+  // ── Identity ───────────────────────────────────────────────────────────────
+  name        String   @unique
+  policyType  String             // allow | deny | conditional
+  description String?
+
+  // ── Status ─────────────────────────────────────────────────────────────────
+  status      String   @default("active") // active | inactive | draft
+
+  // ── Timestamps ─────────────────────────────────────────────────────────────
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // ── Indexes ────────────────────────────────────────────────────────────────
+  @@index([policyType])
+  @@index([status])
+}

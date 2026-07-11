@@ -1,0 +1,27 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// RoleHierarchy Model
+// Defines parent-child relationships between roles for permission inheritance.
+// e.g. Super Admin → Admin → Operations Manager forms a hierarchy tree.
+// level indicates depth from root (0 = root).
+// ─────────────────────────────────────────────────────────────────────────────
+
+model RoleHierarchy {
+  id           Int      @id @default(autoincrement())
+
+  parentRoleId Int
+  childRoleId  Int
+  level        Int      @default(0)   // Depth from root role
+
+  // ── Timestamps ─────────────────────────────────────────────────────────────
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // ── Relations ──────────────────────────────────────────────────────────────
+  parentRole   Role     @relation("ParentRole", fields: [parentRoleId], references: [id], onDelete: Cascade)
+  childRole    Role     @relation("ChildRole",  fields: [childRoleId],  references: [id], onDelete: Cascade)
+
+  // ── Constraints ────────────────────────────────────────────────────────────
+  @@unique([parentRoleId, childRoleId])
+  @@index([parentRoleId])
+  @@index([childRoleId])
+}

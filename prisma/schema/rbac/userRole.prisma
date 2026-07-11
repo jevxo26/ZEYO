@@ -1,0 +1,33 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// UserRole Model
+// Assigns RBAC roles to regular Users. Supports time-bounded assignments
+// (expiresAt) and multiple simultaneous roles per user.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model UserRole {
+  id         Int       @id @default(autoincrement())
+
+  userId     Int
+  roleId     Int
+
+  // ── Assignment Metadata ────────────────────────────────────────────────────
+  assignedBy Int?                   // User ID who performed the assignment
+  assignedAt DateTime  @default(now())
+  expiresAt  DateTime?              // Null = permanent
+
+  // ── Status ─────────────────────────────────────────────────────────────────
+  status     String    @default("active") // active | expired | revoked
+
+  // ── Timestamps ─────────────────────────────────────────────────────────────
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  // ── Relations ──────────────────────────────────────────────────────────────
+  role       Role      @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  // ── Indexes ────────────────────────────────────────────────────────────────
+  @@index([userId])
+  @@index([roleId])
+  @@index([status])
+  @@index([expiresAt])
+}
