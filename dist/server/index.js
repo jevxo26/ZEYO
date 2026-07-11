@@ -17,6 +17,12 @@ const uploadRoutes_1 = __importDefault(require("./routes/uploadRoutes"));
 const roleRoutes_1 = __importDefault(require("./routes/roleRoutes"));
 const meRoutes_1 = __importDefault(require("./routes/authentication/meRoutes"));
 const adminRoutes_1 = __importDefault(require("./routes/authentication/adminRoutes"));
+// ─── RBAC Routes ────────────────────────────────────────────────────────────
+const roleRoutes_2 = __importDefault(require("./routes/rbac/roleRoutes"));
+const moduleRoutes_1 = __importDefault(require("./routes/rbac/moduleRoutes"));
+const permissionRoutes_1 = __importDefault(require("./routes/rbac/permissionRoutes"));
+const rolePermissionRoutes_1 = __importDefault(require("./routes/rbac/rolePermissionRoutes"));
+const userRoleRoutes_1 = __importDefault(require("./routes/rbac/userRoleRoutes"));
 const prisma = new client_1.PrismaClient();
 const dev = process.env.NODE_ENV !== 'production';
 const app = (0, next_1.default)({ dev });
@@ -76,6 +82,12 @@ app.prepare().then(async () => {
     server.use('/api/roles', roleRoutes_1.default);
     server.use('/api/me', meRoutes_1.default); // Authenticated user self-service
     server.use('/api/admin', adminRoutes_1.default); // Admin-only management routes
+    // ─── RBAC API ─────────────────────────────────────────────────────────────
+    server.use('/api/rbac/roles', roleRoutes_2.default);
+    server.use('/api/rbac/modules', moduleRoutes_1.default);
+    server.use('/api/rbac/permissions', permissionRoutes_1.default);
+    server.use('/api/rbac/role-permissions', rolePermissionRoutes_1.default);
+    server.use('/api/rbac/user-roles', userRoleRoutes_1.default);
     // ─── Static Uploads ─────────────────────────────────────────────────────
     server.use('/uploads', express_1.default.static(path_1.default.join(process.cwd(), 'public', 'uploads')));
     // ─── Global Error Handler ────────────────────────────────────────────────
