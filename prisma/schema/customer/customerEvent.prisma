@@ -1,0 +1,17 @@
+model CustomerEvent {
+  id              Int            @id @default(autoincrement())
+  customerId      Int
+  customer        Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  eventTypeId     Int?
+  eventTitle      String
+  eventDate       DateTime?
+  guestCount      Int?
+  zoneId          Int?
+  estimatedBudget Float?
+  status          String         @default("draft") // e.g. draft | planned
+  guests          CustomerGuest[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([customerId])
+}

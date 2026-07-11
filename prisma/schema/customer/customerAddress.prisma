@@ -1,0 +1,23 @@
+model CustomerAddress {
+  id           Int      @id @default(autoincrement())
+  customerId   Int
+  customer     Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  label        String?  // e.g. Home | Office | Event
+  receiverName String
+  phone        String
+  countryId    Int
+  divisionId   Int?
+  districtId   Int?
+  cityId       Int?
+  areaId       Int?
+  zoneId       Int?
+  address      String
+  landmark     String?
+  latitude     Float?
+  longitude    Float?
+  isDefault    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([customerId])
+}
