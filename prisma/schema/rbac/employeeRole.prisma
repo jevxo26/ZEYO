@@ -1,0 +1,34 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// EmployeeRole Model
+// Assigns RBAC roles to Vendor Employees.
+// employeeId references a user with role = 'vendor_employee'.
+// vendorId scopes the employee to a specific vendor.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model EmployeeRole {
+  id         Int      @id @default(autoincrement())
+
+  employeeId Int                    // User.id of the vendor employee
+  vendorId   Int                    // Vendor.id (future module FK)
+  roleId     Int
+
+  // ── Assignment Metadata ────────────────────────────────────────────────────
+  assignedBy Int?                   // User ID who performed the assignment
+  assignedAt DateTime @default(now())
+
+  // ── Status ─────────────────────────────────────────────────────────────────
+  status     String   @default("active") // active | revoked | suspended
+
+  // ── Timestamps ─────────────────────────────────────────────────────────────
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // ── Relations ──────────────────────────────────────────────────────────────
+  role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  // ── Indexes ────────────────────────────────────────────────────────────────
+  @@index([employeeId])
+  @@index([vendorId])
+  @@index([roleId])
+  @@index([status])
+}

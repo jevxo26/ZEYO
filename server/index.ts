@@ -13,6 +13,13 @@ import roleRoutes from './routes/roleRoutes';
 import meRoutes from './routes/authentication/meRoutes';
 import adminRoutes from './routes/authentication/adminRoutes';
 
+// ─── RBAC Routes ────────────────────────────────────────────────────────────
+import rbacRoleRoutes           from './routes/rbac/roleRoutes';
+import rbacModuleRoutes         from './routes/rbac/moduleRoutes';
+import rbacPermissionRoutes     from './routes/rbac/permissionRoutes';
+import rbacRolePermissionRoutes from './routes/rbac/rolePermissionRoutes';
+import rbacUserRoleRoutes       from './routes/rbac/userRoleRoutes';
+
 const prisma = new PrismaClient();
 
 const dev = process.env.NODE_ENV !== 'production';
@@ -81,6 +88,13 @@ app.prepare().then(async () => {
   server.use('/api/roles', roleRoutes);
   server.use('/api/me', meRoutes);        // Authenticated user self-service
   server.use('/api/admin', adminRoutes);  // Admin-only management routes
+
+  // ─── RBAC API ─────────────────────────────────────────────────────────────
+  server.use('/api/rbac/roles',            rbacRoleRoutes);
+  server.use('/api/rbac/modules',          rbacModuleRoutes);
+  server.use('/api/rbac/permissions',      rbacPermissionRoutes);
+  server.use('/api/rbac/role-permissions', rbacRolePermissionRoutes);
+  server.use('/api/rbac/user-roles',       rbacUserRoleRoutes);
 
   // ─── Static Uploads ─────────────────────────────────────────────────────
   server.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));

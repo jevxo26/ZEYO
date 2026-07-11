@@ -1,0 +1,30 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// ApiPermission Model
+// Controls which REST API endpoints a role is allowed to call.
+// Used for route-level middleware enforcement.
+// method: GET | POST | PUT | PATCH | DELETE
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ApiPermission {
+  id        Int      @id @default(autoincrement())
+
+  roleId    Int
+
+  // ── API Endpoint ───────────────────────────────────────────────────────────
+  apiName   String             // Human-readable name e.g. "Get All Users"
+  method    String             // GET | POST | PUT | PATCH | DELETE
+  endpoint  String             // e.g. /api/users, /api/bookings/:id
+  isAllowed Boolean @default(true)
+
+  // ── Timestamps ─────────────────────────────────────────────────────────────
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ── Relations ──────────────────────────────────────────────────────────────
+  role      Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  // ── Indexes ────────────────────────────────────────────────────────────────
+  @@index([roleId])
+  @@index([method])
+  @@index([isAllowed])
+}

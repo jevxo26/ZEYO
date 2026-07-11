@@ -1,0 +1,32 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// AdminRole Model
+// Assigns RBAC roles specifically to Admin-type users.
+// Separate from UserRole to allow admin-specific assignment auditing.
+// adminId references User.id where user.role = 'admin'.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model AdminRole {
+  id         Int      @id @default(autoincrement())
+
+  adminId    Int                    // User.id of the admin
+  roleId     Int
+
+  // ── Assignment Metadata ────────────────────────────────────────────────────
+  assignedBy Int?                   // User ID who performed the assignment
+  assignedAt DateTime @default(now())
+
+  // ── Status ─────────────────────────────────────────────────────────────────
+  status     String   @default("active") // active | revoked | suspended
+
+  // ── Timestamps ─────────────────────────────────────────────────────────────
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // ── Relations ──────────────────────────────────────────────────────────────
+  role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  // ── Indexes ────────────────────────────────────────────────────────────────
+  @@index([adminId])
+  @@index([roleId])
+  @@index([status])
+}

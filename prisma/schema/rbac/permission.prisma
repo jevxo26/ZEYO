@@ -1,0 +1,40 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Permission Model
+// Atomic permission unit. Each Permission belongs to a Module and defines
+// a specific action (e.g. CREATE, VIEW, APPROVE) on a domain area.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Permission {
+  id          Int      @id @default(autoincrement())
+
+  // ── Identity ───────────────────────────────────────────────────────────────
+  name        String   @unique
+  code        String   @unique   // e.g. USER_CREATE, BOOKING_APPROVE
+  description String?
+
+  // ── Module Link ────────────────────────────────────────────────────────────
+  moduleId    Int
+  module      Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  // ── Action ─────────────────────────────────────────────────────────────────
+  action      String             // create | read | update | delete | approve | export | manage | …
+
+  // ── Status ─────────────────────────────────────────────────────────────────
+  status      String   @default("active") // active | inactive
+
+  // ── Timestamps ─────────────────────────────────────────────────────────────
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // ── Relations ──────────────────────────────────────────────────────────────
+  modulePermissions   ModulePermission[]
+  rolePermissions     RolePermission[]
+  permissionConditions PermissionCondition[]
+  permissionAudits    PermissionAudit[]
+
+  // ── Indexes ────────────────────────────────────────────────────────────────
+  @@index([moduleId])
+  @@index([code])
+  @@index([action])
+  @@index([status])
+}

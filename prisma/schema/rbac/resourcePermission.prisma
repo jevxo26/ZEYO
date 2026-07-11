@@ -1,0 +1,29 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// ResourcePermission Model
+// Grants a role access to a specific resource instance (row-level security).
+// e.g. Role X can manage only Booking ID 42, or Vendor ID 7.
+// permissionLevel: read | write | admin
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ResourcePermission {
+  id              Int      @id @default(autoincrement())
+
+  roleId          Int
+
+  // ── Resource Target ────────────────────────────────────────────────────────
+  resourceType    String             // booking | vendor | package | user | zone | …
+  resourceId      String             // ID of the specific resource (string for flexibility)
+  permissionLevel String             // read | write | admin
+
+  // ── Timestamps ─────────────────────────────────────────────────────────────
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // ── Relations ──────────────────────────────────────────────────────────────
+  role            Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  // ── Indexes ────────────────────────────────────────────────────────────────
+  @@index([roleId])
+  @@index([resourceType])
+  @@index([resourceId])
+}

@@ -1,0 +1,31 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// VendorRole Model
+// Assigns RBAC roles to Vendor entities.
+// vendorId will reference the Vendor model (Part 3+).
+// ─────────────────────────────────────────────────────────────────────────────
+
+model VendorRole {
+  id         Int      @id @default(autoincrement())
+
+  vendorId   Int                    // Will FK to Vendor.id (future module)
+  roleId     Int
+
+  // ── Assignment Metadata ────────────────────────────────────────────────────
+  assignedBy Int?                   // User ID who performed the assignment
+  assignedAt DateTime @default(now())
+
+  // ── Status ─────────────────────────────────────────────────────────────────
+  status     String   @default("active") // active | revoked | suspended
+
+  // ── Timestamps ─────────────────────────────────────────────────────────────
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // ── Relations ──────────────────────────────────────────────────────────────
+  role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  // ── Indexes ────────────────────────────────────────────────────────────────
+  @@index([vendorId])
+  @@index([roleId])
+  @@index([status])
+}

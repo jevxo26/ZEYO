@@ -1,0 +1,29 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// FeaturePermission Model
+// Toggles access to specific UI features or system capabilities per role.
+// e.g. Enable "Export CSV" feature for Finance Manager,
+//      disable "Bulk Delete" for Customer Support.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model FeaturePermission {
+  id          Int      @id @default(autoincrement())
+
+  roleId      Int
+
+  // ── Feature Toggle ─────────────────────────────────────────────────────────
+  featureName String             // e.g. export_csv | bulk_delete | analytics_dashboard
+  isEnabled   Boolean @default(false)
+
+  // ── Timestamps ─────────────────────────────────────────────────────────────
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // ── Relations ──────────────────────────────────────────────────────────────
+  role        Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  // ── Constraints ────────────────────────────────────────────────────────────
+  @@unique([roleId, featureName])
+  @@index([roleId])
+  @@index([featureName])
+  @@index([isEnabled])
+}

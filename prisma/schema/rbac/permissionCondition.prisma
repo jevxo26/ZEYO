@@ -1,0 +1,29 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// PermissionCondition Model
+// Attaches conditional constraints to a Permission.
+// e.g. A permission may only be valid during business hours, or only for
+// records where status = "pending".
+// conditionType: time_range | status_filter | ip_whitelist | custom
+// conditionValue: JSON string or simple value
+// ─────────────────────────────────────────────────────────────────────────────
+
+model PermissionCondition {
+  id             Int        @id @default(autoincrement())
+
+  permissionId   Int
+
+  // ── Condition ──────────────────────────────────────────────────────────────
+  conditionType  String             // time_range | status_filter | ip_whitelist | custom
+  conditionValue String             // JSON or plain value
+
+  // ── Timestamps ─────────────────────────────────────────────────────────────
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  // ── Relations ──────────────────────────────────────────────────────────────
+  permission     Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  // ── Indexes ────────────────────────────────────────────────────────────────
+  @@index([permissionId])
+  @@index([conditionType])
+}
