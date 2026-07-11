@@ -60,6 +60,7 @@ model User {
   notificationSetting      UserNotificationSetting?
   security                 UserSecurity?
   preference               UserPreference?
+  customer                 Customer?
 
   // ── One-to-Many Relations ──────────────────────────────────────────────────
   addresses                UserAddress[]
@@ -85,6 +86,8 @@ model User {
   statusHistories          UserStatusHistory[]  @relation("UserStatusLogs")
   // UserStatusHistory: status changes made BY this admin user
   adminStatusChanges       UserStatusHistory[]  @relation("AdminStatusChanges")
+  // CustomerSupport tickets assigned to this admin user
+  assignedCustomerSupport  CustomerSupport[]    @relation("CustomerSupportAssignedAdmin")
 
   // ── Timestamps ─────────────────────────────────────────────────────────────
   createdAt       DateTime  @default(now())
