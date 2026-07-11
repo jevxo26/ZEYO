@@ -156,9 +156,15 @@ export class AuthService {
     return { message: 'Phone verified successfully' };
   });
 
-  static getMe = catchServiceAsync(async (userId: string) => {
+  static getMe = catchServiceAsync(async (userId: string | number) => {
+    const parsedUserId = Number(userId);
+
+    if (Number.isNaN(parsedUserId)) {
+      throw new Error('Invalid user id');
+    }
+
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: parsedUserId },
       select: {
         id: true,
         name: true,
@@ -300,8 +306,14 @@ export class AuthService {
     try {
       const decoded: any = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || 'refresh_secret');
       
+      const parsedUserId = Number(decoded.userId);
+
+      if (Number.isNaN(parsedUserId)) {
+        throw new Error('Invalid refresh token');
+      }
+
       const user = await prisma.user.findFirst({
-        where: { id: decoded.userId, refreshToken },
+        where: { id: parsedUserId, refreshToken },
       });
 
       if (!user) {
@@ -320,9 +332,15 @@ export class AuthService {
     }
   });
 
-  static logoutUser = catchServiceAsync(async (userId: string) => {
+  static logoutUser = catchServiceAsync(async (userId: string | number) => {
+    const parsedUserId = Number(userId);
+
+    if (Number.isNaN(parsedUserId)) {
+      throw new Error('Invalid user id');
+    }
+
     await prisma.user.update({
-      where: { id: userId },
+      where: { id: parsedUserId },
       data: { refreshToken: null },
     });
     return { message: 'Logged out successfully' };

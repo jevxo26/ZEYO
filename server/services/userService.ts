@@ -50,9 +50,15 @@ export class UserService {
     });
   });
 
-  static getUserById = catchServiceAsync(async (id: string) => {
+  static getUserById = catchServiceAsync(async (id: number | string) => {
+    const userId = Number(id);
+
+    if (Number.isNaN(userId)) {
+      throw new Error('Invalid user id');
+    }
+
     return prisma.user.findFirst({
-      where: { id, deletedAt: null },
+      where: { id: userId, deletedAt: null },
       select: safeUserSelect,
     });
   });
@@ -84,7 +90,13 @@ export class UserService {
     return prisma.user.create({ data: dataToSave, select: safeUserSelect });
   });
 
-  static updateUser = catchServiceAsync(async (id: string, data: Prisma.UserUpdateInput) => {
+  static updateUser = catchServiceAsync(async (id: number | string, data: Prisma.UserUpdateInput) => {
+    const userId = Number(id);
+
+    if (Number.isNaN(userId)) {
+      throw new Error('Invalid user id');
+    }
+
     const updateData = data as Prisma.UserUpdateInput & {
       name?: string;
       firstName?: string;
@@ -119,15 +131,21 @@ export class UserService {
     };
 
     return prisma.user.update({
-      where: { id },
+      where: { id: userId },
       data: dataToSave,
       select: safeUserSelect,
     });
   });
 
-  static deleteUser = catchServiceAsync(async (id: string) => {
+  static deleteUser = catchServiceAsync(async (id: number | string) => {
+    const userId = Number(id);
+
+    if (Number.isNaN(userId)) {
+      throw new Error('Invalid user id');
+    }
+
     return prisma.user.update({
-      where: { id },
+      where: { id: userId },
       data: {
         deletedAt: new Date(),
         status: 'deleted',
@@ -152,6 +170,66 @@ export class UserService {
       },
     });
   });
+
+  //user address
+  static getUserAddresses = catchServiceAsync(async (userId: number) => {
+  return prisma.userAddress.findMany({
+    where: { userId },
+    orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
+  });
+});
+static getUserAddressById = catchServiceAsync(async (userId: number, addressId: number) => {
+  return prisma.userAddress.findFirst({
+    where: { id: addressId, userId },
+  });
+});
+static createUserAddress = catchServiceAsync(async (userId: number, data: Prisma.UserAddressUncheckedCreateInput) => {
+  const count = await prisma.userAddress.count({ where: { userId } });
+  return prisma.userAddress.create({
+    data: {
+      ...data,
+      userId,
+      isDefault: count === 0 ? true : (data.isDefault ?? false),
+    },
+  });
+});
+static updateUserAddress = catchServiceAsync(async (userId: number, addressId: number, data: Prisma.UserAddressUncheckedUpdateInput) => {
+  const existing = await prisma.userAddress.findFirst({ where: { id: addressId, userId } });
+  if (!existing) throw new Error('Address not found');
+  return prisma.userAddress.update({
+    where: { id: addressId },
+    data,
+  });
+});
+static deleteUserAddress = catchServiceAsync(async (userId: number, addressId: number) => {
+  const existing = await prisma.userAddress.findFirst({ where: { id: addressId, userId } });
+  if (!existing) throw new Error('Address not found');
+  await prisma.userAddress.delete({ where: { id: addressId } });
+  if (existing.isDefault) {
+    const next = await prisma.userAddress.findFirst({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
+    if (next) {
+      await prisma.userAddress.update({ where: { id: next.id }, data: { isDefault: true } });
+    }
+  }
+  return existing;
+});
+static setDefaultAddress = catchServiceAsync(async (userId: number, addressId: number) => {
+  const existing = await prisma.userAddress.findFirst({ where: { id: addressId, userId } });
+  if (!existing) throw new Error('Address not found');
+  return prisma.$transaction([
+    prisma.userAddress.updateMany({
+      where: { userId },
+      data: { isDefault: false },
+    }),
+    prisma.userAddress.update({
+      where: { id: addressId },
+      data: { isDefault: true },
+    }),
+  ]);
+});
 };
 
 

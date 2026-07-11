@@ -189,5 +189,102 @@ export class UserController {
       data: profile,
     });
   });
+
+  //user address
+  // ─── USER ADDRESS ───────────────────────────────────────────
+
+static getUserAddresses = catchAsync(async (req: Request, res: Response) => {
+  const userId = parseInt((req as any).user?.userId, 10);
+  if (!userId || Number.isNaN(userId)) {
+    return sendResponse(res, { statusCode: 401, message: 'Unauthorized' });
+  }
+
+  const addresses = await UserService.getUserAddresses(userId);
+  sendResponse(res, { statusCode: 200, data: addresses });
+});
+
+static getUserAddressById = catchAsync(async (req: Request, res: Response) => {
+  const userId = parseInt((req as any).user?.userId, 10);
+  const addressId = parseInt(req.params.addressId as string, 10);
+
+  if (!userId || Number.isNaN(userId)) {
+    return sendResponse(res, { statusCode: 401, message: 'Unauthorized' });
+  }
+  if (!addressId || Number.isNaN(addressId)) {
+    return sendResponse(res, { statusCode: 400, message: 'Invalid address id' });
+  }
+
+  const address = await UserService.getUserAddressById(userId, addressId);
+  if (!address) {
+    return sendResponse(res, { statusCode: 404, message: 'Address not found' });
+  }
+  sendResponse(res, { statusCode: 200, data: address });
+});
+
+static createUserAddress = catchAsync(async (req: Request, res: Response) => {
+  const userId = parseInt((req as any).user?.userId, 10);
+  if (!userId || Number.isNaN(userId)) {
+    return sendResponse(res, { statusCode: 401, message: 'Unauthorized' });
+  }
+
+  const { receiverName, receiverPhone, addressLine1, countryId } = req.body;
+  if (!receiverName || !receiverPhone || !addressLine1 || !countryId) {
+    return sendResponse(res, {
+      statusCode: 400,
+      message: 'receiverName, receiverPhone, addressLine1 and countryId are required',
+    });
+  }
+
+  const address = await UserService.createUserAddress(userId, req.body);
+  sendResponse(res, { statusCode: 201, message: 'Address created successfully', data: address });
+});
+
+static updateUserAddress = catchAsync(async (req: Request, res: Response) => {
+  const userId = parseInt((req as any).user?.userId, 10);
+  const addressId = parseInt(req.params.addressId as string, 10);
+
+  if (!userId || Number.isNaN(userId)) {
+    return sendResponse(res, { statusCode: 401, message: 'Unauthorized' });
+  }
+  if (!addressId || Number.isNaN(addressId)) {
+    return sendResponse(res, { statusCode: 400, message: 'Invalid address id' });
+  }
+  if (!req.body || Object.keys(req.body).length === 0) {
+    return sendResponse(res, { statusCode: 400, message: 'Update data is required' });
+  }
+
+  const address = await UserService.updateUserAddress(userId, addressId, req.body);
+  sendResponse(res, { statusCode: 200, message: 'Address updated successfully', data: address });
+});
+
+static deleteUserAddress = catchAsync(async (req: Request, res: Response) => {
+  const userId = parseInt((req as any).user?.userId, 10);
+  const addressId = parseInt(req.params.addressId as string, 10);
+
+  if (!userId || Number.isNaN(userId)) {
+    return sendResponse(res, { statusCode: 401, message: 'Unauthorized' });
+  }
+  if (!addressId || Number.isNaN(addressId)) {
+    return sendResponse(res, { statusCode: 400, message: 'Invalid address id' });
+  }
+
+  await UserService.deleteUserAddress(userId, addressId);
+  sendResponse(res, { statusCode: 200, message: 'Address deleted successfully' });
+});
+
+static setDefaultAddress = catchAsync(async (req: Request, res: Response) => {
+  const userId = parseInt((req as any).user?.userId, 10);
+  const addressId = parseInt(req.params.addressId as string, 10);
+
+  if (!userId || Number.isNaN(userId)) {
+    return sendResponse(res, { statusCode: 401, message: 'Unauthorized' });
+  }
+  if (!addressId || Number.isNaN(addressId)) {
+    return sendResponse(res, { statusCode: 400, message: 'Invalid address id' });
+  }
+
+  await UserService.setDefaultAddress(userId, addressId);
+  sendResponse(res, { statusCode: 200, message: 'Default address updated successfully' });
+});
 }
 
