@@ -1,0 +1,13 @@
+model CustomerPreference {
+  id                         Int      @id @default(autoincrement())
+  customerId                 Int      @unique
+  customer                   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  preferredZoneId            Int?
+  preferredEventTypeId       Int?
+  preferredBudget            Float?
+  preferredGuestRange        String?
+  preferredContactMethod     String?
+  preferredCommunicationTime String?
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+}

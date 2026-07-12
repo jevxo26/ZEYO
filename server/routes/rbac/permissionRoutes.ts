@@ -3,13 +3,10 @@ import { PermissionController } from '../../controllers/rbac/permissionControlle
 
 const router = Router();
 
-// List & create  (supports ?moduleId=&action=&status= query filters)
-router.get('/',       PermissionController.getAll);
-router.post('/',      PermissionController.create);
-
-// Detail, update, delete
-router.get('/:id',    PermissionController.getById);
-router.put('/:id',    PermissionController.update);
+router.get('/', PermissionController.getAll);
+router.get('/:id', PermissionController.getById);
+router.post('/', PermissionController.create);
+router.put('/:id', PermissionController.update);
 router.delete('/:id', PermissionController.delete);
 
 export default router;

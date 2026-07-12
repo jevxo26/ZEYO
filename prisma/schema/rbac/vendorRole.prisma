@@ -23,6 +23,7 @@ model VendorRole {
 
   // ── Relations ──────────────────────────────────────────────────────────────
   role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  vendor     Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
 
   // ── Indexes ────────────────────────────────────────────────────────────────
   @@index([vendorId])

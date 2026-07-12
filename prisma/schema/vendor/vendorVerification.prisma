@@ -1,0 +1,14 @@
+model VendorVerification {
+  id               Int       @id @default(autoincrement())
+  vendorId         Int
+  vendor           Vendor    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  verificationType String    // e.g. phone | email | identity | business | physical_visit
+  status           String    @default("pending") // pending | success | failed
+  remarks          String?
+  verifiedBy       Int?      // Admin user ID
+  verifiedAt       DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([vendorId])
+}

@@ -1,0 +1,14 @@
+model VendorCalendar {
+  id                 Int       @id @default(autoincrement())
+  vendorId           Int
+  vendor             Vendor    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  bookingDate        DateTime
+  startTime          DateTime?
+  endTime            DateTime?
+  availabilityStatus String    @default("busy") // e.g. busy | available
+  bookingId          Int?      // Nullable booking reference
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([vendorId])
+}

@@ -1,0 +1,14 @@
+model CustomerSetting {
+  id                    Int      @id @default(autoincrement())
+  customerId            Int      @unique
+  customer              Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  language              String   @default("bn")
+  currency              String   @default("BDT")
+  emailNotification     Boolean  @default(true)
+  pushNotification      Boolean  @default(true)
+  smsNotification       Boolean  @default(true)
+  marketingNotification Boolean  @default(false)
+  theme                 String   @default("light")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
