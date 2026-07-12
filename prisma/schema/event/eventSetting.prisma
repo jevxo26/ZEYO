@@ -1,0 +1,22 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// EventSetting Model
+// Feature flags and configuration per event type (one per Event)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model EventSetting {
+  id                    Int      @id @default(autoincrement())
+  eventId               Int      @unique
+  event                 Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  allowPackageBooking   Boolean  @default(true)
+  allowCalculator       Boolean  @default(true)
+  allowCustomization    Boolean  @default(false)
+  allowVendorAssignment Boolean  @default(true)
+  allowReschedule       Boolean  @default(true)
+  allowCancellation     Boolean  @default(true)
+  status                String   @default("active")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([status])
+}

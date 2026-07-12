@@ -1,0 +1,21 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// EventVenue Model
+// Supported venue types per event (Hall, Rooftop, Resort, Hotel, Open Ground)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model EventVenue {
+  id              Int      @id @default(autoincrement())
+  eventId         Int
+  event           Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  venueType       String   // e.g. community_center | convention_hall | rooftop | resort | hotel | open_ground
+  indoorOutdoor   String   @default("indoor") // indoor | outdoor | both
+  minimumCapacity Int?
+  maximumCapacity Int?
+  description     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([venueType])
+  @@index([indoorOutdoor])
+}

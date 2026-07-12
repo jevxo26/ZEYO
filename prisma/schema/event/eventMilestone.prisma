@@ -1,0 +1,20 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// EventMilestone Model
+// Key milestones in the event lifecycle (Booking Confirmed, Vendor Assigned, etc.)
+// dayOffset: days before/after event date (negative = before, positive = after)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model EventMilestone {
+  id           Int      @id @default(autoincrement())
+  eventId      Int
+  event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  title        String
+  description  String?
+  dayOffset    Int      @default(0) // e.g. -7 = 7 days before event
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([displayOrder])
+}

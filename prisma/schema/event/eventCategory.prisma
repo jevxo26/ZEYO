@@ -1,0 +1,26 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// EventCategory Model
+// High-level category grouping (Personal, Corporate, Religious, Social)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model EventCategory {
+  id           Int       @id @default(autoincrement())
+  eventId      Int
+  event        Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name         String
+  slug         String    @unique
+  description  String?
+  icon         String?
+  displayOrder Int       @default(0)
+  status       String    @default("active")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Relations
+  subCategories EventSubCategory[]
+
+  @@index([eventId])
+  @@index([slug])
+  @@index([status])
+  @@index([displayOrder])
+}

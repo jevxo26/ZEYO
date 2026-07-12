@@ -15,6 +15,8 @@ import adminRoutes from './routes/authentication/adminRoutes';
 import customerRoutes from './routes/customer/customerRoutes';
 import customerAdminRoutes from './routes/customer/customerAdminRoutes';
 import vendorAdminRoutes from './routes/vendor/vendorAdminRoutes';
+import eventRoutes from './routes/event/eventRoutes';
+import eventAdminRoutes from './routes/event/eventAdminRoutes';
 
 // ─── RBAC Routes ────────────────────────────────────────────────────────────
 import rbacRoleRoutes           from './routes/rbac/roleRoutes';
@@ -94,6 +96,8 @@ app.prepare().then(async () => {
   server.use('/api/customers', customerRoutes); // Customer self-service routes
   server.use('/api/admin/customers', customerAdminRoutes); // Admin customer management
   server.use('/api/admin/vendors', vendorAdminRoutes);     // Admin vendor management
+  server.use('/api/events', eventRoutes);                  // Public event catalog
+  server.use('/api/admin/events', eventAdminRoutes);       // Admin event management
 
   // ─── RBAC API ─────────────────────────────────────────────────────────────
   server.use('/api/rbac/roles',            rbacRoleRoutes);

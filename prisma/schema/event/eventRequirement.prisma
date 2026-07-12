@@ -1,0 +1,23 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// EventRequirement Model
+// Required/optional services for each event type
+// (Photography, Catering, Sound System, Stage, etc.)
+// serviceId references the Service catalog (Service module — Part 6+)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model EventRequirement {
+  id              Int      @id @default(autoincrement())
+  eventId         Int
+  event           Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  serviceId       Int      // FK to Service catalog (added when Service module is built)
+  isRequired      Boolean  @default(false)
+  isOptional      Boolean  @default(true)
+  minimumQuantity Int?
+  maximumQuantity Int?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([serviceId])
+  @@index([isRequired])
+}

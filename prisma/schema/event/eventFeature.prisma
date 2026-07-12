@@ -1,0 +1,20 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// EventFeature Model
+// Highlighted features/selling points per event type
+// (Instant Quote, Live Budget, Zone Pricing, Package Booking, etc.)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model EventFeature {
+  id           Int      @id @default(autoincrement())
+  eventId      Int
+  event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  featureTitle String
+  description  String?
+  icon         String?
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([displayOrder])
+}

@@ -1,0 +1,20 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// EventTheme Model
+// Visual/style themes for each event (Traditional, Royal, Luxury, etc.)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model EventTheme {
+  id          Int      @id @default(autoincrement())
+  eventId     Int
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  themeName   String
+  description String?
+  thumbnail   String?
+  coverImage  String?
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([status])
+}
