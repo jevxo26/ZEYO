@@ -52,15 +52,17 @@ export class UserService {
   });
 
   // id comes in as string from req.params — parse to Int for Prisma
-  static getUserById = catchServiceAsync(async (id: string) => {
-    const numericId = parseInt(id, 10);
-    if (isNaN(numericId)) throw new Error('Invalid user id');
-
-    return prisma.user.findFirst({
-      where: { id: numericId, deletedAt: null },
-      select: safeUserSelect,
-    });
+ static getUserProfile = catchServiceAsync(async (userId: number) => {
+  return prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    include: {
+      profile: true,
+      userRole: true,
+    },
   });
+});
 
   static createUser = catchServiceAsync(async (data: Prisma.UserCreateInput) => {
     const createData = data as Prisma.UserCreateInput & { roleId?: number | null };
@@ -158,12 +160,23 @@ export class UserService {
     });
   });
 
-  static getUserProfile = catchServiceAsync(async (userId: number) => {
-    return prisma.userProfile.findUnique({
-      where: { userId },
-    });
-  });
+  static getUserById = catchServiceAsync(async (id: string) => {
+  const numericId = parseInt(id, 10);
 
+  if (isNaN(numericId)) {
+    throw new Error("Invalid user id");
+  }
+
+  return prisma.user.findFirst({
+    where: {
+      id: numericId,
+      deletedAt: null,
+    },
+    select: safeUserSelect,
+  });
+});
+
+ 
   static upsertUserProfile = catchServiceAsync(async (userId: number, data: Record<string, unknown>) => {
     // Omit any relational fields; only keep plain profile scalar fields
     const { user: _user, id: _id, userId: _uid, createdAt: _ca, updatedAt: _ua, ...safeData } = data as any;

@@ -24,7 +24,7 @@ setCredentials(state,action:PayloadAction<{user:User;token:string}>){
      state.token=action.payload.token;
      state.isAuthenticated=true;
      if(typeof window !=="undefined"){
-        localStorage.setItem("token",action.payload.token);
+        localStorage.setItem("accessToken",action.payload.token);
      }
 },
  restoreUser(state,action:PayloadAction<User>){
@@ -36,7 +36,7 @@ setCredentials(state,action:PayloadAction<{user:User;token:string}>){
     state.token=null;
     state.isAuthenticated=false;
 if(typeof window !=="undefined"){
-localStorage.removeItem("token")
+localStorage.removeItem("accessToken")
 }
  }  
 }
