@@ -52,15 +52,17 @@ export class UserService {
   });
 
   // id comes in as string from req.params — parse to Int for Prisma
-  static getUserById = catchServiceAsync(async (id: string) => {
-    const numericId = parseInt(id, 10);
-    if (isNaN(numericId)) throw new Error('Invalid user id');
-
-    return prisma.user.findFirst({
-      where: { id: numericId, deletedAt: null },
-      select: safeUserSelect,
-    });
+ static getUserProfile = catchServiceAsync(async (userId: number) => {
+  return prisma.user.findUnique({
+    where: {
+      id: userId,
+    },
+    include: {
+      profile: true,
+      userRole: true,
+    },
   });
+});
 
   static createUser = catchServiceAsync(async (data: Prisma.UserCreateInput) => {
     const createData = data as Prisma.UserCreateInput & { roleId?: number | null };
@@ -158,22 +160,79 @@ export class UserService {
     });
   });
 
-  static getUserProfile = catchServiceAsync(async (userId: number) => {
-    return prisma.userProfile.findUnique({
-      where: { userId },
+  static getUserById = catchServiceAsync(async (id: string) => {
+  const numericId = parseInt(id, 10);
+
+  if (isNaN(numericId)) {
+    throw new Error("Invalid user id");
+  }
+
+  return prisma.user.findFirst({
+    where: {
+      id: numericId,
+      deletedAt: null,
+    },
+    select: safeUserSelect,
+  });
+});
+
+ 
+ static upsertUserProfile = catchServiceAsync(async (userId: number, data: Record<string, unknown>) => {
+  // Fields that belong to the User table
+  const userFields = ['firstName', 'lastName', 'phone', 'gender', 'dateOfBirth', 'profileImage'] as const;
+
+  // Separate incoming data into User-table fields and UserProfile-table fields
+  const userData: Record<string, unknown> = {};
+  const profileData: Record<string, unknown> = {};
+
+  for (const [key, value] of Object.entries(data)) {
+    if ((userFields as readonly string[]).includes(key)) {
+      userData[key] = value;
+    } else if (!['user', 'id', 'userId', 'createdAt', 'updatedAt'].includes(key)) {
+      profileData[key] = value;
+    }
+  }
+
+  // Update User table if there's relevant data
+  if (Object.keys(userData).length > 0) {
+    // Recompute fullName/name if firstName or lastName changed
+    if (userData.firstName || userData.lastName) {
+      const existingUser = await prisma.user.findUnique({ where: { id: userId } });
+      const firstName = (userData.firstName as string) ?? existingUser?.firstName ?? '';
+      const lastName = (userData.lastName as string) ?? existingUser?.lastName ?? '';
+      const fullName = [firstName, lastName].filter(Boolean).join(' ').trim();
+      if (fullName) {
+        userData.fullName = fullName;
+        userData.name = fullName;
+      }
+    }
+
+    if (userData.dateOfBirth) {
+      userData.dateOfBirth = new Date(userData.dateOfBirth as string);
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: userData as Prisma.UserUpdateInput,
     });
+  }
+
+  // Update/create UserProfile table
+  const profile = await prisma.userProfile.upsert({
+    where: { userId },
+    update: profileData as Prisma.UserProfileUpdateInput,
+    create: {
+      ...(profileData as Prisma.UserProfileUncheckedCreateInput),
+      userId,
+    },
   });
 
-  static upsertUserProfile = catchServiceAsync(async (userId: number, data: Record<string, unknown>) => {
-    // Omit any relational fields; only keep plain profile scalar fields
-    const { user: _user, id: _id, userId: _uid, createdAt: _ca, updatedAt: _ua, ...safeData } = data as any;
-    return prisma.userProfile.upsert({
-      where: { userId },
-      update: safeData as Prisma.UserProfileUpdateInput,
-      create: {
-        ...(safeData as Prisma.UserProfileUncheckedCreateInput),
-        userId,
-      },
-    });
+  // Return combined data so frontend gets everything back
+  const updatedUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: safeUserSelect,
   });
+
+  return { ...updatedUser, profile };
+});
 }

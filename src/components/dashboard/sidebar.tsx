@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -19,8 +19,57 @@ interface SidebarProps {
   toggleSidebar: () => void;
 }
 
+interface CurrentUser {
+  id: number;
+  name: string;
+  email: string;
+  profileImage?: string;
+}
+
 export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
   const pathname = usePathname();
+  const [user, setUser] = useState<CurrentUser | null>(null);
+
+  
+  
+  useEffect(() => {
+  const token = localStorage.getItem("accessToken");
+
+  console.log("Token:", token);
+
+  if (!token) return;
+
+  fetch("/api/users/profile/me", {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then((res) => {
+      console.log("Status:", res.status);
+      return res.json();
+    })
+    .then((data) => {
+      console.log("Response:", data);
+
+      if (data.success) {
+        setUser(data.data);
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+}, []);
+
+  
+  const initials = user?.name
+    ? user.name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()
+    : "..";
 
   return (
     <aside
@@ -74,19 +123,38 @@ export function Sidebar({ isCollapsed, toggleSidebar }: SidebarProps) {
           );
         })}
       </nav>
-      
+
+     
       <div className="p-4 border-t border-white/20">
-        <div className={cn("flex items-center", isCollapsed ? "justify-center" : "")}>
-          <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-indigo-400 to-purple-400 shrink-0 border-2 border-white shadow-sm flex items-center justify-center text-white font-bold text-xs">
-            JD
-          </div>
-          {!isCollapsed && (
-            <div className="ml-3 truncate">
-              <p className="text-sm font-medium text-slate-700 truncate">John Doe</p>
-              <p className="text-xs text-slate-500 truncate">admin@example.com</p>
+        <Link
+          href={user ? `/profile/${user.id}` : "#"}
+          className={cn(
+            "flex items-center cursor-pointer hover:opacity-80 transition-opacity",
+            isCollapsed ? "justify-center" : ""
+          )}
+        >
+          {user?.profileImage ? (
+            <img
+              src={user.profileImage}
+              alt={user.name}
+              className="h-8 w-8 rounded-full object-cover shrink-0 border-2 border-white shadow-sm"
+            />
+          ) : (
+            <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-indigo-400 to-purple-400 shrink-0 border-2 border-white shadow-sm flex items-center justify-center text-white font-bold text-xs">
+              {initials}
             </div>
           )}
-        </div>
+          {!isCollapsed && (
+            <div className="ml-3 truncate">
+              <p className="text-sm font-medium text-slate-700 truncate">
+                {user?.name || "Loading..."}
+              </p>
+              <p className="text-xs text-slate-500 truncate">
+                {user?.email || ""}
+              </p>
+            </div>
+          )}
+        </Link>
       </div>
     </aside>
   );

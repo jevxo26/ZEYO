@@ -40,8 +40,8 @@ app.prepare().then(async () => {
   // ─── Security Middleware ────────────────────────────────────────────────
   server.use(helmet({
     contentSecurityPolicy: dev ? false : undefined, // Disable CSP only in dev
-    crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
-  }));
+    crossOriginOpenerPolicy: dev ? false : { policy: 'same-origin-allow-popups' },
+}));
 
   server.use(cors({
     origin: (origin, callback) => {
