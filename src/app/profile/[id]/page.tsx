@@ -90,8 +90,25 @@ export default function ProfilePage() {
         headers: { Authorization: `Bearer ${token}` },
       });
       const result = await res.json();
-      if (res.ok) setUser(result.data);
-      else setError(result.message || "Failed to load profile.");
+      if (res.ok) {
+        // Flatten nested `profile` object into the top-level user object
+        const raw = result.data;
+        const flattened: UserProfile = {
+          ...raw,
+          company: raw.profile?.companyName ?? null,
+          organization: raw.profile?.organization ?? null,
+          occupation: raw.profile?.occupation ?? null,
+          website: raw.profile?.website ?? null,
+          bio: raw.profile?.bio ?? null,
+          facebook: raw.profile?.facebook ?? null,
+          instagram: raw.profile?.instagram ?? null,
+          linkedin: raw.profile?.linkedin ?? null,
+          preferredLanguage: raw.profile?.preferredLanguage ?? null,
+        };
+        setUser(flattened);
+      } else {
+        setError(result.message || "Failed to load profile.");
+      }
     } catch (err) {
       console.error(err);
       setError("Something went wrong while loading your profile.");
