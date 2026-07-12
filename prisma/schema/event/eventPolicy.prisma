@@ -1,0 +1,16 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// EventPolicy Model
+// Policies specific to an event type (cancellation, refund, etc.)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model EventPolicy {
+  id                Int      @id @default(autoincrement())
+  eventId           Int
+  event             Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  policyTitle       String
+  policyDescription String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([eventId])
+}

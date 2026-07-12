@@ -1,0 +1,43 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Event Model
+// Master catalog of event types (Wedding, Birthday, Corporate, etc.)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Event {
+  id           Int       @id @default(autoincrement())
+  name         String    @unique
+  slug         String    @unique
+  description  String?
+  icon         String?
+  banner       String?
+  status       String    @default("active")  // active | inactive | draft
+  displayOrder Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  // Relations
+  categories   EventCategory[]
+  types        EventType[]
+  themes       EventTheme[]
+  packageTypes EventPackageType[]
+  timelines    EventTimeline[]
+  schedules    EventSchedule[]
+  requirements EventRequirement[]
+  guestConfig  EventGuest[]
+  venues       EventVenue[]
+  checklists   EventChecklist[]
+  milestones   EventMilestone[]
+  policies     EventPolicy[]
+  terms        EventTerms[]
+  faqs         EventFAQ[]
+  gallery      EventGallery[]
+  tags         EventTag[]
+  features     EventFeature[]
+  setting      EventSetting?
+
+  @@index([slug])
+  @@index([status])
+  @@index([displayOrder])
+  @@index([deletedAt])
+}

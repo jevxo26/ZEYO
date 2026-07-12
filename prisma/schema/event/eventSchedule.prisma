@@ -1,0 +1,20 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// EventSchedule Model
+// Day-by-day schedule for multi-day events (1-day, 2-day Wedding, 3-day, etc.)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model EventSchedule {
+  id          Int      @id @default(autoincrement())
+  eventId     Int
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  dayNumber   Int      // e.g. 1, 2, 3
+  title       String
+  startTime   String?  // HH:mm format
+  endTime     String?  // HH:mm format
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([dayNumber])
+}

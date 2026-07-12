@@ -1,0 +1,19 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// EventTerms Model
+// Versioned terms & conditions per event type
+// ─────────────────────────────────────────────────────────────────────────────
+
+model EventTerms {
+  id            Int      @id @default(autoincrement())
+  eventId       Int
+  event         Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  title         String
+  description   String
+  version       String   @default("1.0")
+  effectiveDate DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([version])
+}
