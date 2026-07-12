@@ -1,0 +1,15 @@
+model VendorEmployee {
+  id           Int       @id @default(autoincrement())
+  vendorId     Int
+  vendor       Vendor    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  employeeName String
+  phone        String
+  email        String?
+  designation  String    // e.g. Photographer | Cameraman | Decorator | Chef | Driver | Event Manager
+  status       String    @default("active") // active | inactive
+  joinedAt     DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([vendorId])
+}

@@ -1,0 +1,11 @@
+model VendorCategory {
+  id            Int      @id @default(autoincrement())
+  vendorId      Int
+  vendor        Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  categoryId    Int
+  subcategoryId Int?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([vendorId, categoryId, subcategoryId])
+}

@@ -1,0 +1,17 @@
+model VendorTransaction {
+  id              Int          @id @default(autoincrement())
+  vendorId        Int
+  vendor          Vendor       @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  walletId        Int
+  wallet          VendorWallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  bookingId       Int?
+  transactionType String       // credit | debit | payout
+  amount          Float
+  reference       String?
+  status          String       @default("completed") // pending | completed | failed
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([vendorId])
+  @@index([walletId])
+}

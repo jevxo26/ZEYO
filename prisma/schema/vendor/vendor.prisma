@@ -1,0 +1,47 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Vendor Model
+// Core model for EVENTO vendors.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Vendor {
+  id                 Int       @id @default(autoincrement())
+  vendorCode         String    @unique
+  businessName       String
+  ownerName          String
+  email              String    @unique
+  phone              String
+  logo               String?
+  coverImage         String?
+  description        String?
+  businessType       String    // e.g. individual | agency | company
+  tradeLicenseNumber String?
+  status             String    @default("pending") // e.g. pending | active | suspended | inactive
+  isVerified         Boolean   @default(false)
+  joinedAt           DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  deletedAt          DateTime?
+
+  // Relations
+  profile        VendorProfile?
+  business       VendorBusiness?
+  owner          VendorOwner?
+  documents      VendorDocument[]
+  verifications  VendorVerification[]
+  categories     VendorCategory[]
+  services       VendorService[]
+  availabilities VendorAvailability[]
+  calendar       VendorCalendar[]
+  portfolios     VendorPortfolio[]
+  gallery        VendorGallery[]
+  employees      VendorEmployee[]
+  bankAccounts   VendorBankAccount[]
+  wallet         VendorWallet?
+  transactions   VendorTransaction[]
+  payouts        VendorPayout[]
+  settings       VendorSetting?
+  roles          VendorRole[]
+
+  @@index([status])
+  @@index([deletedAt])
+}

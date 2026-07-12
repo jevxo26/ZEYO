@@ -1,0 +1,18 @@
+model VendorPayout {
+  id              Int          @id @default(autoincrement())
+  vendorId        Int
+  vendor          Vendor       @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  walletId        Int
+  wallet          VendorWallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  requestedAmount Float
+  approvedAmount  Float?
+  paymentMethod   String       // bank_transfer | bkash | nagad
+  paymentStatus   String       @default("pending") // pending | approved | rejected | processed
+  processedBy     Int?         // Admin user ID
+  processedAt     DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([vendorId])
+  @@index([walletId])
+}
