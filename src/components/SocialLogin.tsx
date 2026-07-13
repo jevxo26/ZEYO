@@ -1,67 +1,105 @@
 "use client";
 
-import React from 'react';
-import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
-import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props';
-import { useRouter } from 'next/navigation';
-import { useAppDispatch } from '@/store/store';
-import { setCredentials } from '@/store/slices/authSlice';
-import { toast } from 'sonner';
+import React, { useEffect, useState } from "react";
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import { useRouter } from "next/navigation";
+import { useAppDispatch } from "@/store/store";
+import { setCredentials } from "@/store/slices/authSlice";
+import { toast } from "sonner";
+
+declare global {
+  interface Window {
+    FB: any;
+    fbAsyncInit: () => void;
+  }
+}
 
 export default function SocialLogin() {
-  const router=useRouter();
-  const dispatch=useAppDispatch();
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+  const [fbLoaded, setFbLoaded] = useState(false);
+
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
+  const facebookAppId = process.env.NEXT_PUBLIC_FACEBOOK_APP_ID || "";
+
+  // SDK is loaded + initialized globally via next/script in layout.tsx,
+  // which dispatches "fb-sdk-ready" once FB.init() has run.
+  useEffect(() => {
+    if (!facebookAppId) return;
+
+    // Already ready (e.g. fast refresh / navigating back to this page)
+    if (window.FB) {
+      setFbLoaded(true);
+      return;
+    }
+
+    const handleReady = () => setFbLoaded(true);
+    window.addEventListener("fb-sdk-ready", handleReady);
+
+    return () => window.removeEventListener("fb-sdk-ready", handleReady);
+  }, [facebookAppId]);
+
   const handleGoogleSuccess = async (credentialResponse: any) => {
     try {
-      const res = await fetch('/api/auth/social-login/google', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/auth/social-login/google", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ credential: credentialResponse.credential }),
       });
       const data = await res.json();
+
       if (data.success) {
-        dispatch(setCredentials({user:data.data.user,token:data.data.token}))
-        toast.success('Logged in with Google');
-        router.push('/dashboard')}
-        else{
-toast.error(data.error || 'google login failed');}}
-catch(err){
-  console.error('error during google signin',err);
-  toast.error('Something Went Wrong With Google SignIn')
-} }
+        dispatch(setCredentials({ user: data.data.user, token: data.data.token }));
+        toast.success("Logged in with Google");
+        router.push("/dashboard");
+      } else {
+        toast.error(data.error || "Google login failed");
+      }
+    } catch (err) {
+      console.error("Error during google signin", err);
+      toast.error("Something went wrong with Google sign in");
+    }
+  };
 
-        
-        // Handle successful login (e.g., store token, redirect)
-        // localStorage.setItem('token', data.data.token);
+  const handleFacebookResponse = async (accessToken: string) => {
+    try {
+      const res = await fetch("/api/auth/social-login/facebook", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accessToken }),
+      });
+      const data = await res.json();
 
-  const handleFacebookResponse = async (response: any) => {
-    if (response.accessToken) {
-      try {
-        const res = await fetch('/api/auth/social-login/facebook', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ accessToken: response.accessToken }),
-        });
-        const data = await res.json();
-        if (data.success) {
-          dispatch(setCredentials({user:data.data.user,token:data.data.token}))
-          toast.success('Logged in with Facebook');
-          router.push('/dashboard');}
-          else{
-            toast.error(data.error || 'Facebook Login Failed');
-          }}catch(err){
-            console.error('Error during facebook login',err);
-            toast.error('Something went wrong with facebook signin');
-          }}
-          else{
-            toast.error('Facebook Login Failed:No access token')
-          }};
+      if (data.success) {
+        dispatch(setCredentials({ user: data.data.user, token: data.data.token }));
+        toast.success("Logged in with Facebook");
+        router.push("/dashboard");
+      } else {
+        toast.error(data.error || "Facebook login failed");
+      }
+    } catch (err) {
+      console.error("Error during facebook login", err);
+      toast.error("Something went wrong with Facebook sign in");
+    }
+  };
 
-         
-         
-       
-  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
-  const facebookAppId = process.env.NEXT_PUBLIC_FACEBOOK_APP_ID || '';
+  const handleFacebookLogin = () => {
+    if (!window.FB) {
+      toast.error("Facebook SDK is still loading, please try again in a moment");
+      return;
+    }
+
+    window.FB.login(
+      (response: any) => {
+        if (response.authResponse?.accessToken) {
+          handleFacebookResponse(response.authResponse.accessToken);
+        } else {
+          toast.error("Facebook login cancelled");
+        }
+      },
+      { scope: "public_profile,email" }
+    );
+  };
 
   return (
     <div className="flex flex-col gap-4 w-full max-w-sm mt-6">
@@ -80,8 +118,8 @@ catch(err){
             <GoogleLogin
               onSuccess={handleGoogleSuccess}
               onError={() => {
-                console.error('Google Login Failed');
-                toast.error('Google login failed');
+                console.error("Google Login Failed");
+                toast.error("Google login failed");
               }}
               useOneTap
             />
@@ -94,23 +132,22 @@ catch(err){
       )}
 
       {facebookAppId ? (
-        <FacebookLogin
-          appId={facebookAppId}
-          autoLoad={false}
-          fields="name,email,picture"
-          callback={handleFacebookResponse}
-          render={(renderProps: any) => (
-            <button
-              onClick={renderProps.onClick}
-              className="w-full flex items-center justify-center gap-2 bg-[#1877F2] text-white p-2 rounded-md hover:bg-[#166FE5] transition-colors shadow-sm font-medium h-10"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z"/>
-              </svg>
-              Log in with Facebook
-            </button>
-          )}
-        />
+        <button
+          onClick={handleFacebookLogin}
+          disabled={!fbLoaded}
+          className="w-full flex items-center justify-center gap-2 bg-[#1877F2] text-white p-2 rounded-md hover:bg-[#166FE5] transition-colors shadow-sm font-medium h-10 disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            fill="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z" />
+          </svg>
+          {fbLoaded ? "Log in with Facebook" : "Loading Facebook..."}
+        </button>
       ) : (
         <div className="p-3 bg-red-50 text-red-600 text-sm rounded-md text-center">
           Configure NEXT_PUBLIC_FACEBOOK_APP_ID to enable Facebook Login
