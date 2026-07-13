@@ -1,0 +1,12 @@
+model ZoneDeliveryCharge {
+  id          Int      @id @default(autoincrement())
+  zoneId      Int
+  zone        Zone     @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  chargeType  String   // flat | per_km
+  amount      Float
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([zoneId])
+}

@@ -1,0 +1,14 @@
+model PackageService {
+  id           Int                  @id @default(autoincrement())
+  packageId    Int
+  package      Package              @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  serviceId    Int                  // References core service ID concept
+  isRequired   Boolean              @default(true)
+  displayOrder Int                  @default(0)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  serviceItems PackageServiceItem[]
+
+  @@index([packageId])
+}

@@ -3,6 +3,7 @@ model VendorServiceZone {
   vendorServiceId Int
   vendorService   VendorService @relation(fields: [vendorServiceId], references: [id], onDelete: Cascade)
   zoneId          Int
+  zone            Zone          @relation(fields: [zoneId], references: [id], onDelete: Cascade)
   status          String        @default("active") // active | inactive
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt

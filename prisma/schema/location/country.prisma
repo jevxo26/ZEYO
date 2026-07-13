@@ -1,0 +1,15 @@
+model Country {
+  id        Int      @id @default(autoincrement())
+  name      String
+  isoCode   String   @unique
+  currency  String
+  phoneCode String
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  divisions         Division[]
+  zones             Zone[]
+  userAddresses     UserAddress[]
+  customerAddresses CustomerAddress[]
+}

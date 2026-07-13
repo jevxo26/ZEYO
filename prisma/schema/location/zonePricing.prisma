@@ -1,0 +1,18 @@
+model ZonePricing {
+  id            Int       @id @default(autoincrement())
+  zoneId        Int
+  zone          Zone      @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  serviceId     Int
+  packageId     Int?
+  basePrice     Float
+  minimumPrice  Float?
+  maximumPrice  Float?
+  currency      String    @default("BDT")
+  effectiveFrom DateTime?
+  effectiveTo   DateTime?
+  status        String    @default("active")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([zoneId])
+}

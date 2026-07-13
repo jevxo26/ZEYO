@@ -35,6 +35,7 @@ model Event {
   tags         EventTag[]
   features     EventFeature[]
   setting      EventSetting?
+  packages     Package[]
 
   @@index([slug])
   @@index([status])

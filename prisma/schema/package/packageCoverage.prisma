@@ -1,0 +1,12 @@
+model PackageCoverage {
+  id           Int      @id @default(autoincrement())
+  packageId    Int
+  package      Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  coverageType String   // e.g. duration | days | events
+  duration     Float
+  unit         String   // e.g. Day | Hour | Event
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([packageId])
+}

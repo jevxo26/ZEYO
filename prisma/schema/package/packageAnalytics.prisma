@@ -1,0 +1,13 @@
+model PackageAnalytics {
+  id             Int      @id @default(autoincrement())
+  packageId      Int
+  package        Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  totalBookings  Int      @default(0)
+  totalRevenue   Float    @default(0.0)
+  averageRating  Float    @default(0.0)
+  conversionRate Float    @default(0.0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([packageId])
+}

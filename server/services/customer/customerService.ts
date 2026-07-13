@@ -75,12 +75,12 @@ export class CustomerService {
       await tx.customerPreference.create({
         data: {
           customerId: customer.id,
-          preferredZoneId: data.preference?.preferredZoneId || null,
-          preferredEventTypeId: data.preference?.preferredEventTypeId || null,
-          preferredBudget: data.preference?.preferredBudget || null,
-          preferredGuestRange: data.preference?.preferredGuestRange || null,
-          preferredContactMethod: data.preference?.preferredContactMethod || null,
-          preferredCommunicationTime: data.preference?.preferredCommunicationTime || null,
+          preferredZoneId:            (data.preference as any)?.preferredZoneId           ?? null,
+          preferredEventTypeId:       data.preference?.preferredEventTypeId                ?? null,
+          preferredBudget:            data.preference?.preferredBudget                     ?? null,
+          preferredGuestRange:        data.preference?.preferredGuestRange                 ?? null,
+          preferredContactMethod:     data.preference?.preferredContactMethod              ?? null,
+          preferredCommunicationTime: data.preference?.preferredCommunicationTime          ?? null,
         },
       });
 

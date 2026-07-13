@@ -1,0 +1,17 @@
+model PackageSetting {
+  id                 Int      @id @default(autoincrement())
+  packageId          Int      @unique
+  package            Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  allowCustomization Boolean  @default(true)
+  allowAddon         Boolean  @default(true)
+  allowReschedule    Boolean  @default(true)
+  allowCancellation  Boolean  @default(true)
+  showOnHomepage     Boolean  @default(false)
+  isFeatured         Boolean  @default(false)
+  status             String   @default("active")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([packageId])
+  @@index([status])
+}

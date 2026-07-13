@@ -1,0 +1,14 @@
+model ZonePackage {
+  id           Int      @id @default(autoincrement())
+  zoneId       Int
+  zone         Zone     @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  packageId    Int
+  packagePrice Float
+  discount     Float    @default(0.0)
+  status       String   @default("active")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([zoneId, packageId])
+  @@index([zoneId])
+}

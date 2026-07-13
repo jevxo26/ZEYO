@@ -1,0 +1,17 @@
+model PackageCategory {
+  id           Int                  @id @default(autoincrement())
+  name         String
+  slug         String               @unique
+  description  String?
+  icon         String?
+  displayOrder Int                  @default(0)
+  status       String               @default("active")
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  subCategories PackageSubCategory[]
+  packages      Package[]
+
+  @@index([slug])
+  @@index([status])
+}

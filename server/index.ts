@@ -17,6 +17,10 @@ import customerAdminRoutes from './routes/customer/customerAdminRoutes';
 import vendorAdminRoutes from './routes/vendor/vendorAdminRoutes';
 import eventRoutes from './routes/event/eventRoutes';
 import eventAdminRoutes from './routes/event/eventAdminRoutes';
+import locationRoutes from './routes/location/locationRoutes';
+import zoneRoutes     from './routes/location/zoneRoutes';
+import packageRoutes      from './routes/package/packageRoutes';
+import packageAdminRoutes from './routes/package/packageAdminRoutes';
 
 // ─── RBAC Routes ────────────────────────────────────────────────────────────
 import rbacRoleRoutes           from './routes/rbac/roleRoutes';
@@ -98,6 +102,14 @@ app.prepare().then(async () => {
   server.use('/api/admin/vendors', vendorAdminRoutes);     // Admin vendor management
   server.use('/api/events', eventRoutes);                  // Public event catalog
   server.use('/api/admin/events', eventAdminRoutes);       // Admin event management
+
+  // ─── Zone & Location API ──────────────────────────────────────────────────
+  server.use('/api/locations', locationRoutes); // Country/Division/District/City/Area
+  server.use('/api/zones',     zoneRoutes);     // Zone, pricing, taxes, delivery, analytics, etc.
+
+  // ─── Package API ──────────────────────────────────────────────────────────
+  server.use('/api/packages',       packageRoutes);
+  server.use('/api/admin/packages', packageAdminRoutes);
 
   // ─── RBAC API ─────────────────────────────────────────────────────────────
   server.use('/api/rbac/roles',            rbacRoleRoutes);

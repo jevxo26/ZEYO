@@ -1,0 +1,18 @@
+model PackageZonePricing {
+  id            Int       @id @default(autoincrement())
+  packageId     Int
+  package       Package   @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  zoneId        Int
+  zone          Zone      @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  price         Float
+  discount      Float     @default(0.0)
+  effectiveFrom DateTime?
+  effectiveTo   DateTime?
+  status        String    @default("active")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([packageId])
+  @@index([zoneId])
+  @@index([status])
+}

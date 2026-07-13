@@ -1,0 +1,54 @@
+model Zone {
+  id          Int      @id @default(autoincrement())
+  countryId   Int
+  country     Country  @relation(fields: [countryId], references: [id])
+  divisionId  Int?
+  division    Division? @relation(fields: [divisionId], references: [id])
+  districtId  Int?
+  district    District? @relation(fields: [districtId], references: [id])
+  cityId      Int?
+  city        City?     @relation(fields: [cityId], references: [id])
+  areaId      Int?
+  area        Area?     @relation(fields: [areaId], references: [id])
+  
+  name        String
+  zoneCode    String   @unique
+  description String?
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  zoneGroupId Int?
+  zoneGroup   ZoneGroup? @relation(fields: [zoneGroupId], references: [id])
+
+  serviceZones        ServiceZone[]
+  zonePricing         ZonePricing[]
+  zoneServices        ZoneService[]
+  zonePackages        ZonePackage[]
+  zoneHolidays        ZoneHoliday[]
+  zoneTaxes           ZoneTax[]
+  zoneDeliveryCharges ZoneDeliveryCharge[]
+  zoneCoverages       ZoneCoverage[]
+  zonePolygons        ZonePolygon[]
+  geoLocations        GeoLocation[]
+  geoFences           GeoFence[]
+  zoneAnalytics       ZoneAnalytics[]
+  zoneSetting         ZoneSetting?
+  packageZonePricings PackageZonePricing[]
+  packageAvailabilities PackageAvailability[]
+
+  userAddresses       UserAddress[]
+  customerAddresses   CustomerAddress[]
+  userFavoriteZones   UserFavoriteZone[]
+  userPreferences     UserPreference[]
+  customerEvents      CustomerEvent[]
+  customerPreferences CustomerPreference[]
+  vendorPricing       VendorPricing[]
+  vendorServiceZones  VendorServiceZone[]
+
+  @@index([countryId])
+  @@index([divisionId])
+  @@index([districtId])
+  @@index([cityId])
+  @@index([areaId])
+}

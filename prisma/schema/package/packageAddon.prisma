@@ -1,0 +1,15 @@
+model PackageAddon {
+  id          Int      @id @default(autoincrement())
+  packageId   Int
+  package     Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  serviceId   Int
+  name        String   // e.g. Drone | Live Streaming | Extra Photographer
+  price       Float
+  pricingType String   // flat | hourly | daily
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([packageId])
+  @@index([status])
+}

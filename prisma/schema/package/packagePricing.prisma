@@ -1,0 +1,15 @@
+model PackagePricing {
+  id             Int      @id @default(autoincrement())
+  packageId      Int
+  package        Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  basePrice      Float
+  discountAmount Float    @default(0.0)
+  discountType   String   @default("percentage") // flat | percentage
+  taxAmount      Float    @default(0.0)
+  finalPrice     Float
+  currency       String   @default("BDT")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([packageId])
+}
