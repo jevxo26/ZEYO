@@ -16,6 +16,8 @@ model ServiceAddon {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  selectedAddons SelectedAddon[]
+
   @@index([serviceId])
   @@index([status])
 }

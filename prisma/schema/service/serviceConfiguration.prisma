@@ -16,7 +16,8 @@ model ServiceConfiguration {
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
 
-  variants          ServiceVariant[]
+  variants                      ServiceVariant[]
+  selectedConfigurations        SelectedServiceConfiguration[]
 
   @@index([serviceId])
   @@index([displayOrder])

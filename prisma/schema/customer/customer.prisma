@@ -35,6 +35,9 @@ model Customer {
   reviews             CustomerReview[]
   setting             CustomerSetting?
   packageReviews      PackageReview[]
+  calculators         SmartEventCalculator[]
+  savedEstimates      SavedEstimate[]
+  comparisons         Comparison[]
 
   @@index([deletedAt])
   @@index([status])

@@ -38,6 +38,8 @@ model Zone {
   packageAvailabilities PackageAvailability[]
   serviceZonePricings ServiceZonePricing[]
   serviceAvailabilities ServiceAvailability[]
+  calculators           SmartEventCalculator[]
+  selectedEvents        SelectedEvent[]
 
   userAddresses       UserAddress[]
   customerAddresses   CustomerAddress[]

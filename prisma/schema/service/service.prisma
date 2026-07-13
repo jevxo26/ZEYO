@@ -39,6 +39,7 @@ model Service {
   analytics        ServiceAnalytics?
   tags             ServiceTag[]
   setting          ServiceSetting?
+  selectedServices SelectedService[]
 
   @@index([categoryId])
   @@index([slug])
