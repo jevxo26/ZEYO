@@ -11,6 +11,18 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "lh3.googleusercontent.com",
       },
+      {
+        protocol: "https",
+        hostname: "**.fbcdn.net",
+      },
+      {
+        protocol: "https",
+        hostname: "**.fna.fbcdn.net",
+      },
+      {
+        protocol: "https",
+        hostname: "graph.facebook.com",
+      },
     ],
   },
 };
