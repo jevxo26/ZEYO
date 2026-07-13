@@ -10,7 +10,8 @@ model UserPreference {
   userId               Int     @unique
 
   // ── Discovery Preferences (FK to future models) ────────────────────────────
-  preferredZoneId      Int?    // FK → Zone (pending)
+  preferredZoneId      Int?
+  preferredZone        Zone?   @relation(fields: [preferredZoneId], references: [id])
   preferredEventTypeId Int?    // FK → EventType (pending)
 
   // ── UI & Budget Preferences ────────────────────────────────────────────────

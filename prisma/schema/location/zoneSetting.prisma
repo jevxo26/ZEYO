@@ -1,0 +1,14 @@
+model ZoneSetting {
+  id                     Int      @id @default(autoincrement())
+  zoneId                 Int      @unique
+  zone                   Zone     @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  allowBooking           Boolean  @default(true)
+  allowCalculator        Boolean  @default(true)
+  allowPackage           Boolean  @default(true)
+  allowVendorAssignment  Boolean  @default(true)
+  isActive               Boolean  @default(true)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  @@index([zoneId])
+}

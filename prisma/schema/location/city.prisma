@@ -1,0 +1,17 @@
+model City {
+  id         Int      @id @default(autoincrement())
+  districtId Int
+  district   District @relation(fields: [districtId], references: [id], onDelete: Cascade)
+  name       String
+  code       String?
+  status     String   @default("active")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  areas             Area[]
+  zones             Zone[]
+  userAddresses     UserAddress[]
+  customerAddresses CustomerAddress[]
+
+  @@index([districtId])
+}

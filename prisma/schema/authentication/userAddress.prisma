@@ -20,13 +20,19 @@ model UserAddress {
   receiverName  String
   receiverPhone String
 
-  // ── Location IDs (raw refs — no FK yet, future location models pending) ────
+  // ── Location Relations & IDs ────────────────────────────────────────────────
   countryId  Int
+  country    Country   @relation(fields: [countryId], references: [id])
   divisionId Int?
+  division   Division? @relation(fields: [divisionId], references: [id])
   districtId Int?
+  district   District? @relation(fields: [districtId], references: [id])
   cityId     Int?
+  city       City?     @relation(fields: [cityId], references: [id])
   areaId     Int?
+  area       Area?     @relation(fields: [areaId], references: [id])
   zoneId     Int?
+  zone       Zone?     @relation(fields: [zoneId], references: [id])
 
   // ── Address Text ───────────────────────────────────────────────────────────
   addressLine1 String

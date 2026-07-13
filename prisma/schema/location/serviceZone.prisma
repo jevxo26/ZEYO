@@ -1,0 +1,12 @@
+model ServiceZone {
+  id        Int      @id @default(autoincrement())
+  serviceId Int
+  zoneId    Int
+  zone      Zone     @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([serviceId, zoneId])
+  @@index([zoneId])
+}

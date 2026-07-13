@@ -196,6 +196,227 @@ async function main() {
   }
 
   console.log('\n🎉 RBAC seed complete!');
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Zone & Location Seed
+  // ─────────────────────────────────────────────────────────────────────────────
+  console.log('\n🌍 Seeding Zone & Location data...\n');
+
+  // 1. Country — Bangladesh
+  const bangladesh = await prisma.country.upsert({
+    where: { isoCode: 'BD' },
+    update: { name: 'Bangladesh', currency: 'BDT', phoneCode: '+880', status: 'active' },
+    create: { name: 'Bangladesh', isoCode: 'BD', currency: 'BDT', phoneCode: '+880', status: 'active' },
+  });
+  console.log(`   ✅ Country: ${bangladesh.name}`);
+
+  // 2. Divisions
+  const divisionData = [
+    { name: 'Dhaka',      code: 'DHK' },
+    { name: 'Chattogram', code: 'CTG' },
+    { name: 'Rajshahi',   code: 'RJH' },
+    { name: 'Khulna',     code: 'KHU' },
+    { name: 'Sylhet',     code: 'SYL' },
+    { name: 'Barishal',   code: 'BAR' },
+    { name: 'Rangpur',    code: 'RNG' },
+    { name: 'Mymensingh', code: 'MYM' },
+  ];
+
+  const divisionMap: Record<string, number> = {};
+  for (const div of divisionData) {
+    const d = await prisma.division.upsert({
+      where: { id: (await prisma.division.findFirst({ where: { code: div.code, countryId: bangladesh.id } }))?.id ?? 0 },
+      update: { name: div.name, status: 'active' },
+      create: { name: div.name, code: div.code, countryId: bangladesh.id, status: 'active' },
+    });
+    divisionMap[div.code] = d.id;
+    console.log(`   ✅ Division: ${div.name}`);
+  }
+
+  // 3. Districts (Dhaka Division)
+  const dhakaDistrictData = [
+    { name: 'Dhaka',      code: 'DH-DH' },
+    { name: 'Narayanganj', code: 'DH-NG' },
+    { name: 'Gazipur',    code: 'DH-GZ' },
+  ];
+  const districtMap: Record<string, number> = {};
+  for (const dist of dhakaDistrictData) {
+    const existing = await prisma.district.findFirst({ where: { code: dist.code, divisionId: divisionMap['DHK'] } });
+    const d = await prisma.district.upsert({
+      where: { id: existing?.id ?? 0 },
+      update: { name: dist.name, status: 'active' },
+      create: { name: dist.name, code: dist.code, divisionId: divisionMap['DHK'], status: 'active' },
+    });
+    districtMap[dist.code] = d.id;
+    console.log(`   ✅ District: ${dist.name}`);
+  }
+
+  // Chattogram District
+  const ctgDistExisting = await prisma.district.findFirst({ where: { code: 'CTG-CTG', divisionId: divisionMap['CTG'] } });
+  const ctgDistrict = await prisma.district.upsert({
+    where: { id: ctgDistExisting?.id ?? 0 },
+    update: { name: 'Chattogram', status: 'active' },
+    create: { name: 'Chattogram', code: 'CTG-CTG', divisionId: divisionMap['CTG'], status: 'active' },
+  });
+  districtMap['CTG-CTG'] = ctgDistrict.id;
+  console.log(`   ✅ District: Chattogram`);
+
+  // Rajshahi District
+  const rjhDistExisting = await prisma.district.findFirst({ where: { code: 'RJH-RJH', divisionId: divisionMap['RJH'] } });
+  const rjhDistrict = await prisma.district.upsert({
+    where: { id: rjhDistExisting?.id ?? 0 },
+    update: { name: 'Rajshahi', status: 'active' },
+    create: { name: 'Rajshahi', code: 'RJH-RJH', divisionId: divisionMap['RJH'], status: 'active' },
+  });
+  districtMap['RJH-RJH'] = rjhDistrict.id;
+  console.log(`   ✅ District: Rajshahi`);
+
+  // 4. Cities
+  const cityData = [
+    { name: 'Dhaka North',  code: 'DH-N', districtCode: 'DH-DH' },
+    { name: 'Dhaka South',  code: 'DH-S', districtCode: 'DH-DH' },
+    { name: 'Narayanganj',  code: 'NG-C', districtCode: 'DH-NG' },
+    { name: 'Gazipur City', code: 'GZ-C', districtCode: 'DH-GZ' },
+    { name: 'Chattogram City', code: 'CTG-C', districtCode: 'CTG-CTG' },
+    { name: 'Rajshahi City', code: 'RJH-C', districtCode: 'RJH-RJH' },
+  ];
+  const cityMap: Record<string, number> = {};
+  for (const city of cityData) {
+    const districtId = districtMap[city.districtCode];
+    const existing = await prisma.city.findFirst({ where: { code: city.code, districtId } });
+    const c = await prisma.city.upsert({
+      where: { id: existing?.id ?? 0 },
+      update: { name: city.name, status: 'active' },
+      create: { name: city.name, code: city.code, districtId, status: 'active' },
+    });
+    cityMap[city.code] = c.id;
+    console.log(`   ✅ City: ${city.name}`);
+  }
+
+  // 5. Areas (sample)
+  const areaData = [
+    { name: 'Gulshan',    postalCode: '1212', cityCode: 'DH-N', lat: 23.7806, lng: 90.4193 },
+    { name: 'Banani',     postalCode: '1213', cityCode: 'DH-N', lat: 23.7937, lng: 90.4066 },
+    { name: 'Uttara',     postalCode: '1230', cityCode: 'DH-N', lat: 23.8759, lng: 90.3795 },
+    { name: 'Dhanmondi',  postalCode: '1209', cityCode: 'DH-S', lat: 23.7461, lng: 90.3742 },
+    { name: 'Old Dhaka',  postalCode: '1100', cityCode: 'DH-S', lat: 23.7239, lng: 90.4039 },
+    { name: 'Nasirabad',  postalCode: '4209', cityCode: 'CTG-C', lat: 22.3569, lng: 91.7832 },
+  ];
+  const areaMap: Record<string, number> = {};
+  for (const area of areaData) {
+    const cityId = cityMap[area.cityCode];
+    const existing = await prisma.area.findFirst({ where: { name: area.name, cityId } });
+    const a = await prisma.area.upsert({
+      where: { id: existing?.id ?? 0 },
+      update: { postalCode: area.postalCode, latitude: area.lat, longitude: area.lng, status: 'active' },
+      create: { name: area.name, postalCode: area.postalCode, cityId, latitude: area.lat, longitude: area.lng, status: 'active' },
+    });
+    areaMap[area.name] = a.id;
+    console.log(`   ✅ Area: ${area.name}`);
+  }
+
+  // 6. ZoneGroups
+  const zoneGroupData = [
+    { name: 'Metro Cities',  description: 'Major metropolitan areas with premium pricing' },
+    { name: 'Divisional Cities', description: 'Divisional capitals with standard pricing' },
+    { name: 'Outskirts',     description: 'Peripheral and suburban zones' },
+  ];
+  const zoneGroupMap: Record<string, number> = {};
+  for (const zg of zoneGroupData) {
+    const existing = await prisma.zoneGroup.findFirst({ where: { name: zg.name } });
+    const g = existing
+      ? await prisma.zoneGroup.update({ where: { id: existing.id }, data: { description: zg.description, status: 'active' } })
+      : await prisma.zoneGroup.create({ data: { name: zg.name, description: zg.description, status: 'active' } });
+    zoneGroupMap[zg.name] = g.id;
+    console.log(`   ✅ ZoneGroup: ${zg.name}`);
+  }
+
+  // 7. Zones
+  const zoneData = [
+    { name: 'Dhaka North',     zoneCode: 'ZONE-DHK-N', cityCode: 'DH-N',   divCode: 'DHK', distCode: 'DH-DH',  group: 'Metro Cities',       desc: 'North Dhaka including Gulshan, Banani, Uttara' },
+    { name: 'Dhaka South',     zoneCode: 'ZONE-DHK-S', cityCode: 'DH-S',   divCode: 'DHK', distCode: 'DH-DH',  group: 'Metro Cities',       desc: 'South Dhaka including Dhanmondi, Old Dhaka' },
+    { name: 'Chattogram City', zoneCode: 'ZONE-CTG',   cityCode: 'CTG-C',  divCode: 'CTG', distCode: 'CTG-CTG', group: 'Divisional Cities',  desc: 'Chattogram city zone' },
+    { name: 'Rajshahi City',   zoneCode: 'ZONE-RJH',   cityCode: 'RJH-C',  divCode: 'RJH', distCode: 'RJH-RJH', group: 'Divisional Cities',  desc: 'Rajshahi city zone' },
+    { name: 'Gazipur',         zoneCode: 'ZONE-GZP',   cityCode: 'GZ-C',   divCode: 'DHK', distCode: 'DH-GZ',  group: 'Outskirts',          desc: 'Gazipur industrial and residential zone' },
+    { name: 'Narayanganj',     zoneCode: 'ZONE-NRG',   cityCode: 'NG-C',   divCode: 'DHK', distCode: 'DH-NG',  group: 'Outskirts',          desc: 'Narayanganj city zone' },
+  ];
+  const zoneMap: Record<string, number> = {};
+  for (const z of zoneData) {
+    const existing = await prisma.zone.findFirst({ where: { zoneCode: z.zoneCode } });
+    const zone = await prisma.zone.upsert({
+      where: { zoneCode: z.zoneCode },
+      update: { name: z.name, description: z.desc, status: 'active', zoneGroupId: zoneGroupMap[z.group] },
+      create: {
+        name:        z.name,
+        zoneCode:    z.zoneCode,
+        description: z.desc,
+        countryId:   bangladesh.id,
+        divisionId:  divisionMap[z.divCode],
+        districtId:  districtMap[z.distCode],
+        cityId:      cityMap[z.cityCode],
+        status:      'active',
+        zoneGroupId: zoneGroupMap[z.group],
+      },
+    });
+    zoneMap[z.zoneCode] = zone.id;
+    console.log(`   ✅ Zone: ${z.name} (${z.zoneCode})`);
+
+    // 8. ZoneSetting for each zone
+    await prisma.zoneSetting.upsert({
+      where: { zoneId: zone.id },
+      update: { allowBooking: true, allowCalculator: true, allowPackage: true, allowVendorAssignment: true, isActive: true },
+      create: { zoneId: zone.id, allowBooking: true, allowCalculator: true, allowPackage: true, allowVendorAssignment: true, isActive: true },
+    });
+
+    // 9. ZoneAnalytics (initial zeros)
+    const analyticsExists = await prisma.zoneAnalytics.findFirst({ where: { zoneId: zone.id } });
+    if (!analyticsExists) {
+      await prisma.zoneAnalytics.create({ data: { zoneId: zone.id } });
+    }
+
+    // 10. ZoneTax (VAT 5% for all zones)
+    const taxExists = await prisma.zoneTax.findFirst({ where: { zoneId: zone.id, taxName: 'VAT' } });
+    if (!taxExists) {
+      await prisma.zoneTax.create({ data: { zoneId: zone.id, taxName: 'VAT', taxType: 'percentage', taxValue: 5, status: 'active' } });
+    }
+
+    // 11. ZoneDeliveryCharge
+    const deliveryExists = await prisma.zoneDeliveryCharge.findFirst({ where: { zoneId: zone.id } });
+    if (!deliveryExists) {
+      await prisma.zoneDeliveryCharge.create({ data: { zoneId: zone.id, chargeType: 'flat', amount: 500, description: 'Standard transport charge' } });
+    }
+
+    // 12. ZoneCoverage
+    const coverageExists = await prisma.zoneCoverage.findFirst({ where: { zoneId: zone.id } });
+    if (!coverageExists) {
+      await prisma.zoneCoverage.create({ data: { zoneId: zone.id, coverageType: 'radius', minimumDistance: 0, maximumDistance: 30, status: 'active' } });
+    }
+  }
+
+  // 13. ZonePricing (Photography service in each zone — serviceId=1 as placeholder)
+  const pricingByZone: Record<string, number> = {
+    'ZONE-DHK-N': 18000,
+    'ZONE-DHK-S': 16000,
+    'ZONE-CTG':   14000,
+    'ZONE-RJH':   12000,
+    'ZONE-GZP':   11000,
+    'ZONE-NRG':   10000,
+  };
+  for (const [code, basePrice] of Object.entries(pricingByZone)) {
+    const zoneId = zoneMap[code];
+    const exists = await prisma.zonePricing.findFirst({ where: { zoneId, serviceId: 1 } });
+    if (!exists) {
+      await prisma.zonePricing.create({
+        data: { zoneId, serviceId: 1, basePrice, minimumPrice: basePrice * 0.8, maximumPrice: basePrice * 1.5, currency: 'BDT', status: 'active' },
+      });
+    }
+    console.log(`   ✅ ZonePricing: Zone ${code} → Photography ৳${basePrice.toLocaleString()}`);
+  }
+
+  console.log('\n🎉 Zone & Location seed complete!');
+  console.log(`   Countries: 1, Divisions: ${divisionData.length}, Districts: 5, Cities: ${cityData.length}`);
+  console.log(`   Areas: ${areaData.length}, ZoneGroups: ${zoneGroupData.length}, Zones: ${zoneData.length}`);
+
   console.log(`   Roles:       ${defaultRoles.length}`);
   console.log(`   Modules:     ${defaultModules.length}`);
   console.log(`   Permissions: ${defaultPermissions.length}`);

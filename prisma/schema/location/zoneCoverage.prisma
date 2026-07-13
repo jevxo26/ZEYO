@@ -1,0 +1,13 @@
+model ZoneCoverage {
+  id              Int      @id @default(autoincrement())
+  zoneId          Int
+  zone            Zone     @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  coverageType    String   // radius | polygon | city_limit
+  minimumDistance Float?
+  maximumDistance Float?
+  status          String   @default("active")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([zoneId])
+}

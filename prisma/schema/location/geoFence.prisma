@@ -1,0 +1,13 @@
+model GeoFence {
+  id        Int      @id @default(autoincrement())
+  zoneId    Int
+  zone      Zone     @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  radius    Float    // radius in meters/km
+  latitude  Float
+  longitude Float
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([zoneId])
+}

@@ -3,6 +3,7 @@ model CustomerPreference {
   customerId                 Int      @unique
   customer                   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
   preferredZoneId            Int?
+  preferredZone              Zone?    @relation(fields: [preferredZoneId], references: [id])
   preferredEventTypeId       Int?
   preferredBudget            Float?
   preferredGuestRange        String?
