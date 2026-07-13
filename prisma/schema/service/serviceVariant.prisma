@@ -1,0 +1,20 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// ServiceVariant Model
+// Options for each configuration field (4 Hours, 8 Hours, 1 Day, 2 Days)
+// additionalPrice: extra cost when this variant is selected
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ServiceVariant {
+  id                    Int                  @id @default(autoincrement())
+  serviceConfigurationId Int
+  configuration         ServiceConfiguration @relation(fields: [serviceConfigurationId], references: [id], onDelete: Cascade)
+  name                  String
+  description           String?
+  additionalPrice       Decimal?             @db.Decimal(12, 2)
+  status                String               @default("active")
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+
+  @@index([serviceConfigurationId])
+  @@index([status])
+}

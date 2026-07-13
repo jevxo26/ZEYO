@@ -1,0 +1,21 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// ServiceAddon Model
+// Optional add-ons for a service (Album, Drone, Extra Photographer, Dessert)
+// pricingType: fixed | percentage
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ServiceAddon {
+  id          Int      @id @default(autoincrement())
+  serviceId   Int
+  service     Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  price       Decimal? @db.Decimal(12, 2)
+  pricingType String   @default("fixed") // fixed | percentage
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([serviceId])
+  @@index([status])
+}

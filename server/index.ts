@@ -21,6 +21,8 @@ import locationRoutes from './routes/location/locationRoutes';
 import zoneRoutes     from './routes/location/zoneRoutes';
 import packageRoutes      from './routes/package/packageRoutes';
 import packageAdminRoutes from './routes/package/packageAdminRoutes';
+import serviceRoutes      from './routes/service/serviceRoutes';
+import serviceAdminRoutes from './routes/service/serviceAdminRoutes';
 
 // ─── RBAC Routes ────────────────────────────────────────────────────────────
 import rbacRoleRoutes           from './routes/rbac/roleRoutes';
@@ -110,6 +112,8 @@ app.prepare().then(async () => {
   // ─── Package API ──────────────────────────────────────────────────────────
   server.use('/api/packages',       packageRoutes);
   server.use('/api/admin/packages', packageAdminRoutes);
+  server.use('/api/services',       serviceRoutes);       // Public service catalog
+  server.use('/api/admin/services', serviceAdminRoutes);  // Admin service management
 
   // ─── RBAC API ─────────────────────────────────────────────────────────────
   server.use('/api/rbac/roles',            rbacRoleRoutes);

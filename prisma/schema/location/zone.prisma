@@ -36,6 +36,8 @@ model Zone {
   zoneSetting         ZoneSetting?
   packageZonePricings PackageZonePricing[]
   packageAvailabilities PackageAvailability[]
+  serviceZonePricings ServiceZonePricing[]
+  serviceAvailabilities ServiceAvailability[]
 
   userAddresses       UserAddress[]
   customerAddresses   CustomerAddress[]

@@ -36,6 +36,7 @@ model Event {
   features     EventFeature[]
   setting      EventSetting?
   packages     Package[]
+  serviceRequirements ServiceRequirement[]
 
   @@index([slug])
   @@index([status])

@@ -1,0 +1,23 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// ServiceCategory Model
+// Top-level grouping: Media, Food, Decoration, Venue, Entertainment, Logistics
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ServiceCategory {
+  id           Int                  @id @default(autoincrement())
+  name         String               @unique
+  slug         String               @unique
+  description  String?
+  icon         String?
+  displayOrder Int                  @default(0)
+  status       String               @default("active")
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  services     Service[]
+  subCategories ServiceSubCategory[]
+
+  @@index([slug])
+  @@index([status])
+  @@index([displayOrder])
+}

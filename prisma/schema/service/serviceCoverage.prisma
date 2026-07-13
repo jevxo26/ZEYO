@@ -1,0 +1,17 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// ServiceCoverage Model
+// Time coverage options per service (Half Day, Full Day, Two Days, Three Days)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ServiceCoverage {
+  id           Int      @id @default(autoincrement())
+  serviceId    Int
+  service      Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  coverageName String
+  duration     Int      // numeric value (e.g. 4, 8, 1, 2)
+  unit         String   @default("hours") // hours | days
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([serviceId])
+}

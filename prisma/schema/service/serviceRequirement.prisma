@@ -1,0 +1,22 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// ServiceRequirement Model
+// Event-specific service requirements (Wedding → Photography Required)
+// eventId references Event model (Part 5)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ServiceRequirement {
+  id              Int      @id @default(autoincrement())
+  serviceId       Int
+  service         Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  eventId         Int
+  event           Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  isMandatory     Boolean  @default(false)
+  minimumQuantity Int?
+  maximumQuantity Int?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([serviceId, eventId])
+  @@index([serviceId])
+  @@index([eventId])
+}

@@ -1,0 +1,17 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// ServiceAnalytics Model — one-to-one with Service
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ServiceAnalytics {
+  id              Int      @id @default(autoincrement())
+  serviceId       Int      @unique
+  service         Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  totalBookings   Int      @default(0)
+  totalRevenue    Decimal  @default(0) @db.Decimal(14, 2)
+  averageRating   Decimal  @default(0) @db.Decimal(3, 2)
+  conversionRate  Decimal  @default(0) @db.Decimal(5, 2)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([serviceId])
+}
