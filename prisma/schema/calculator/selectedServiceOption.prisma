@@ -1,0 +1,20 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// SelectedServiceOption — chosen option per service (e.g. Photography = Premium)
+// optionId → ServiceOption
+// ─────────────────────────────────────────────────────────────────────────────
+
+model SelectedServiceOption {
+  id                Int             @id @default(autoincrement())
+  selectedServiceId Int
+  selectedService   SelectedService @relation(fields: [selectedServiceId], references: [id], onDelete: Cascade)
+  optionId          Int
+  option            ServiceOption   @relation(fields: [optionId], references: [id])
+  optionValue       String?
+  price             Decimal?        @db.Decimal(12, 2)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@unique([selectedServiceId, optionId])
+  @@index([selectedServiceId])
+  @@index([optionId])
+}

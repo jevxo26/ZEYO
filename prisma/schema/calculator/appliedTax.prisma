@@ -1,0 +1,16 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// AppliedTax — taxes applied to this calculator
+// ─────────────────────────────────────────────────────────────────────────────
+
+model AppliedTax {
+  id           Int                  @id @default(autoincrement())
+  calculatorId Int
+  calculator   SmartEventCalculator @relation(fields: [calculatorId], references: [id], onDelete: Cascade)
+  taxName      String
+  taxRate      Decimal              @db.Decimal(6, 4)
+  taxAmount    Decimal              @db.Decimal(14, 2)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@index([calculatorId])
+}

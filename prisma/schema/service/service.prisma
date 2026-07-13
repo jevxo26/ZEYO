@@ -1,0 +1,49 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Service Model
+// Master catalog of all event services (Photography, Catering, Decoration, etc.)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Service {
+  id               Int       @id @default(autoincrement())
+  categoryId       Int
+  category         ServiceCategory @relation(fields: [categoryId], references: [id])
+  name             String    @unique
+  slug             String    @unique
+  code             String?   @unique
+  description      String?
+  shortDescription String?
+  icon             String?
+  thumbnail        String?
+  banner           String?
+  startingPrice    Decimal?  @db.Decimal(12, 2)
+  status           String    @default("active")
+  displayOrder     Int       @default(0)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  deletedAt        DateTime?
+
+  // Relations
+  types            ServiceType[]
+  options          ServiceOption[]
+  configurations   ServiceConfiguration[]
+  coverages        ServiceCoverage[]
+  pricing          ServicePricing?
+  zonePricing      ServiceZonePricing[]
+  addons           ServiceAddon[]
+  attributes       ServiceAttribute[]
+  requirements     ServiceRequirement[]
+  availability     ServiceAvailability[]
+  gallery          ServiceGallery[]
+  faqs             ServiceFAQ[]
+  policies         ServicePolicy[]
+  analytics        ServiceAnalytics?
+  tags             ServiceTag[]
+  setting          ServiceSetting?
+  selectedServices SelectedService[]
+
+  @@index([categoryId])
+  @@index([slug])
+  @@index([status])
+  @@index([displayOrder])
+  @@index([deletedAt])
+}

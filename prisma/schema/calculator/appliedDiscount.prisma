@@ -1,0 +1,18 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// AppliedDiscount — discounts applied to this calculator
+// discountType: percentage | fixed
+// ─────────────────────────────────────────────────────────────────────────────
+
+model AppliedDiscount {
+  id             Int                  @id @default(autoincrement())
+  calculatorId   Int
+  calculator     SmartEventCalculator @relation(fields: [calculatorId], references: [id], onDelete: Cascade)
+  discountName   String
+  discountType   String               @default("percentage")
+  discountValue  Decimal              @db.Decimal(10, 4)
+  discountAmount Decimal              @db.Decimal(14, 2)
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+
+  @@index([calculatorId])
+}

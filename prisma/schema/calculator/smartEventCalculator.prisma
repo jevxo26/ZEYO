@@ -1,0 +1,42 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// SmartEventCalculator — Root calculator session per customer
+// customerId → Customer, zoneId → Zone, eventId → Event
+// ─────────────────────────────────────────────────────────────────────────────
+
+model SmartEventCalculator {
+  id          Int       @id @default(autoincrement())
+  customerId  Int?
+  customer    Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  zoneId      Int?
+  zone        Zone?     @relation(fields: [zoneId], references: [id], onDelete: SetNull)
+  eventId     Int?
+  event       Event?    @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  sessionId   String    @unique @default(cuid())
+  status      String    @default("in_progress") // in_progress | completed | abandoned | converted
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  sessions          CalculatorSession[]
+  steps             CalculatorStep[]
+  sections          CalculatorSection[]
+  selectedEvent     SelectedEvent?
+  selectedServices  SelectedService[]
+  guestInformation  GuestInformation?
+  budgetCalculation BudgetCalculation?
+  pricingRules      PricingRule[]
+  appliedDiscounts  AppliedDiscount[]
+  appliedTaxes      AppliedTax[]
+  estimateSummary   EstimateSummary?
+  savedEstimates    SavedEstimate[]
+  quotation         Quotation?
+  estimateHistory   EstimateHistory[]
+
+  @@index([customerId])
+  @@index([zoneId])
+  @@index([eventId])
+  @@index([sessionId])
+  @@index([status])
+}

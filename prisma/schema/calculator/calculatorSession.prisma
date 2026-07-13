@@ -1,0 +1,21 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// CalculatorSession — tracks each browser/device session
+// ─────────────────────────────────────────────────────────────────────────────
+
+model CalculatorSession {
+  id           Int                  @id @default(autoincrement())
+  calculatorId Int
+  calculator   SmartEventCalculator @relation(fields: [calculatorId], references: [id], onDelete: Cascade)
+  sessionToken String               @unique @default(cuid())
+  deviceId     String?
+  ipAddress    String?
+  startedAt    DateTime             @default(now())
+  endedAt      DateTime?
+  status       String               @default("active") // active | ended | expired
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@index([calculatorId])
+  @@index([sessionToken])
+  @@index([status])
+}

@@ -1,0 +1,24 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Quotation — official generated quotation (one-to-one per calculator)
+// quotationNumber auto-generated, e.g. QUO-2026-00001
+// status: draft | sent | accepted | rejected | expired
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Quotation {
+  id              Int                  @id @default(autoincrement())
+  calculatorId    Int                  @unique
+  calculator      SmartEventCalculator @relation(fields: [calculatorId], references: [id], onDelete: Cascade)
+  quotationNumber String               @unique
+  validUntil      DateTime?
+  subtotal        Decimal              @db.Decimal(14, 2)
+  discount        Decimal              @default(0) @db.Decimal(14, 2)
+  tax             Decimal              @default(0) @db.Decimal(14, 2)
+  grandTotal      Decimal              @db.Decimal(14, 2)
+  status          String               @default("draft")
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  @@index([calculatorId])
+  @@index([quotationNumber])
+  @@index([status])
+}

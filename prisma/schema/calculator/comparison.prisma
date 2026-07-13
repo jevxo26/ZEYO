@@ -1,0 +1,21 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Comparison — side-by-side comparison of two saved estimates
+// customerId → Customer
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Comparison {
+  id               Int          @id @default(autoincrement())
+  customerId       Int
+  customer         Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  estimateOneId    Int
+  estimateOne      SavedEstimate @relation("ComparisonEstimateOne", fields: [estimateOneId], references: [id])
+  estimateTwoId    Int
+  estimateTwo      SavedEstimate @relation("ComparisonEstimateTwo", fields: [estimateTwoId], references: [id])
+  comparisonResult Json?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([customerId])
+  @@index([estimateOneId])
+  @@index([estimateTwoId])
+}
