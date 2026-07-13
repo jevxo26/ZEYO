@@ -38,7 +38,6 @@ type UserProfile = {
   preferredLanguage: string | null;
 };
 
-// Now includes User-table fields too (firstName, lastName, phone, gender, dateOfBirth)
 const EDITABLE_FIELDS: (keyof UserProfile)[] = [
   "firstName",
   "lastName",
@@ -68,6 +67,12 @@ const SOCIAL_FIELDS = [
   { icon: FaInstagram, field: "instagram" as const, placeholder: "Instagram URL" },
   { icon: FaLinkedin, field: "linkedin" as const, placeholder: "LinkedIn URL" },
 ];
+
+// Ensures links always have a protocol so they don't resolve as relative URLs
+const normalizeUrl = (url: string) => {
+  if (!url) return "";
+  return /^https?:\/\//i.test(url) ? url : `https://${url}`;
+};
 
 export default function ProfilePage() {
   const [user, setUser] = React.useState<UserProfile | null>(null);
@@ -269,7 +274,7 @@ export default function ProfilePage() {
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Contact Information — address stays read-only */}
+        {/* Contact Information */}
         <Card accent="blue">
           <CardHeader>
             <CardTitle className="text-base">Contact Information</CardTitle>
@@ -293,7 +298,12 @@ export default function ProfilePage() {
               placeholder="Website URL"
               displayValue={
                 user.website ? (
-                  <a href={user.website} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                  <a
+                    href={normalizeUrl(user.website)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 hover:underline"
+                  >
                     {user.website}
                   </a>
                 ) : undefined
@@ -302,7 +312,7 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        {/* Personal Information — all editable now */}
+        {/* Personal Information */}
         <Card accent="purple">
           <CardHeader>
             <CardTitle className="text-base">Personal Information</CardTitle>
@@ -359,7 +369,7 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        {/* Work Information — all editable */}
+        {/* Work Information */}
         <Card accent="green">
           <CardHeader>
             <CardTitle className="text-base">Work Information</CardTitle>
@@ -371,7 +381,7 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        {/* Social Links — all editable */}
+        {/* Social Links */}
         <Card accent="rose">
           <CardHeader>
             <CardTitle className="text-base">Social Links</CardTitle>
@@ -387,7 +397,12 @@ export default function ProfilePage() {
                 placeholder={placeholder}
                 displayValue={
                   user[field] ? (
-                    <a href={user[field]!} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                    <a
+                      href={normalizeUrl(user[field]!)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:underline"
+                    >
                       {user[field]}
                     </a>
                   ) : undefined
