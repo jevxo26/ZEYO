@@ -1,0 +1,16 @@
+model PackageDiscount {
+  id            Int       @id @default(autoincrement())
+  packageId     Int
+  package       Package   @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  discountType  String    // flat | percentage
+  discountValue Float
+  minimumAmount Float     @default(0.0)
+  startDate     DateTime?
+  endDate       DateTime?
+  status        String    @default("active")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([packageId])
+  @@index([status])
+}

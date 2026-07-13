@@ -3,6 +3,7 @@ model CustomerFavoritePackage {
   customerId Int
   customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
   packageId  Int
+  package    Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 

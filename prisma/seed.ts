@@ -417,6 +417,223 @@ async function main() {
   console.log(`   Countries: 1, Divisions: ${divisionData.length}, Districts: 5, Cities: ${cityData.length}`);
   console.log(`   Areas: ${areaData.length}, ZoneGroups: ${zoneGroupData.length}, Zones: ${zoneData.length}`);
 
+  console.log('\n📦 Seeding Package Module data...\n');
+
+  // 14. Event seeds (if none exist)
+  const weddingEvent = await prisma.event.upsert({
+    where: { name: 'Wedding' },
+    update: {},
+    create: { name: 'Wedding', slug: 'wedding', description: 'Wedding events', status: 'active', displayOrder: 1 },
+  });
+  const birthdayEvent = await prisma.event.upsert({
+    where: { name: 'Birthday' },
+    update: {},
+    create: { name: 'Birthday', slug: 'birthday', description: 'Birthday parties', status: 'active', displayOrder: 2 },
+  });
+  const corporateEvent = await prisma.event.upsert({
+    where: { name: 'Corporate' },
+    update: {},
+    create: { name: 'Corporate', slug: 'corporate', description: 'Corporate events', status: 'active', displayOrder: 3 },
+  });
+
+  // 15. Package Categories
+  const weddingCat = await prisma.packageCategory.upsert({
+    where: { slug: 'wedding' },
+    update: { name: 'Wedding', status: 'active' },
+    create: { name: 'Wedding', slug: 'wedding', description: 'Wedding packages', status: 'active' },
+  });
+  const birthdayCat = await prisma.packageCategory.upsert({
+    where: { slug: 'birthday' },
+    update: { name: 'Birthday', status: 'active' },
+    create: { name: 'Birthday', slug: 'birthday', description: 'Birthday packages', status: 'active' },
+  });
+  const corporateCat = await prisma.packageCategory.upsert({
+    where: { slug: 'corporate' },
+    update: { name: 'Corporate', status: 'active' },
+    create: { name: 'Corporate', slug: 'corporate', description: 'Corporate packages', status: 'active' },
+  });
+
+  // 16. Package SubCategories
+  const weddingSub = await prisma.packageSubCategory.findFirst({ where: { name: 'Wedding Reception', packageCategoryId: weddingCat.id } })
+    || await prisma.packageSubCategory.create({ data: { name: 'Wedding Reception', packageCategoryId: weddingCat.id, status: 'active' } });
+  const birthdaySub = await prisma.packageSubCategory.findFirst({ where: { name: 'Kids Birthday', packageCategoryId: birthdayCat.id } })
+    || await prisma.packageSubCategory.create({ data: { name: 'Kids Birthday', packageCategoryId: birthdayCat.id, status: 'active' } });
+  const corporateSub = await prisma.packageSubCategory.findFirst({ where: { name: 'Corporate Seminar', packageCategoryId: corporateCat.id } })
+    || await prisma.packageSubCategory.create({ data: { name: 'Corporate Seminar', packageCategoryId: corporateCat.id, status: 'active' } });
+
+  // 17. Packages
+  const weddingPremiumPkg = await prisma.package.upsert({
+    where: { slug: 'wedding-premium' },
+    update: { startingPrice: 320000, eventId: weddingEvent.id, packageCategoryId: weddingCat.id, packageSubCategoryId: weddingSub.id },
+    create: {
+      name: 'Wedding Premium',
+      slug: 'wedding-premium',
+      code: 'PKG-WED-PREM',
+      description: 'Premium wedding package with photography, decor and catering.',
+      startingPrice: 320000,
+      eventId: weddingEvent.id,
+      packageCategoryId: weddingCat.id,
+      packageSubCategoryId: weddingSub.id,
+      status: 'active',
+    }
+  });
+
+  const birthdayBasicPkg = await prisma.package.upsert({
+    where: { slug: 'birthday-basic' },
+    update: { startingPrice: 50000, eventId: birthdayEvent.id, packageCategoryId: birthdayCat.id, packageSubCategoryId: birthdaySub.id },
+    create: {
+      name: 'Birthday Basic',
+      slug: 'birthday-basic',
+      code: 'PKG-BD-BASIC',
+      description: 'Basic birthday celebration package.',
+      startingPrice: 50000,
+      eventId: birthdayEvent.id,
+      packageCategoryId: birthdayCat.id,
+      packageSubCategoryId: birthdaySub.id,
+      status: 'active',
+    }
+  });
+
+  const corporateStdPkg = await prisma.package.upsert({
+    where: { slug: 'corporate-standard' },
+    update: { startingPrice: 150000, eventId: corporateEvent.id, packageCategoryId: corporateCat.id, packageSubCategoryId: corporateSub.id },
+    create: {
+      name: 'Corporate Standard',
+      slug: 'corporate-standard',
+      code: 'PKG-CORP-STD',
+      description: 'Standard corporate event package.',
+      startingPrice: 150000,
+      eventId: corporateEvent.id,
+      packageCategoryId: corporateCat.id,
+      packageSubCategoryId: corporateSub.id,
+      status: 'active',
+    }
+  });
+
+  // Clean up sub-records for the seeded packages to avoid duplication on re-run
+  const seededPkgIds = [weddingPremiumPkg.id, birthdayBasicPkg.id, corporateStdPkg.id];
+  await prisma.packagePricing.deleteMany({ where: { packageId: { in: seededPkgIds } } });
+  await prisma.packageZonePricing.deleteMany({ where: { packageId: { in: seededPkgIds } } });
+  await prisma.packageAvailability.deleteMany({ where: { packageId: { in: seededPkgIds } } });
+  await prisma.packageGuestRange.deleteMany({ where: { packageId: { in: seededPkgIds } } });
+  await prisma.packageCoverage.deleteMany({ where: { packageId: { in: seededPkgIds } } });
+  await prisma.packageService.deleteMany({ where: { packageId: { in: seededPkgIds } } }); // Cascade will delete items
+  await prisma.packageAddon.deleteMany({ where: { packageId: { in: seededPkgIds } } });
+  await prisma.packageFeature.deleteMany({ where: { packageId: { in: seededPkgIds } } });
+  await prisma.packageFAQ.deleteMany({ where: { packageId: { in: seededPkgIds } } });
+  await prisma.packagePolicy.deleteMany({ where: { packageId: { in: seededPkgIds } } });
+  await prisma.packageTerms.deleteMany({ where: { packageId: { in: seededPkgIds } } });
+  await prisma.packageAnalytics.deleteMany({ where: { packageId: { in: seededPkgIds } } });
+
+  // 18. Package Settings
+  await prisma.packageSetting.upsert({
+    where: { packageId: weddingPremiumPkg.id },
+    update: {},
+    create: { packageId: weddingPremiumPkg.id, allowCustomization: true, allowAddon: true, allowReschedule: true, allowCancellation: true, showOnHomepage: true, isFeatured: true }
+  });
+  await prisma.packageSetting.upsert({
+    where: { packageId: birthdayBasicPkg.id },
+    update: {},
+    create: { packageId: birthdayBasicPkg.id, allowCustomization: true, allowAddon: true, allowReschedule: true, allowCancellation: true, showOnHomepage: false, isFeatured: false }
+  });
+  await prisma.packageSetting.upsert({
+    where: { packageId: corporateStdPkg.id },
+    update: {},
+    create: { packageId: corporateStdPkg.id, allowCustomization: false, allowAddon: true, allowReschedule: true, allowCancellation: true, showOnHomepage: true, isFeatured: false }
+  });
+
+  // 19. Package Pricing (Generic baseline)
+  await prisma.packagePricing.create({
+    data: { packageId: weddingPremiumPkg.id, basePrice: 300000, taxAmount: 15000, finalPrice: 315000 }
+  });
+  await prisma.packagePricing.create({
+    data: { packageId: birthdayBasicPkg.id, basePrice: 48000, taxAmount: 2000, finalPrice: 50000 }
+  });
+  await prisma.packagePricing.create({
+    data: { packageId: corporateStdPkg.id, basePrice: 140000, taxAmount: 7000, finalPrice: 147000 }
+  });
+
+  // 20. Package Zone Pricing & Availabilities
+  const zoneDhkN = await prisma.zone.findUnique({ where: { zoneCode: 'ZONE-DHK-N' } });
+  const zoneDhkS = await prisma.zone.findUnique({ where: { zoneCode: 'ZONE-DHK-S' } });
+  const zoneRjh = await prisma.zone.findUnique({ where: { zoneCode: 'ZONE-RJH' } });
+
+  if (zoneDhkN && zoneRjh) {
+    await prisma.packageZonePricing.create({
+      data: { packageId: weddingPremiumPkg.id, zoneId: zoneDhkN.id, price: 320000, discount: 0 }
+    });
+    await prisma.packageZonePricing.create({
+      data: { packageId: weddingPremiumPkg.id, zoneId: zoneRjh.id, price: 280000, discount: 0 }
+    });
+
+    await prisma.packageAvailability.create({
+      data: { packageId: weddingPremiumPkg.id, zoneId: zoneDhkN.id, bookingLimit: 10, status: 'active' }
+    });
+    await prisma.packageAvailability.create({
+      data: { packageId: weddingPremiumPkg.id, zoneId: zoneRjh.id, bookingLimit: 5, status: 'active' }
+    });
+  }
+
+  // 21. Package Guest Range
+  await prisma.packageGuestRange.create({
+    data: { packageId: weddingPremiumPkg.id, minimumGuest: 100, maximumGuest: 500, recommendedGuest: 300 }
+  });
+
+  // 22. Package Coverage
+  await prisma.packageCoverage.create({
+    data: { packageId: weddingPremiumPkg.id, coverageType: 'days', duration: 2, unit: 'Day' }
+  });
+
+  // 23. Package Services & Items (Photography = serviceId 1, Videography = serviceId 2)
+  const service1 = await prisma.packageService.create({
+    data: { packageId: weddingPremiumPkg.id, serviceId: 1, isRequired: true, displayOrder: 1 }
+  });
+  const service2 = await prisma.packageService.create({
+    data: { packageId: weddingPremiumPkg.id, serviceId: 2, isRequired: true, displayOrder: 2 }
+  });
+
+  await prisma.packageServiceItem.create({
+    data: { packageServiceId: service1.id, serviceOptionId: 1, coverageId: 1, quantity: 2, duration: 2, remarks: '2 Photographers' }
+  });
+  await prisma.packageServiceItem.create({
+    data: { packageServiceId: service2.id, serviceOptionId: 2, coverageId: 1, quantity: 1, duration: 2, remarks: '1 Videographer' }
+  });
+
+  // 24. Package Addons
+  await prisma.packageAddon.create({
+    data: { packageId: weddingPremiumPkg.id, serviceId: 4, name: 'Drone', price: 15000, pricingType: 'flat', status: 'active' }
+  });
+  await prisma.packageAddon.create({
+    data: { packageId: weddingPremiumPkg.id, serviceId: 5, name: 'Live Streaming', price: 10000, pricingType: 'flat', status: 'active' }
+  });
+
+  // 25. Package Features
+  await prisma.packageFeature.create({
+    data: { packageId: weddingPremiumPkg.id, title: 'Free Consultation', description: '1-hour coordination call', displayOrder: 1 }
+  });
+  await prisma.packageFeature.create({
+    data: { packageId: weddingPremiumPkg.id, title: 'Professional Team', description: 'Experienced service providers', displayOrder: 2 }
+  });
+
+  // 26. Package FAQs, Policies, Terms, and Analytics
+  await prisma.packageFAQ.create({
+    data: { packageId: weddingPremiumPkg.id, question: 'Can I customize the menu?', answer: 'Yes, custom menu changes are allowed.', displayOrder: 1 }
+  });
+
+  await prisma.packagePolicy.create({
+    data: { packageId: weddingPremiumPkg.id, title: 'Cancellation', description: 'Cancellations must be made 30 days prior to the event.' }
+  });
+
+  await prisma.packageTerms.create({
+    data: { packageId: weddingPremiumPkg.id, title: 'Standard Agreement', description: 'Prices are subject to tax and availability.' }
+  });
+
+  await prisma.packageAnalytics.create({
+    data: { packageId: weddingPremiumPkg.id, totalBookings: 0, totalRevenue: 0.0, averageRating: 0.0, conversionRate: 0.0 }
+  });
+
+  console.log('🎉 Package Module seed complete!');
+
   console.log(`   Roles:       ${defaultRoles.length}`);
   console.log(`   Modules:     ${defaultModules.length}`);
   console.log(`   Permissions: ${defaultPermissions.length}`);

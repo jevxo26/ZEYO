@@ -34,6 +34,7 @@ model Customer {
   rewards             CustomerReward[]
   reviews             CustomerReview[]
   setting             CustomerSetting?
+  packageReviews      PackageReview[]
 
   @@index([deletedAt])
   @@index([status])

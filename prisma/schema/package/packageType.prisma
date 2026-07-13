@@ -1,0 +1,14 @@
+model PackageType {
+  id           Int      @id @default(autoincrement())
+  packageId    Int
+  package      Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  name         String   // e.g. Basic | Standard | Premium | Luxury
+  description  String?
+  displayOrder Int      @default(0)
+  status       String   @default("active")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([packageId])
+  @@index([status])
+}

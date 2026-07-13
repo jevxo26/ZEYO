@@ -34,6 +34,8 @@ model Zone {
   geoFences           GeoFence[]
   zoneAnalytics       ZoneAnalytics[]
   zoneSetting         ZoneSetting?
+  packageZonePricings PackageZonePricing[]
+  packageAvailabilities PackageAvailability[]
 
   userAddresses       UserAddress[]
   customerAddresses   CustomerAddress[]

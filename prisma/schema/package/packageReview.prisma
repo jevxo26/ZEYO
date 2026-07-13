@@ -1,0 +1,15 @@
+model PackageReview {
+  id         Int      @id @default(autoincrement())
+  packageId  Int
+  package    Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  customerId Int
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  rating     Int
+  review     String?
+  status     String   @default("active") // active | flagged | hidden
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([packageId])
+  @@index([customerId])
+}

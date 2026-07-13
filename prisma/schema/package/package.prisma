@@ -1,0 +1,53 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Package Model
+// Root package entity. Contains event reference, names, slugs, and links to all config tables.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Package {
+  id                   Int                 @id @default(autoincrement())
+  eventId              Int
+  event                Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  packageCategoryId    Int?
+  packageCategory      PackageCategory?    @relation(fields: [packageCategoryId], references: [id], onDelete: SetNull)
+  packageSubCategoryId Int?
+  packageSubCategory   PackageSubCategory? @relation(fields: [packageSubCategoryId], references: [id], onDelete: SetNull)
+  name                 String
+  slug                 String              @unique
+  code                 String              @unique
+  description          String?
+  thumbnail            String?
+  banner               String?
+  startingPrice        Float
+  status               String              @default("active") // active | inactive | draft
+  displayOrder         Int                 @default(0)
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+  deletedAt            DateTime?
+
+  // Relations
+  types                PackageType[]
+  services             PackageService[]
+  pricings             PackagePricing[]
+  zonePricings         PackageZonePricing[]
+  guestRanges          PackageGuestRange[]
+  coverages            PackageCoverage[]
+  addons               PackageAddon[]
+  features             PackageFeature[]
+  gallery              PackageGallery[]
+  faqs                 PackageFAQ[]
+  policies             PackagePolicy[]
+  terms                PackageTerms[]
+  availabilities       PackageAvailability[]
+  discounts            PackageDiscount[]
+  analytics            PackageAnalytics[]
+  reviews              PackageReview[]
+  setting              PackageSetting?
+  favoriteCustomers    CustomerFavoritePackage[]
+
+  @@index([eventId])
+  @@index([packageCategoryId])
+  @@index([packageSubCategoryId])
+  @@index([status])
+  @@index([displayOrder])
+  @@index([deletedAt])
+}
