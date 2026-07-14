@@ -27,8 +27,9 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${baiJamjuree.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
-      <body className={baiJamjuree.className}>
+      <body className={baiJamjuree.className} suppressHydrationWarning>
         <ReduxProvider>
           <AuthInitializer>{children}</AuthInitializer>
         </ReduxProvider>
