@@ -160,7 +160,7 @@ export function Footer() {
                                 <li className="flex items-center space-x-3 text-sm text-slate-600 dark:text-slate-400">
                                     <Mail size={16} className="text-indigo-500 dark:text-indigo-400 shrink-0" />
                                     <a href="mailto:hello@finora.com" className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                                        hello@finora.com
+                                        hello@evento.com
                                     </a>
                                 </li>
                             </ul>
@@ -207,7 +207,7 @@ export function Footer() {
                 {/* Bottom Copyright & Legal links */}
                 <div className="border-t border-slate-200/50 dark:border-slate-800/50 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                        &copy; {currentYear} Finora Inc. All rights reserved.
+                        &copy; {currentYear} EVENTO  Inc. All rights reserved.
                     </p>
                     <div className="flex space-x-6">
                         {[
