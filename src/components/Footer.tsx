@@ -52,12 +52,14 @@ export function Footer() {
                     <div className="md:col-span-2 space-y-6">
                         <div className="flex items-center space-x-2">
                             {/* Stylish Geometric Mini-logo */}
-                            <div className="relative flex items-center justify-center w-8 h-8 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white font-black text-sm shadow-md shadow-indigo-500/20">
-                                <span>F</span>
-                            </div>
-                            <span className="text-2xl font-bold bg-gradient-to-r from-indigo-500 via-violet-600 to-purple-500 bg-clip-text text-transparent">
-                                Finora
-                            </span>
+                            <Link href="/" className="flex items-baseline gap-2">
+          <span className="text-[15px] font-bold tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-500">
+            EVENTO
+          </span>
+          <span className="hidden lg:inline text-[11px] font-medium text-slate-400 tracking-wide">
+            — Every moment, perfectly planned
+          </span>
+        </Link>
                         </div>
                         <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-sm">
                             Empowering modern event orchestration and digital vendor integration. Discover premium, beautiful, and tailored planning solutions.

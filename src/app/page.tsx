@@ -5,6 +5,8 @@ import  Navbar  from "../components/Navbar";
 import { Hero } from "@/components/Hero";
 import { Process } from "@/components/Process";
 import { FeaturedPackages } from "@/components/Featuredpackages";
+import ServiceAreasSection from "@/components/Serviceareassection";
+import CustomBudgetBanner from "@/components/CustomBudgetBanner";
 
 export default function Home() {
   return (
@@ -20,6 +22,8 @@ export default function Home() {
 <Hero></Hero>
 <Process></Process>
 <FeaturedPackages></FeaturedPackages>
+<ServiceAreasSection></ServiceAreasSection>
+<CustomBudgetBanner></CustomBudgetBanner>
       <main >
        
       </main>
