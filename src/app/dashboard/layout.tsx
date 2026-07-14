@@ -2,8 +2,9 @@
 
 import React, { useState } from "react";
 import { Sidebar } from "@/components/dashboard/sidebar";
-import { Navbar } from "@/components/dashboard/navbar";
+
 import { Toaster } from "@/components/ui/sonner";
+import Navbar from "@/components/Navbar";
 
 export default function DashboardLayout({
   children,

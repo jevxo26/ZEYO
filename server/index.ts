@@ -135,8 +135,26 @@ app.prepare().then(async () => {
     return handle(req, res);
   });
 
-  server.listen(port, () => {
+  // ─── Start Server ───────────────────────────────────────────────────────
+  // Capture the returned http.Server instance so we can attach the
+  // 'upgrade' event handler below (needed for Next.js Fast Refresh/HMR).
+  const httpServer = server.listen(port, () => {
     console.log(`🚀 Ready on http://localhost:${port}`);
+  });
+
+  // ─── HMR / WebSocket Upgrade Handling ────────────────────────────────────
+  // Next.js Fast Refresh (hot reload) works over a WebSocket connection.
+  // WebSocket connections start with an HTTP 'upgrade' request, which is a
+  // separate event from normal req/res — Express never sees it unless we
+  // forward it manually. Without this block, files compile fine on save,
+  // but the browser is never told to reload, so the UI appears "stuck".
+  httpServer.on('upgrade', async (req, socket, head) => {
+    try {
+      await app.getUpgradeHandler()(req, socket as any, head);
+    } catch (err) {
+      console.error('Error handling upgrade request', err);
+      socket.destroy();
+    }
   });
 }).catch((err) => {
   console.error('Error starting server', err);

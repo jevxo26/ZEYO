@@ -1,7 +1,7 @@
 import Image from "next/image";
 import SocialLogin from "../components/SocialLogin";
 import { Footer } from "../components/Footer";
-import { Navber } from "../components/Navber";
+import  Navbar  from "../components/Navbar";
 
 export default function Home() {
   return (
@@ -13,7 +13,7 @@ export default function Home() {
         <div className="absolute top-1/3 left-1/4 w-[400px] h-[400px] bg-purple-300/30 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob animation-delay-2000"></div>
       </div>
 
-      <Navber />
+      <Navbar />
 
       <main className="flex-1 flex flex-col items-center justify-center relative z-10 px-6 py-32 w-full max-w-6xl mx-auto">
         <div className="text-center mb-12">
