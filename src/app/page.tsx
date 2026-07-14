@@ -2,6 +2,7 @@ import Image from "next/image";
 import SocialLogin from "../components/SocialLogin";
 import { Footer } from "../components/Footer";
 import  Navbar  from "../components/Navbar";
+import { Hero } from "@/components/Hero";
 
 export default function Home() {
   return (
@@ -14,7 +15,7 @@ export default function Home() {
       </div>
 
       <Navbar />
-
+<Hero></Hero>
       <main className="flex-1 flex flex-col items-center justify-center relative z-10 px-6 py-32 w-full max-w-6xl mx-auto">
         <div className="text-center mb-12">
           <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-slate-900 mb-6 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
