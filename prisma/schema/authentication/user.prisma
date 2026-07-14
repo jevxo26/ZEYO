@@ -89,6 +89,14 @@ model User {
   // CustomerSupport tickets assigned to this admin user
   assignedCustomerSupport  CustomerSupport[]    @relation("CustomerSupportAssignedAdmin")
 
+  // ── Booking Relations ───────────────────────────────────────────────────────
+  bookingStatusUpdates     BookingStatus[]      @relation
+  bookingTimelineEntries   BookingTimeline[]    @relation
+  bookingRescheduleApproval BookingReschedule[] @relation
+  bookingAttachments       BookingAttachment[]  @relation
+  bookingNotes             BookingNote[]        @relation
+  bookingHistories         BookingHistory[]     @relation
+
   // ── Timestamps ─────────────────────────────────────────────────────────────
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt

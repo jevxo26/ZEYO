@@ -1,0 +1,21 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// BookingStatus — status change log (many per booking)
+// Status flow: pending → under_review → approved → vendor_assigned →
+//              confirmed → in_progress → completed | cancelled
+// ─────────────────────────────────────────────────────────────────────────────
+
+model BookingStatus {
+  id            Int      @id @default(autoincrement())
+  bookingId     Int
+  booking       Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  currentStatus String
+  statusReason  String?
+  updatedBy     Int?
+  updatedByUser User?    @relation(fields: [updatedBy], references: [id], onDelete: SetNull)
+  updatedAt     DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  @@index([bookingId])
+  @@index([currentStatus])
+  @@index([updatedBy])
+}

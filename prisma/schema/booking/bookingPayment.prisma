@@ -1,0 +1,23 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// BookingPayment — payment records per booking (multiple payments allowed)
+// paymentMethod: cash | card | bkash | nagad | bank | wallet
+// paymentStatus: pending | paid | failed | refunded
+// ─────────────────────────────────────────────────────────────────────────────
+
+model BookingPayment {
+  id            Int      @id @default(autoincrement())
+  bookingId     Int
+  booking       Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  paymentId     String?  @unique
+  paymentMethod String   @default("cash")
+  paidAmount    Decimal  @db.Decimal(14, 2)
+  dueAmount     Decimal  @default(0) @db.Decimal(14, 2)
+  paymentStatus String   @default("pending")
+  paidAt        DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([bookingId])
+  @@index([paymentStatus])
+  @@index([paymentId])
+}

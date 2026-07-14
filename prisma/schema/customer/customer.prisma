@@ -38,6 +38,7 @@ model Customer {
   calculators         SmartEventCalculator[]
   savedEstimates      SavedEstimate[]
   comparisons         Comparison[]
+  eventBookings       Booking[]           @relation("eventBookings")
 
   @@index([deletedAt])
   @@index([status])

@@ -1,0 +1,19 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// BookingDiscount — coupon / manual discounts applied to a booking
+// discountType: percentage | fixed
+// ─────────────────────────────────────────────────────────────────────────────
+
+model BookingDiscount {
+  id             Int      @id @default(autoincrement())
+  bookingId      Int
+  booking        Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  couponId       Int?
+  discountName   String
+  discountType   String   @default("percentage")
+  discountValue  Decimal  @db.Decimal(10, 4)
+  discountAmount Decimal  @db.Decimal(14, 2)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([bookingId])
+}

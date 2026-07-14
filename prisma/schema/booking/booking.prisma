@@ -1,0 +1,64 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Booking — Root booking record
+// bookingType: calculator | package | manual
+// bookingSource: web | app | admin | api
+// bookingStatus: pending | under_review | approved | vendor_assigned | confirmed | in_progress | completed | cancelled
+// paymentStatus: unpaid | partial | paid | refunded
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Booking {
+  id             Int       @id @default(autoincrement())
+  bookingNumber  String    @unique
+  customerId     Int
+  customer       Customer  @relation("eventBookings", fields: [customerId], references: [id])
+  calculatorId   Int?
+  calculator     SmartEventCalculator? @relation(fields: [calculatorId], references: [id], onDelete: SetNull)
+  packageId      Int?
+  package        Package?  @relation(fields: [packageId], references: [id], onDelete: SetNull)
+  zoneId         Int?
+  zone           Zone?     @relation(fields: [zoneId], references: [id], onDelete: SetNull)
+  eventId        Int?
+  event          Event?    @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  bookingType    String    @default("calculator") // calculator | package | manual
+  bookingSource  String    @default("web")        // web | app | admin | api
+  eventName      String
+  eventDate      DateTime?
+  eventTime      String?
+  guestCount     Int       @default(0)
+  subtotal       Decimal   @default(0) @db.Decimal(14, 2)
+  discount       Decimal   @default(0) @db.Decimal(14, 2)
+  tax            Decimal   @default(0) @db.Decimal(14, 2)
+  grandTotal     Decimal   @default(0) @db.Decimal(14, 2)
+  bookingStatus  String    @default("pending")
+  paymentStatus  String    @default("unpaid")
+  remarks        String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+
+  // Relations
+  items           BookingItem[]
+  guest           BookingGuest?
+  schedule        BookingSchedule?
+  venue           BookingVenue?
+  pricing         BookingPricing?
+  discounts       BookingDiscount[]
+  taxes           BookingTax[]
+  statuses        BookingStatus[]
+  timeline        BookingTimeline[]
+  invoices        BookingInvoice[]
+  payments        BookingPayment[]
+  cancellation    BookingCancellation?
+  reschedules     BookingReschedule[]
+  attachments     BookingAttachment[]
+  notes           BookingNote[]
+  history         BookingHistory[]
+  logs            BookingLog[]
+
+  @@index([bookingNumber])
+  @@index([customerId])
+  @@index([bookingStatus])
+  @@index([paymentStatus])
+  @@index([eventDate])
+  @@index([deletedAt])
+}

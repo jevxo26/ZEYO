@@ -40,6 +40,8 @@ model Zone {
   serviceAvailabilities ServiceAvailability[]
   calculators           SmartEventCalculator[]
   selectedEvents        SelectedEvent[]
+  bookings              Booking[]
+  bookingVenues         BookingVenue[]
 
   userAddresses       UserAddress[]
   customerAddresses   CustomerAddress[]

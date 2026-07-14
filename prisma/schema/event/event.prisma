@@ -39,6 +39,7 @@ model Event {
   serviceRequirements ServiceRequirement[]
   calculators         SmartEventCalculator[]
   selectedEvents      SelectedEvent[]
+  bookings            Booking[]
 
   @@index([slug])
   @@index([status])

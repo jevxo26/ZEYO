@@ -33,6 +33,7 @@ model SmartEventCalculator {
   savedEstimates    SavedEstimate[]
   quotation         Quotation?
   estimateHistory   EstimateHistory[]
+  bookings          Booking[]
 
   @@index([customerId])
   @@index([zoneId])

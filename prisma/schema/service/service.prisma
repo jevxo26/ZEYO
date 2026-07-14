@@ -40,6 +40,8 @@ model Service {
   tags             ServiceTag[]
   setting          ServiceSetting?
   selectedServices SelectedService[]
+  bookingItems     BookingItem[]
+  bookingServices  BookingService[]
 
   @@index([categoryId])
   @@index([slug])
