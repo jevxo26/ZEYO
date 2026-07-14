@@ -1,0 +1,20 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// BookingPricing — full price breakdown (one-to-one per booking)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model BookingPricing {
+  id              Int      @id @default(autoincrement())
+  bookingId       Int      @unique
+  booking         Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  subtotal        Decimal  @default(0) @db.Decimal(14, 2)
+  serviceCharge   Decimal  @default(0) @db.Decimal(14, 2)
+  transportCharge Decimal  @default(0) @db.Decimal(14, 2)
+  discount        Decimal  @default(0) @db.Decimal(14, 2)
+  tax             Decimal  @default(0) @db.Decimal(14, 2)
+  grandTotal      Decimal  @default(0) @db.Decimal(14, 2)
+  currency        String   @default("BDT")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([bookingId])
+}

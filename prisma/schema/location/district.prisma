@@ -12,6 +12,7 @@ model District {
   zones             Zone[]
   userAddresses     UserAddress[]
   customerAddresses CustomerAddress[]
+  bookingVenues     BookingVenue[]
 
   @@index([divisionId])
 }

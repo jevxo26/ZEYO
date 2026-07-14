@@ -1,0 +1,20 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// BookingCancellation — cancellation record (one-to-one per booking)
+// status: requested | approved | rejected
+// cancelledBy: customer | admin
+// ─────────────────────────────────────────────────────────────────────────────
+
+model BookingCancellation {
+  id           Int      @id @default(autoincrement())
+  bookingId    Int      @unique
+  booking      Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  cancelledBy  String   @default("customer")
+  reason       String?
+  refundAmount Decimal  @default(0) @db.Decimal(14, 2)
+  status       String   @default("requested")
+  cancelledAt  DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  @@index([bookingId])
+  @@index([status])
+}

@@ -1,0 +1,27 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// BookingVenue — event venue details (one-to-one per booking)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model BookingVenue {
+  id         Int       @id @default(autoincrement())
+  bookingId  Int       @unique
+  booking    Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  venueName  String?
+  venueType  String?   @default("indoor")
+  address    String?
+  divisionId Int?
+  division   Division? @relation(fields: [divisionId], references: [id], onDelete: SetNull)
+  districtId Int?
+  district   District? @relation(fields: [districtId], references: [id], onDelete: SetNull)
+  cityId     Int?
+  city       City?     @relation(fields: [cityId], references: [id], onDelete: SetNull)
+  zoneId     Int?
+  zone       Zone?     @relation(fields: [zoneId], references: [id], onDelete: SetNull)
+  latitude   Decimal?  @db.Decimal(10, 7)
+  longitude  Decimal?  @db.Decimal(10, 7)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([bookingId])
+  @@index([zoneId])
+}
