@@ -3,6 +3,8 @@ import SocialLogin from "../components/SocialLogin";
 import { Footer } from "../components/Footer";
 import  Navbar  from "../components/Navbar";
 import { Hero } from "@/components/Hero";
+import { Process } from "@/components/Process";
+import { FeaturedPackages } from "@/components/Featuredpackages";
 
 export default function Home() {
   return (
@@ -16,31 +18,10 @@ export default function Home() {
 
       <Navbar />
 <Hero></Hero>
-      <main className="flex-1 flex flex-col items-center justify-center relative z-10 px-6 py-32 w-full max-w-6xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-slate-900 mb-6 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
-            Welcome to Our Platform
-          </h1>
-          <p className="text-xl md:text-2xl text-slate-600 max-w-2xl mx-auto font-medium">
-            Experience the future of seamless integration with our premium tools and services.
-          </p>
-        </div>
-
-        <div className="w-full max-w-md">
-          <div className="glass-card rounded-3xl p-8 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-400/10 rounded-full blur-2xl -mr-16 -mt-16 pointer-events-none"></div>
-            <div className="absolute bottom-0 left-0 w-32 h-32 bg-purple-400/10 rounded-full blur-2xl -ml-16 -mb-16 pointer-events-none"></div>
-            
-            <div className="relative z-10 text-center mb-6">
-              <h2 className="text-2xl font-bold text-slate-800">Get Started</h2>
-              <p className="text-sm text-slate-500 mt-2">Sign in to your account</p>
-            </div>
-            
-            <div className="relative z-10 flex justify-center w-full">
-              <SocialLogin />
-            </div>
-          </div>
-        </div>
+<Process></Process>
+<FeaturedPackages></FeaturedPackages>
+      <main >
+       
       </main>
 
       <Footer />
