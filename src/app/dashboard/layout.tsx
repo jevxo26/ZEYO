@@ -2,8 +2,9 @@
 
 import React, { useState } from "react";
 import { Sidebar } from "@/components/dashboard/sidebar";
-import { Navbar } from "@/components/dashboard/navbar";
+
 import { Toaster } from "@/components/ui/sonner";
+
 
 export default function DashboardLayout({
   children,
@@ -28,7 +29,7 @@ export default function DashboardLayout({
       <Sidebar isCollapsed={isSidebarCollapsed} toggleSidebar={toggleSidebar} />
       
       <div className="flex flex-col flex-1 relative z-10 w-full overflow-hidden">
-        <Navbar />
+       
         <main className="flex-1 overflow-y-auto p-6">
           <div className="max-w-7xl mx-auto">
             {children}
