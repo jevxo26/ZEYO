@@ -54,6 +54,7 @@ model Booking {
   notes           BookingNote[]
   history         BookingHistory[]
   logs            BookingLog[]
+  vendorAssignments VendorAssignment[]
 
   @@index([bookingNumber])
   @@index([customerId])

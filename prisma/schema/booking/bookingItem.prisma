@@ -18,6 +18,7 @@ model BookingItem {
   updatedAt               DateTime @updatedAt
 
   bookingServices BookingService[]
+  assignmentItems AssignmentItem[]
 
   @@index([bookingId])
   @@index([serviceId])

@@ -1,0 +1,18 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// AssignmentHistory — field-level audit trail per assignment
+// ─────────────────────────────────────────────────────────────────────────────
+
+model AssignmentHistory {
+  id           Int              @id @default(autoincrement())
+  assignmentId Int
+  assignment   VendorAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  action       String
+  performedBy  Int?
+  performedByUser User?         @relation("AssignmentHistoryBy", fields: [performedBy], references: [id], onDelete: SetNull)
+  oldValue     Json?
+  newValue     Json?
+  createdAt    DateTime         @default(now())
+
+  @@index([assignmentId])
+  @@index([performedBy])
+}

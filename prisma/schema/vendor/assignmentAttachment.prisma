@@ -1,0 +1,16 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// AssignmentAttachment — files uploaded per assignment item
+// ─────────────────────────────────────────────────────────────────────────────
+
+model AssignmentAttachment {
+  id               Int            @id @default(autoincrement())
+  assignmentItemId Int
+  assignmentItem   AssignmentItem @relation(fields: [assignmentItemId], references: [id], onDelete: Cascade)
+  fileName         String
+  fileUrl          String
+  uploadedBy       Int?
+  uploadedByUser   User?          @relation("AssignmentAttachmentUploadedBy", fields: [uploadedBy], references: [id], onDelete: SetNull)
+  createdAt        DateTime       @default(now())
+
+  @@index([assignmentItemId])
+}

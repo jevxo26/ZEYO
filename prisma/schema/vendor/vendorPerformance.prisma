@@ -1,0 +1,18 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// VendorPerformance — aggregated performance metrics per vendor
+// ─────────────────────────────────────────────────────────────────────────────
+
+model VendorPerformance {
+  id              Int      @id @default(autoincrement())
+  vendorId        Int      @unique
+  vendor          Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  completedJobs   Int      @default(0)
+  cancelledJobs   Int      @default(0)
+  averageRating   Decimal? @db.Decimal(3, 2)
+  completionRate  Decimal? @db.Decimal(5, 2)
+  responseTime    String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([vendorId])
+}

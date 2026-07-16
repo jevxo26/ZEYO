@@ -1,0 +1,17 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// AssignmentTimeline — milestone/progress log per assignment
+// ─────────────────────────────────────────────────────────────────────────────
+
+model AssignmentTimeline {
+  id           Int              @id @default(autoincrement())
+  assignmentId Int
+  assignment   VendorAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  title        String
+  description  String?
+  status       String           @default("pending")
+  createdBy    Int?
+  createdByUser User?           @relation("AssignmentTimelineCreatedBy", fields: [createdBy], references: [id], onDelete: SetNull)
+  createdAt    DateTime         @default(now())
+
+  @@index([assignmentId])
+}

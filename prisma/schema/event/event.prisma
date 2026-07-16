@@ -40,6 +40,7 @@ model Event {
   calculators         SmartEventCalculator[]
   selectedEvents      SelectedEvent[]
   bookings            Booking[]
+  vendorAssignments   VendorAssignment[]
 
   @@index([slug])
   @@index([status])

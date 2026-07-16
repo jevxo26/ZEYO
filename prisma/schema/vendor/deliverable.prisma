@@ -1,0 +1,20 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Deliverable — files uploaded by vendor (edited photos, videos, albums)
+// fileType: image | video | document | pdf
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Deliverable {
+  id               Int            @id @default(autoincrement())
+  assignmentItemId Int
+  assignmentItem   AssignmentItem @relation(fields: [assignmentItemId], references: [id], onDelete: Cascade)
+  fileType         String         @default("document")
+  fileName         String
+  fileUrl          String
+  uploadedBy       Int?
+  uploadedByUser   User?          @relation("DeliverableUploadedBy", fields: [uploadedBy], references: [id], onDelete: SetNull)
+  uploadedAt       DateTime       @default(now())
+  createdAt        DateTime       @default(now())
+
+  @@index([assignmentItemId])
+  @@index([uploadedBy])
+}

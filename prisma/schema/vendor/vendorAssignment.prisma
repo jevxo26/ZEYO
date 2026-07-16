@@ -1,0 +1,36 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// VendorAssignment — Root assignment created by admin after booking approval
+// assignmentStatus: draft | active | completed | cancelled
+// ─────────────────────────────────────────────────────────────────────────────
+
+model VendorAssignment {
+  id               Int      @id @default(autoincrement())
+  assignmentNumber String   @unique
+  bookingId        Int
+  booking          Booking  @relation(fields: [bookingId], references: [id])
+  customerId       Int
+  customer         Customer @relation("vendorAssignments", fields: [customerId], references: [id])
+  zoneId           Int?
+  zone             Zone?    @relation(fields: [zoneId], references: [id], onDelete: SetNull)
+  eventId          Int?
+  event            Event?   @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  assignmentStatus String   @default("draft")
+  assignedBy       Int?
+  assignedByUser   User?    @relation("AssignmentCreatedBy", fields: [assignedBy], references: [id], onDelete: SetNull)
+  assignedAt       DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  // Relations
+  items        AssignmentItem[]
+  statuses     AssignmentStatus[]
+  timeline     AssignmentTimeline[]
+  history      AssignmentHistory[]
+  logs         AssignmentLog[]
+  setting      AssignmentSetting?
+
+  @@index([bookingId])
+  @@index([customerId])
+  @@index([assignmentStatus])
+  @@index([assignmentNumber])
+}

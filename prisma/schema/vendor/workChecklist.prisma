@@ -1,0 +1,16 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// WorkChecklist — pre-execution checklist items per assignment item
+// ─────────────────────────────────────────────────────────────────────────────
+
+model WorkChecklist {
+  id               Int            @id @default(autoincrement())
+  assignmentItemId Int
+  assignmentItem   AssignmentItem @relation(fields: [assignmentItemId], references: [id], onDelete: Cascade)
+  title            String
+  isCompleted      Boolean        @default(false)
+  completedAt      DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([assignmentItemId])
+}

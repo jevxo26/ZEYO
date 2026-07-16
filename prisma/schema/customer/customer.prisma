@@ -39,6 +39,7 @@ model Customer {
   savedEstimates      SavedEstimate[]
   comparisons         Comparison[]
   eventBookings       Booking[]           @relation("eventBookings")
+  vendorAssignments   VendorAssignment[]  @relation("vendorAssignments")
 
   @@index([deletedAt])
   @@index([status])

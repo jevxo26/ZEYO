@@ -42,6 +42,14 @@ model Vendor {
   settings       VendorSetting?
   roles          VendorRole[]
 
+  // ── Assignment Relations ─────────────────────────────────────────────────
+  assignedVendors   AssignedVendor[]
+  acceptances       VendorAcceptance[]
+  commissions       VendorCommission[]
+  performance       VendorPerformance?
+  replacedIn        VendorReplacement[] @relation("ReplacedVendor")
+  replacementFor    VendorReplacement[] @relation("ReplacementVendor")
+
   @@index([status])
   @@index([deletedAt])
 }
