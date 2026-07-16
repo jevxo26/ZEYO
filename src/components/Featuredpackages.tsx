@@ -48,14 +48,14 @@ function FeaturedCard({ pkg }: { pkg: EventPackage }) {
       <div className="flex flex-1 flex-col p-6">
         <h3 className="text-lg font-semibold text-slate-900">{pkg.title}</h3>
         <p className="mt-1 text-sm text-slate-500">
-          {pkg.price.toLocaleString("en-BD")}{" "}
+          {(pkg.price ?? 0).toLocaleString("en-BD")}{" "}
           <span className="font-normal text-slate-400">
             {pkg.currency} / Starting
           </span>
         </p>
 
         <ul className="mt-4 space-y-1.5">
-          {pkg.included.slice(0, 4).map((item) => (
+          {(pkg.included ?? []).slice(0, 4).map((item) => (
             <li
               key={item}
               className="flex items-start gap-2 text-sm text-slate-600"

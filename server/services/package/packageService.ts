@@ -27,7 +27,7 @@ export class PackageService {
     if (filters?.eventId)     whereClause.eventId = filters.eventId;
     if (filters?.categoryId)  whereClause.packageCategoryId = filters.categoryId;
     if (filters?.subCategoryId) whereClause.packageSubCategoryId = filters.subCategoryId;
-    
+
     if (filters?.isFeatured !== undefined) {
       whereClause.setting = { isFeatured: filters.isFeatured };
     }
@@ -51,11 +51,15 @@ export class PackageService {
         setting: true,
         pricings: { orderBy: { createdAt: 'desc' }, take: 1 },
         zonePricings: filters?.zoneId ? { where: { zoneId: filters.zoneId, status: 'active' } } : false,
+        features: { orderBy: { displayOrder: 'asc' } }, // used to build "included" list for frontend
       },
       orderBy: { displayOrder: 'asc' },
     });
 
-    // Map zone-specific prices if zoneId is provided
+    // Map zone-specific prices if zoneId is provided, and normalize the
+    // response shape so the frontend (EventPackage type) always gets
+    // consistent, predictable field names regardless of the underlying
+    // Prisma model naming.
     return packages.map((pkg) => {
       let activePrice = pkg.startingPrice;
       let activeDiscount = 0;
@@ -72,6 +76,17 @@ export class PackageService {
         activePrice,
         activeDiscount,
         isZonePriced,
+
+        // ── Normalized fields for the frontend ──────────────────────────
+        id: pkg.id,
+        title: pkg.name,
+        subtitle: pkg.description ?? undefined,
+        price: activePrice,
+        currency: pkg.pricings?.[0]?.currency ?? 'BDT',
+        imageUrl: pkg.thumbnail ?? pkg.banner ?? undefined,
+        included: (pkg.features ?? []).map((f) => f.title),
+        popular: pkg.setting?.isFeatured ?? false,
+        tier: pkg.packageCategory?.name ?? undefined,
       };
     });
   });
@@ -126,6 +141,17 @@ export class PackageService {
       activePrice,
       activeDiscount,
       isZonePriced,
+
+      // ── Normalized fields for the frontend ──────────────────────────
+      id: pkg.id,
+      title: pkg.name,
+      subtitle: pkg.description ?? undefined,
+      price: activePrice,
+      currency: pkg.pricings?.[0]?.currency ?? 'BDT',
+      imageUrl: pkg.thumbnail ?? pkg.banner ?? undefined,
+      included: (pkg.features ?? []).map((f) => f.title),
+      popular: pkg.setting?.isFeatured ?? false,
+      tier: pkg.packageCategory?.name ?? undefined,
     };
   });
 
