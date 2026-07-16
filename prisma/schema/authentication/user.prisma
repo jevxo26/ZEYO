@@ -110,6 +110,12 @@ model User {
   vendorReplacementsApproved VendorReplacement[]     @relation("VendorReplacementApprovedBy")
   assignmentCancellations  AssignmentCancellation[]  @relation("AssignmentCancelledBy")
 
+  // ── Payment Relations ─────────────────────────────────────────────────────
+  paymentVerifications   PaymentVerification[]  @relation("PaymentVerifiedBy")
+  paymentHistories       PaymentHistory[]       @relation("PaymentHistoryBy")
+  refundsRequested       Refund[]               @relation("RefundRequestedBy")
+  refundsApproved        Refund[]               @relation("RefundApprovedBy")
+
   // ── Timestamps ─────────────────────────────────────────────────────────────
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt

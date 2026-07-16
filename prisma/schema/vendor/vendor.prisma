@@ -50,6 +50,10 @@ model Vendor {
   replacedIn        VendorReplacement[] @relation("ReplacedVendor")
   replacementFor    VendorReplacement[] @relation("ReplacementVendor")
 
+  // ── Payment Relations ───────────────────────────────────────────────────────────
+  vendorSettlements   VendorSettlement[]  @relation("vendorSettlements")
+  vendorCommissions   PlatformCommission[] @relation("vendorCommissions")
+
   @@index([status])
   @@index([deletedAt])
 }

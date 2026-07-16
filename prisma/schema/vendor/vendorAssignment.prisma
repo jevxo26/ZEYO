@@ -28,6 +28,7 @@ model VendorAssignment {
   history      AssignmentHistory[]
   logs         AssignmentLog[]
   setting      AssignmentSetting?
+  vendorSettlements VendorSettlement[]
 
   @@index([bookingId])
   @@index([customerId])

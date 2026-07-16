@@ -1,0 +1,15 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// TaxTransaction — tax breakdown per payment
+// ─────────────────────────────────────────────────────────────────────────────
+
+model TaxTransaction {
+  id        Int      @id @default(autoincrement())
+  paymentId Int
+  payment   Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  taxName   String
+  taxRate   Decimal  @db.Decimal(5, 4)
+  taxAmount Decimal  @db.Decimal(12, 2)
+  createdAt DateTime @default(now())
+
+  @@index([paymentId])
+}

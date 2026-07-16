@@ -1,0 +1,19 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// PaymentHistory — audit trail of payment status changes
+// ─────────────────────────────────────────────────────────────────────────────
+
+model PaymentHistory {
+  id          Int      @id @default(autoincrement())
+  paymentId   Int
+  payment     Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  action      String
+  performedBy Int?
+  performedByUser User? @relation("PaymentHistoryBy", fields: [performedBy], references: [id], onDelete: SetNull)
+  oldStatus   String?
+  newStatus   String?
+  remarks     String?
+  createdAt   DateTime @default(now())
+
+  @@index([paymentId])
+  @@index([performedBy])
+}

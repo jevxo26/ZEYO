@@ -44,6 +44,7 @@ model Service {
   bookingServices  BookingService[]
   assignmentItems  AssignmentItem[]
   assignmentServices AssignmentService[]
+  invoiceItems     InvoiceItem[]
 
   @@index([categoryId])
   @@index([slug])

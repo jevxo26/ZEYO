@@ -40,6 +40,7 @@ model Customer {
   comparisons         Comparison[]
   eventBookings       Booking[]           @relation("eventBookings")
   vendorAssignments   VendorAssignment[]  @relation("vendorAssignments")
+  payments            Payment[]           @relation("payments")
 
   @@index([deletedAt])
   @@index([status])

@@ -1,0 +1,21 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// PaymentWebhook — raw webhook payloads from payment gateways
+// status: received | processed | failed | ignored
+// ─────────────────────────────────────────────────────────────────────────────
+
+model PaymentWebhook {
+  id          Int      @id @default(autoincrement())
+  paymentId   Int?
+  payment     Payment? @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+  gatewayName String
+  eventType   String
+  payload     Json
+  response    Json?
+  status      String   @default("received")
+  receivedAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@index([paymentId])
+  @@index([gatewayName])
+  @@index([status])
+}

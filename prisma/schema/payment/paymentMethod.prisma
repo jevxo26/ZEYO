@@ -1,0 +1,22 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// PaymentMethod — supported payment methods (bKash, Nagad, SSLCommerz, etc.)
+// methodType: mobile_banking | card | bank_transfer | cash | gateway
+// ─────────────────────────────────────────────────────────────────────────────
+
+model PaymentMethod {
+  id            Int              @id @default(autoincrement())
+  name          String
+  provider      String
+  methodType    String           @default("gateway")
+  processingFee Decimal?         @db.Decimal(5, 2)
+  status        String           @default("active")
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  // Relations
+  gateways     PaymentGateway[]
+  transactions PaymentTransaction[]
+
+  @@index([status])
+  @@index([methodType])
+}

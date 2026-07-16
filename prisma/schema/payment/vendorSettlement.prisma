@@ -1,0 +1,23 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// VendorSettlement — individual vendor payout per settlement
+// paymentStatus: pending | paid | held | disputed
+// ─────────────────────────────────────────────────────────────────────────────
+
+model VendorSettlement {
+  id           Int              @id @default(autoincrement())
+  settlementId Int
+  settlement   Settlement       @relation(fields: [settlementId], references: [id], onDelete: Cascade)
+  vendorId     Int
+  vendor       Vendor           @relation("vendorSettlements", fields: [vendorId], references: [id])
+  assignmentId Int?
+  assignment   VendorAssignment? @relation(fields: [assignmentId], references: [id], onDelete: SetNull)
+  amount       Decimal          @db.Decimal(12, 2)
+  paymentStatus String          @default("pending")
+  paidAt       DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@index([settlementId])
+  @@index([vendorId])
+  @@index([paymentStatus])
+}

@@ -1,0 +1,21 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// PaymentInstallment — partial/installment payment tracking
+// status: pending | paid | overdue | waived
+// ─────────────────────────────────────────────────────────────────────────────
+
+model PaymentInstallment {
+  id                Int      @id @default(autoincrement())
+  paymentId         Int
+  payment           Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  installmentNumber Int
+  amount            Decimal  @db.Decimal(12, 2)
+  dueDate           DateTime
+  paidDate          DateTime?
+  status            String   @default("pending")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([paymentId])
+  @@index([status])
+  @@index([dueDate])
+}
