@@ -1,0 +1,22 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// VendorReplacement — replaces a vendor who cannot perform
+// ─────────────────────────────────────────────────────────────────────────────
+
+model VendorReplacement {
+  id               Int            @id @default(autoincrement())
+  assignmentItemId Int
+  assignmentItem   AssignmentItem @relation(fields: [assignmentItemId], references: [id], onDelete: Cascade)
+  oldVendorId      Int
+  oldVendor        Vendor         @relation("ReplacedVendor", fields: [oldVendorId], references: [id])
+  newVendorId      Int
+  newVendor        Vendor         @relation("ReplacementVendor", fields: [newVendorId], references: [id])
+  reason           String?
+  approvedBy       Int?
+  approvedByUser   User?          @relation("VendorReplacementApprovedBy", fields: [approvedBy], references: [id], onDelete: SetNull)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([assignmentItemId])
+  @@index([oldVendorId])
+  @@index([newVendorId])
+}

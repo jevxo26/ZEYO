@@ -1,0 +1,20 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// PaymentVerification — admin manual verification of payment
+// verificationStatus: pending | verified | rejected
+// ─────────────────────────────────────────────────────────────────────────────
+
+model PaymentVerification {
+  id                 Int      @id @default(autoincrement())
+  paymentId          Int      @unique
+  payment            Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  verifiedBy         Int?
+  verifiedByUser     User?    @relation("PaymentVerifiedBy", fields: [verifiedBy], references: [id], onDelete: SetNull)
+  verificationStatus String   @default("pending")
+  verificationNote   String?
+  verifiedAt         DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@index([verificationStatus])
+  @@index([verifiedBy])
+}

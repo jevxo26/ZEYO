@@ -54,6 +54,14 @@ model Booking {
   notes           BookingNote[]
   history         BookingHistory[]
   logs            BookingLog[]
+  vendorAssignments VendorAssignment[]
+
+  // ── Payment Relations ───────────────────────────────────────────────────────────
+  billingPayments    Payment[]         @relation("billingPayments")
+  paymentInvoices    PaymentInvoice[]  @relation("paymentInvoices")
+  paymentRefunds     Refund[]          @relation("paymentRefunds")
+  settlements        Settlement[]      @relation("settlements")
+  platformCommissions PlatformCommission[] @relation("platformCommissions")
 
   @@index([bookingNumber])
   @@index([customerId])

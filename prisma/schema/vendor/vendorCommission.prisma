@@ -1,0 +1,23 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// VendorCommission — commission calculation per assignment item
+// status: pending | settled | disputed
+// ─────────────────────────────────────────────────────────────────────────────
+
+model VendorCommission {
+  id                   Int            @id @default(autoincrement())
+  assignmentItemId     Int
+  assignmentItem       AssignmentItem @relation(fields: [assignmentItemId], references: [id], onDelete: Cascade)
+  vendorId             Int
+  vendor               Vendor         @relation(fields: [vendorId], references: [id])
+  bookingAmount        Decimal        @db.Decimal(12, 2)
+  vendorAmount         Decimal        @db.Decimal(12, 2)
+  platformCommission   Decimal        @db.Decimal(12, 2)
+  commissionPercentage Decimal        @db.Decimal(5, 2)
+  status               String         @default("pending")
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  @@index([assignmentItemId])
+  @@index([vendorId])
+  @@index([status])
+}

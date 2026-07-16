@@ -42,6 +42,7 @@ model Zone {
   selectedEvents        SelectedEvent[]
   bookings              Booking[]
   bookingVenues         BookingVenue[]
+  vendorAssignments     VendorAssignment[]
 
   userAddresses       UserAddress[]
   customerAddresses   CustomerAddress[]

@@ -9,8 +9,9 @@ model VendorService {
   updatedAt   DateTime @updatedAt
 
   // Relations
-  zones   VendorServiceZone[]
-  pricing VendorPricing[]
+  zones          VendorServiceZone[]
+  pricing        VendorPricing[]
+  assignedVendors AssignedVendor[]
 
   @@index([vendorId])
 }

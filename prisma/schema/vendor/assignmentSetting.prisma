@@ -1,0 +1,17 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// AssignmentSetting — global/per-assignment operational settings
+// ─────────────────────────────────────────────────────────────────────────────
+
+model AssignmentSetting {
+  id                       Int              @id @default(autoincrement())
+  assignmentId             Int              @unique
+  assignment               VendorAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  autoAssignment           Boolean          @default(false)
+  allowVendorReplacement   Boolean          @default(true)
+  allowVendorCancellation  Boolean          @default(true)
+  allowMultipleVendor      Boolean          @default(true)
+  requireCompletionReport  Boolean          @default(true)
+  status                   String           @default("active")
+  createdAt                DateTime         @default(now())
+  updatedAt                DateTime         @updatedAt
+}

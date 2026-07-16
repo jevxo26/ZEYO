@@ -1,0 +1,16 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// PaymentReceipt — generated receipt after successful payment
+// ─────────────────────────────────────────────────────────────────────────────
+
+model PaymentReceipt {
+  id            Int      @id @default(autoincrement())
+  paymentId     Int      @unique
+  payment       Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  receiptNumber String   @unique
+  receiptUrl    String?
+  issuedDate    DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([receiptNumber])
+}

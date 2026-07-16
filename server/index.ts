@@ -26,6 +26,9 @@ import serviceAdminRoutes from './routes/service/serviceAdminRoutes';
 import calculatorRoutes   from './routes/calculator/calculatorRoutes';
 import bookingRoutes      from './routes/booking/bookingRoutes';
 import bookingAdminRoutes from './routes/booking/bookingAdminRoutes';
+import assignmentRoutes   from './routes/vendor/assignmentRoutes';
+import vendorWorkRoutes   from './routes/vendor/vendorWorkRoutes';
+import paymentRoutes      from './routes/payment/paymentRoutes';
 
 // ─── RBAC Routes ────────────────────────────────────────────────────────────
 import rbacRoleRoutes           from './routes/rbac/roleRoutes';
@@ -120,6 +123,9 @@ app.prepare().then(async () => {
   server.use('/api/calculator',       calculatorRoutes);    // Smart Event Calculator
   server.use('/api/bookings',          bookingRoutes);       // Customer bookings
   server.use('/api/admin/bookings',    bookingAdminRoutes);  // Admin booking management
+  server.use('/api/admin/assignments', assignmentRoutes);   // Vendor Assignment (admin)
+  server.use('/api/vendor/work',       vendorWorkRoutes);   // Vendor work operations
+  server.use('/api/admin/payments',    paymentRoutes);      // Payment & Billing (admin)
 
   // ─── RBAC API ─────────────────────────────────────────────────────────────
   server.use('/api/rbac/roles',            rbacRoleRoutes);

@@ -1,0 +1,16 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// PaymentSetting — global platform payment configuration
+// ─────────────────────────────────────────────────────────────────────────────
+
+model PaymentSetting {
+  id                    Int      @id @default(autoincrement())
+  allowPartialPayment   Boolean  @default(true)
+  allowRefund           Boolean  @default(true)
+  allowCOD              Boolean  @default(false)
+  allowOnlinePayment    Boolean  @default(true)
+  autoGenerateInvoice   Boolean  @default(true)
+  autoSettlement        Boolean  @default(false)
+  status                String   @default("active")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}

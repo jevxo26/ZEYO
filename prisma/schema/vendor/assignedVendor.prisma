@@ -1,0 +1,25 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// AssignedVendor — which vendor is assigned to a specific item
+// status: assigned | accepted | rejected | replaced | completed
+// ─────────────────────────────────────────────────────────────────────────────
+
+model AssignedVendor {
+  id               Int            @id @default(autoincrement())
+  assignmentItemId Int
+  assignmentItem   AssignmentItem @relation(fields: [assignmentItemId], references: [id], onDelete: Cascade)
+  vendorId         Int
+  vendor           Vendor         @relation(fields: [vendorId], references: [id])
+  vendorServiceId  Int?
+  vendorService    VendorService? @relation(fields: [vendorServiceId], references: [id], onDelete: SetNull)
+  assignedPrice    Decimal?       @db.Decimal(12, 2)
+  status           String         @default("assigned")
+  assignedBy       Int?
+  assignedByUser   User?          @relation("VendorAssignedBy", fields: [assignedBy], references: [id], onDelete: SetNull)
+  assignedAt       DateTime       @default(now())
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([assignmentItemId])
+  @@index([vendorId])
+  @@index([status])
+}

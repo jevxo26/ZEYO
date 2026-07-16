@@ -97,6 +97,25 @@ model User {
   bookingNotes             BookingNote[]        @relation
   bookingHistories         BookingHistory[]     @relation
 
+  // ── Assignment Relations ───────────────────────────────────────────────────────
+  createdAssignments       VendorAssignment[]        @relation("AssignmentCreatedBy")
+  assignmentStatusUpdates  AssignmentStatus[]        @relation("AssignmentStatusUpdatedBy")
+  assignmentTimelines      AssignmentTimeline[]      @relation("AssignmentTimelineCreatedBy")
+  assignmentNotes          AssignmentNote[]          @relation("AssignmentNoteCreatedBy")
+  assignmentAttachments    AssignmentAttachment[]    @relation("AssignmentAttachmentUploadedBy")
+  assignmentHistories      AssignmentHistory[]       @relation("AssignmentHistoryBy")
+  vendorAssignedBy         AssignedVendor[]          @relation("VendorAssignedBy")
+  deliverables             Deliverable[]             @relation("DeliverableUploadedBy")
+  completionReports        CompletionReport[]        @relation("CompletionReportBy")
+  vendorReplacementsApproved VendorReplacement[]     @relation("VendorReplacementApprovedBy")
+  assignmentCancellations  AssignmentCancellation[]  @relation("AssignmentCancelledBy")
+
+  // ── Payment Relations ─────────────────────────────────────────────────────
+  paymentVerifications   PaymentVerification[]  @relation("PaymentVerifiedBy")
+  paymentHistories       PaymentHistory[]       @relation("PaymentHistoryBy")
+  refundsRequested       Refund[]               @relation("RefundRequestedBy")
+  refundsApproved        Refund[]               @relation("RefundApprovedBy")
+
   // ── Timestamps ─────────────────────────────────────────────────────────────
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt

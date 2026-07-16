@@ -1,0 +1,20 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// AssignmentStatus — status change log per assignment
+// currentStatus: waiting_assignment | vendor_assigned | vendor_accepted |
+//                on_the_way | working | completed | cancelled
+// ─────────────────────────────────────────────────────────────────────────────
+
+model AssignmentStatus {
+  id               Int              @id @default(autoincrement())
+  assignmentId     Int
+  assignment       VendorAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  currentStatus    String
+  remarks          String?
+  updatedBy        Int?
+  updatedByUser    User?            @relation("AssignmentStatusUpdatedBy", fields: [updatedBy], references: [id], onDelete: SetNull)
+  updatedAt        DateTime         @default(now())
+  createdAt        DateTime         @default(now())
+
+  @@index([assignmentId])
+  @@index([currentStatus])
+}

@@ -1,0 +1,16 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// VendorWorkProgress — vendor self-reports progress
+// ─────────────────────────────────────────────────────────────────────────────
+
+model VendorWorkProgress {
+  id                  Int            @id @default(autoincrement())
+  assignmentItemId    Int
+  assignmentItem      AssignmentItem @relation(fields: [assignmentItemId], references: [id], onDelete: Cascade)
+  progressTitle       String
+  progressDescription String?
+  progressPercentage  Int            @default(0)
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  @@index([assignmentItemId])
+}
