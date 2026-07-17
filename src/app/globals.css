@@ -4,6 +4,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
+<<<<<<< Updated upstream
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -162,29 +163,37 @@
   --chart-3: oklch(0.7 0.15 250);
   --chart-4: oklch(0.75 0.15 200);
   --chart-5: oklch(0.8 0.15 150);
+=======
+@theme {
+  --color-brand-navy: #0f172a;
+  --color-brand-purple: #7c3aed;
+  --color-brand-blue: #2563eb;
+  --color-brand-gold: #fcd34d;
+  --color-brand-emerald: #064e3b;
+  --color-brand-surface: #f5f3ff;
 }
 
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-  html {
-    @apply font-sans;
-  }
+body {
+  background-color: #f5f3ff;
+  color: #0f172a;
+  font-family: var(--font-plus-jakarta), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Glassmorphism Utilities */
-@layer utilities {
-  .glass {
-    @apply bg-background/70 backdrop-blur-md border border-white/20 dark:border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.1)];
-  }
-  .glass-card {
-    @apply bg-card/60 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.08)];
-  }
-  .animation-delay-2000 {
-    animation-delay: 2s;
-  }
+/* Purple-Blue Gradient Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+>>>>>>> Stashed changes
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #7c3aed, #2563eb);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #6d28d9, #1d4ed8);
 }
