@@ -1,0 +1,17 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// ReviewReply — admin reply to a customer review
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ReviewReply {
+  id        Int      @id @default(autoincrement())
+  reviewId  Int
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  adminId   Int
+  admin     User     @relation("ReviewReplyAdmin", fields: [adminId], references: [id])
+  reply     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([reviewId])
+  @@index([adminId])
+}

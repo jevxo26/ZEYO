@@ -1,3 +1,4 @@
+import { prisma } from '../../config/prisma';
 // ─────────────────────────────────────────────────────────────────────────────
 // ZoneService
 // CRUD for Zone and all sub-entities (pricing, packages, services, holidays,
@@ -10,7 +11,7 @@
 import { PrismaClient } from '@prisma/client';
 import { catchServiceAsync } from '../../utils/catchServiceAsync';
 
-const prisma = new PrismaClient();
+
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 /** Haversine distance in km between two lat/lng points */

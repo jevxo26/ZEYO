@@ -1,8 +1,9 @@
+import { prisma } from '../../config/prisma';
 import { PrismaClient, Prisma } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { catchServiceAsync } from '../../utils/catchServiceAsync';
 
-const prisma = new PrismaClient();
+
 
 // Safe user select — never exposes password or sensitive token fields
 const safeUserSelect = {

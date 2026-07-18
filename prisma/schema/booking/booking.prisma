@@ -63,6 +63,12 @@ model Booking {
   settlements        Settlement[]      @relation("settlements")
   platformCommissions PlatformCommission[] @relation("platformCommissions")
 
+  // ── Review Relations ──────────────────────────────────────────────────────
+  bookingReviews      Review[]            @relation("bookingReviews")
+  bookingReviewDetail BookingReview[]     @relation("bookingReviewDetail")
+  bookingFeedbacks    CustomerFeedback[]  @relation("bookingFeedbacks")
+  satisfactionSurveys SatisfactionSurvey[] @relation("satisfactionSurveys")
+
   @@index([bookingNumber])
   @@index([customerId])
   @@index([bookingStatus])

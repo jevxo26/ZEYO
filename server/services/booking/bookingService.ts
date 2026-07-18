@@ -1,10 +1,11 @@
+import { prisma } from '../../config/prisma';
 // ─────────────────────────────────────────────────────────────────────────────
 // BookingService — Core service for the Booking & Order Module
 // ─────────────────────────────────────────────────────────────────────────────
 import { PrismaClient } from '@prisma/client';
 import { catchServiceAsync } from '../../utils/catchServiceAsync';
 
-const prisma = new PrismaClient();
+
 
 // ── Booking Number Generator ──────────────────────────────────────────────────
 async function generateBookingNumber(): Promise<string> {

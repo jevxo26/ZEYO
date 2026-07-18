@@ -1,7 +1,8 @@
+import { prisma } from '../config/prisma';
 import { PrismaClient } from '@prisma/client';
 import { catchServiceAsync } from '../utils/catchServiceAsync';
 
-const prisma = new PrismaClient();
+
 
 const safeRoleSelect = {
   id: true,

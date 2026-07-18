@@ -1,3 +1,4 @@
+import { prisma } from '../../config/prisma';
 // ─────────────────────────────────────────────────────────────────────────────
 // ServiceService
 // CRUD for Service, ServiceCategory, ServiceSubCategory,
@@ -6,7 +7,7 @@
 import { PrismaClient } from '@prisma/client';
 import { catchServiceAsync } from '../../utils/catchServiceAsync';
 
-const prisma = new PrismaClient();
+
 
 export const ServiceService = {
 

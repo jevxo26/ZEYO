@@ -1,7 +1,8 @@
+import { prisma } from '../../config/prisma';
 import { PrismaClient, Prisma } from '@prisma/client';
 import { catchServiceAsync } from '../../utils/catchServiceAsync';
 
-const prisma = new PrismaClient();
+
 
 const defaults = {
   pushNotification: true,

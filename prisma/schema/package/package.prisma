@@ -44,6 +44,7 @@ model Package {
   setting              PackageSetting?
   favoriteCustomers    CustomerFavoritePackage[]
   bookings             Booking[]
+  reviewPackageFeedbacks ReviewPackageFeedback[] @relation("reviewPackageFeedbacks")
 
   @@index([eventId])
   @@index([packageCategoryId])

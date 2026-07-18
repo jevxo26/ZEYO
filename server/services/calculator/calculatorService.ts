@@ -1,3 +1,4 @@
+import { prisma } from '../../config/prisma';
 // ─────────────────────────────────────────────────────────────────────────────
 // CalculatorService
 // Core business logic for the Smart Event Calculator
@@ -5,7 +6,7 @@
 import { PrismaClient } from '@prisma/client';
 import { catchServiceAsync } from '../../utils/catchServiceAsync';
 
-const prisma = new PrismaClient();
+
 
 export const CalculatorService = {
 
