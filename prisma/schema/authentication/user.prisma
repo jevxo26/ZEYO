@@ -116,6 +116,13 @@ model User {
   refundsRequested       Refund[]               @relation("RefundRequestedBy")
   refundsApproved        Refund[]               @relation("RefundApprovedBy")
 
+  // ── Review Relations ──────────────────────────────────────────────────────
+  reviewReplies          ReviewReply[]          @relation("ReviewReplyAdmin")
+  reviewReports          ReviewReport[]         @relation("ReviewReportedBy")
+  reviewModerations      ReviewModeration[]     @relation("ReviewModerator")
+  reviewVerifications    ReviewVerification[]   @relation("ReviewVerifiedBy")
+  reviewHistories        ReviewHistory[]        @relation("ReviewHistoryBy")
+
   // ── Timestamps ─────────────────────────────────────────────────────────────
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt

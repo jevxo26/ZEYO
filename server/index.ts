@@ -1,3 +1,4 @@
+import { prisma } from './config/prisma';
 import express, { Request, Response, NextFunction } from 'express';
 import next from 'next';
 import cors from 'cors';
@@ -29,6 +30,7 @@ import bookingAdminRoutes from './routes/booking/bookingAdminRoutes';
 import assignmentRoutes   from './routes/vendor/assignmentRoutes';
 import vendorWorkRoutes   from './routes/vendor/vendorWorkRoutes';
 import paymentRoutes      from './routes/payment/paymentRoutes';
+import reviewRoutes       from './routes/review/reviewRoutes';
 
 // ─── RBAC Routes ────────────────────────────────────────────────────────────
 import rbacRoleRoutes           from './routes/rbac/roleRoutes';
@@ -37,7 +39,7 @@ import rbacPermissionRoutes     from './routes/rbac/permissionRoutes';
 import rbacRolePermissionRoutes from './routes/rbac/rolePermissionRoutes';
 import rbacUserRoleRoutes       from './routes/rbac/userRoleRoutes';
 
-const prisma = new PrismaClient();
+
 
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
@@ -126,6 +128,7 @@ app.prepare().then(async () => {
   server.use('/api/admin/assignments', assignmentRoutes);   // Vendor Assignment (admin)
   server.use('/api/vendor/work',       vendorWorkRoutes);   // Vendor work operations
   server.use('/api/admin/payments',    paymentRoutes);      // Payment & Billing (admin)
+  server.use('/api/reviews',           reviewRoutes);       // Review, Rating & Feedback
 
   // ─── RBAC API ─────────────────────────────────────────────────────────────
   server.use('/api/rbac/roles',            rbacRoleRoutes);

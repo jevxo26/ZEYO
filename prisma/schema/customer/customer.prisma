@@ -42,6 +42,12 @@ model Customer {
   vendorAssignments   VendorAssignment[]  @relation("vendorAssignments")
   payments            Payment[]           @relation("payments")
 
+  // ── Review Relations ──────────────────────────────────────────────────────
+  customerReviews     Review[]            @relation("customerReviews")
+  reviewReactions     ReviewReaction[]    @relation("reviewReactions")
+  feedbacks           CustomerFeedback[]  @relation("customerFeedbacks")
+  surveys             SatisfactionSurvey[] @relation("customerSurveys")
+
   @@index([deletedAt])
   @@index([status])
 }

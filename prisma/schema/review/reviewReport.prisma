@@ -1,0 +1,19 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// ReviewReport — customer flagging inappropriate reviews
+// status: pending | reviewed | dismissed | actioned
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ReviewReport {
+  id          Int      @id @default(autoincrement())
+  reviewId    Int
+  review      Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  reportedBy  Int?
+  reporter    User?    @relation("ReviewReportedBy", fields: [reportedBy], references: [id], onDelete: SetNull)
+  reason      String
+  status      String   @default("pending")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([reviewId])
+  @@index([status])
+}

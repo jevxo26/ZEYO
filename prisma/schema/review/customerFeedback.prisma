@@ -1,0 +1,24 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// CustomerFeedback — general feedback (suggestion, complaint, appreciation)
+// feedbackType: suggestion | complaint | appreciation | other
+// status: open | in_review | resolved | closed
+// ─────────────────────────────────────────────────────────────────────────────
+
+model CustomerFeedback {
+  id           Int      @id @default(autoincrement())
+  customerId   Int
+  customer     Customer @relation("customerFeedbacks", fields: [customerId], references: [id])
+  bookingId    Int?
+  booking      Booking? @relation("bookingFeedbacks", fields: [bookingId], references: [id], onDelete: SetNull)
+  feedbackType String   @default("suggestion")
+  subject      String?
+  message      String
+  status       String   @default("open")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([customerId])
+  @@index([bookingId])
+  @@index([feedbackType])
+  @@index([status])
+}

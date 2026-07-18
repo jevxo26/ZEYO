@@ -1,3 +1,4 @@
+import { prisma } from '../../config/prisma';
 import { Request, Response } from 'express';
 import { PrismaClient } from '@prisma/client';
 import { catchAsync } from '../../utils/catchAsync';
@@ -5,7 +6,7 @@ import { sendResponse } from '../../utils/sendResponse';
 import { BookingService } from '../../services/booking/bookingService';
 import { AuthRequest } from '../../middlewares/authMiddleware';
 
-const prisma = new PrismaClient();
+
 
 export class BookingController {
 

@@ -1,0 +1,16 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// NPSScore — Net Promoter Score from satisfaction survey
+// category: promoter (9-10) | passive (7-8) | detractor (0-6)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model NPSScore {
+  id        Int                @id @default(autoincrement())
+  surveyId  Int                @unique
+  survey    SatisfactionSurvey @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  score     Int                // 0-10
+  category  String             @default("passive")
+  createdAt DateTime           @default(now())
+
+  @@index([category])
+  @@index([score])
+}

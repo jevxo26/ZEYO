@@ -1,0 +1,17 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// BookingReview — event experience details tied to a booking review
+// ─────────────────────────────────────────────────────────────────────────────
+
+model BookingReview {
+  id               Int      @id @default(autoincrement())
+  reviewId         Int      @unique
+  review           Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  bookingId        Int
+  booking          Booking  @relation("bookingReviewDetail", fields: [bookingId], references: [id])
+  eventExperience  String?
+  recommendation   Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([bookingId])
+}

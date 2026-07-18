@@ -1,8 +1,9 @@
+import { prisma } from '../../config/prisma';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import { catchServiceAsync } from '../../utils/catchServiceAsync';
 
-const prisma = new PrismaClient();
+
 
 export class UserSecurityService {
   static getSecurity = catchServiceAsync(async (userId: number) => {

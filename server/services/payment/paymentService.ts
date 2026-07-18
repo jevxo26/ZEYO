@@ -1,10 +1,11 @@
+import { prisma } from '../../config/prisma';
 // ─────────────────────────────────────────────────────────────────────────────
 // PaymentService — Core service for Part 12: Payment & Billing Module
 // ─────────────────────────────────────────────────────────────────────────────
 import { PrismaClient, Prisma } from '@prisma/client';
 import { catchServiceAsync } from '../../utils/catchServiceAsync';
 
-const prisma = new PrismaClient();
+
 
 async function generatePaymentNumber(): Promise<string> {
   const count = await prisma.payment.count();

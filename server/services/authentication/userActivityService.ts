@@ -1,7 +1,8 @@
+import { prisma } from '../../config/prisma';
 import { PrismaClient, Prisma } from '@prisma/client';
 import { catchServiceAsync } from '../../utils/catchServiceAsync';
 
-const prisma = new PrismaClient();
+
 
 export class UserActivityService {
   static getActivity = catchServiceAsync(async (userId: number, limit = 30, skip = 0) => {

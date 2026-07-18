@@ -1,0 +1,41 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Review — main customer review per completed booking
+// status: pending | approved | hidden | removed
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Review {
+  id            Int      @id @default(autoincrement())
+  bookingId     Int
+  booking       Booking  @relation("bookingReviews", fields: [bookingId], references: [id])
+  customerId    Int
+  customer      Customer @relation("customerReviews", fields: [customerId], references: [id])
+  overallRating Decimal  @db.Decimal(3, 2)
+  title         String?
+  review        String?
+  status        String   @default("pending")
+  isPublished   Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  serviceReviews    ServiceReview[]
+  packageFeedbacks  ReviewPackageFeedback[]
+  bookingReview     BookingReview?
+  criteria          ReviewCriteria[]
+  rating            ReviewRating?
+  media             ReviewMedia[]
+  reactions         ReviewReaction[]
+  replies           ReviewReply[]
+  reports           ReviewReport[]
+  moderation        ReviewModeration[]
+  verification      ReviewVerification?
+  analytics         ReviewAnalytics?
+  history           ReviewHistory[]
+  logs              ReviewLog[]
+  testimonial       CustomerTestimonial?
+
+  @@index([bookingId])
+  @@index([customerId])
+  @@index([status])
+  @@index([isPublished])
+}
