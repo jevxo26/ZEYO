@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { LucideIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -14,7 +13,7 @@ import {
 type Option = { value: string; label: string };
 
 type EditableFieldProps = {
-  icon?: LucideIcon;
+  icon?: React.ComponentType<{ className?: string }>;
   label?: string;
   value: string;
   displayValue?: React.ReactNode;
@@ -39,8 +38,14 @@ export function EditableField({
   options,
 }: EditableFieldProps) {
   const control = options ? (
-    <Select value={value || undefined} onValueChange={(v) => onChange(v as string)}>
-      <SelectTrigger size="sm" className={layout === "row" ? "w-full" : "max-w-[160px]"}>
+    <Select
+      value={value || undefined}
+      onValueChange={(v) => onChange(v as string)}
+    >
+      <SelectTrigger
+        size="sm"
+        className={layout === "row" ? "w-full" : "max-w-[160px]"}
+      >
         <SelectValue placeholder="—" />
       </SelectTrigger>
       <SelectContent>

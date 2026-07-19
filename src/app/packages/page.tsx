@@ -16,6 +16,61 @@ import type { EventPackage } from "@/types/package";
 // TODO: point this at your real endpoint if it differs
 const PACKAGES_ENDPOINT = "/api/packages";
 
+function normalizePackageItem(raw: Record<string, unknown>): EventPackage {
+  const included = Array.from(
+    new Set(
+      Array.isArray(raw.included)
+        ? raw.included.filter(
+            (item): item is string => typeof item === "string",
+          )
+        : [
+            typeof raw.packageCategory?.name === "string"
+              ? String(raw.packageCategory.name)
+              : undefined,
+            typeof raw.packageSubCategory?.name === "string"
+              ? String(raw.packageSubCategory.name)
+              : undefined,
+            typeof raw.event?.name === "string"
+              ? String(raw.event.name)
+              : undefined,
+          ].filter((item): item is string => Boolean(item)),
+    ),
+  );
+
+  const price = Number(
+    raw.activePrice ??
+      raw.startingPrice ??
+      raw.price ??
+      raw.pricings?.[0]?.finalPrice ??
+      0,
+  );
+
+  return {
+    id: Number(raw.id ?? 0),
+    title: String(raw.name ?? raw.title ?? `Package ${raw.id ?? ""}`),
+    subtitle: typeof raw.description === "string" ? raw.description : undefined,
+    price: Number.isFinite(price) ? price : 0,
+    currency:
+      typeof raw.pricings?.[0]?.currency === "string"
+        ? String(raw.pricings[0].currency)
+        : typeof raw.currency === "string"
+          ? raw.currency
+          : "BDT",
+    imageUrl:
+      typeof raw.thumbnail === "string"
+        ? raw.thumbnail
+        : typeof raw.banner === "string"
+          ? raw.banner
+          : typeof raw.imageUrl === "string"
+            ? raw.imageUrl
+            : undefined,
+    included,
+    popular: Boolean(raw.setting?.isFeatured ?? raw.popular),
+    tier: typeof raw.tier === "string" ? raw.tier : undefined,
+    maxGuests: typeof raw.maxGuests === "number" ? raw.maxGuests : undefined,
+  };
+}
+
 const TIERS = ["Basic", "Standard", "Premium", "Luxury"] as const;
 type Tier = (typeof TIERS)[number];
 
@@ -37,6 +92,10 @@ function CardSkeleton() {
 
 function PackageCard({ pkg }: { pkg: EventPackage }) {
   const isPopular = !!pkg.popular;
+  const title = pkg.title ?? "Package";
+  const price = pkg.price ?? 0;
+  const currency = pkg.currency ?? "BDT";
+  const included = pkg.included ?? [];
 
   return (
     <div
@@ -51,7 +110,7 @@ function PackageCard({ pkg }: { pkg: EventPackage }) {
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={pkg.imageUrl}
-            alt={pkg.title}
+            alt={title}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
@@ -67,27 +126,25 @@ function PackageCard({ pkg }: { pkg: EventPackage }) {
       </div>
 
       <div className="flex flex-1 flex-col p-6">
-        <h3 className="text-lg font-semibold text-slate-900">{pkg.title}</h3>
+        <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
         {pkg.subtitle && (
           <p className="mt-1 text-sm text-violet-700">{pkg.subtitle}</p>
         )}
 
         <p className="mt-3 flex items-baseline gap-1.5">
           <span className="bg-gradient-to-r from-violet-700 to-blue-700 bg-clip-text text-2xl font-bold text-transparent">
-            {pkg.price.toLocaleString("en-BD")}
+            {price.toLocaleString("en-BD")}
           </span>
-          <span className="text-sm font-medium text-slate-400">
-            {pkg.currency}
-          </span>
+          <span className="text-sm font-medium text-slate-400">{currency}</span>
         </p>
 
         <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-slate-400">
           What&apos;s Included
         </p>
         <ul className="mt-2 space-y-1.5">
-          {pkg.included.slice(0, 4).map((item) => (
+          {included.slice(0, 4).map((item, index) => (
             <li
-              key={item}
+              key={`${pkg.id}-${item}-${index}`}
               className="flex items-start gap-2 text-sm text-slate-600"
             >
               <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-violet-600" />
@@ -114,7 +171,7 @@ function PackageCard({ pkg }: { pkg: EventPackage }) {
 const Page = () => {
   const [packages, setPackages] = useState<EventPackage[]>([]);
   const [status, setStatus] = useState<"loading" | "error" | "ready">(
-    "loading"
+    "loading",
   );
 
   const [selectedTiers, setSelectedTiers] = useState<Tier[]>([
@@ -135,9 +192,12 @@ const Page = () => {
         });
         if (!res.ok) throw new Error(`Request failed: ${res.status}`);
         const payload = await res.json();
-        const list: EventPackage[] = Array.isArray(payload)
-          ? payload
-          : (payload.data ?? []);
+        const rawList = Array.isArray(payload) ? payload : (payload.data ?? []);
+        const list: EventPackage[] = Array.isArray(rawList)
+          ? rawList.map((item) =>
+              normalizePackageItem(item as Record<string, unknown>),
+            )
+          : [];
 
         if (!cancelled) {
           setPackages(list);
@@ -157,7 +217,7 @@ const Page = () => {
 
   const toggleTier = (tier: Tier) => {
     setSelectedTiers((prev) =>
-      prev.includes(tier) ? prev.filter((t) => t !== tier) : [...prev, tier]
+      prev.includes(tier) ? prev.filter((t) => t !== tier) : [...prev, tier],
     );
   };
 
