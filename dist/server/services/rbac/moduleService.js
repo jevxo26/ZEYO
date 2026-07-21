@@ -2,9 +2,8 @@
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ModuleService = void 0;
-const client_1 = require("@prisma/client");
+const prisma_1 = require("../../config/prisma");
 const catchServiceAsync_1 = require("../../utils/catchServiceAsync");
-const prisma = new client_1.PrismaClient();
 const moduleSelect = {
     id: true,
     name: true,
@@ -22,7 +21,7 @@ exports.ModuleService = ModuleService;
 _a = ModuleService;
 // ── List ──────────────────────────────────────────────────────────────────
 ModuleService.getAll = (0, catchServiceAsync_1.catchServiceAsync)(async (status) => {
-    return prisma.module.findMany({
+    return prisma_1.prisma.module.findMany({
         where: Object.assign({}, (status ? { status } : {})),
         select: moduleSelect,
         orderBy: { displayOrder: 'asc' },
@@ -30,7 +29,7 @@ ModuleService.getAll = (0, catchServiceAsync_1.catchServiceAsync)(async (status)
 });
 // ── List with Permissions ─────────────────────────────────────────────────
 ModuleService.getAllWithPermissions = (0, catchServiceAsync_1.catchServiceAsync)(async () => {
-    return prisma.module.findMany({
+    return prisma_1.prisma.module.findMany({
         where: { status: 'active' },
         orderBy: { displayOrder: 'asc' },
         select: Object.assign(Object.assign({}, moduleSelect), { permissions: {
@@ -42,7 +41,7 @@ ModuleService.getAllWithPermissions = (0, catchServiceAsync_1.catchServiceAsync)
 });
 // ── Detail ────────────────────────────────────────────────────────────────
 ModuleService.getById = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.module.findUnique({
+    return prisma_1.prisma.module.findUnique({
         where: { id },
         select: moduleSelect,
     });
@@ -50,7 +49,7 @@ ModuleService.getById = (0, catchServiceAsync_1.catchServiceAsync)(async (id) =>
 // ── Create ────────────────────────────────────────────────────────────────
 ModuleService.create = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
     var _b;
-    return prisma.module.create({
+    return prisma_1.prisma.module.create({
         data: {
             name: data.name,
             code: data.code.toUpperCase(),
@@ -64,7 +63,7 @@ ModuleService.create = (0, catchServiceAsync_1.catchServiceAsync)(async (data) =
 });
 // ── Update ────────────────────────────────────────────────────────────────
 ModuleService.update = (0, catchServiceAsync_1.catchServiceAsync)(async (id, data) => {
-    return prisma.module.update({
+    return prisma_1.prisma.module.update({
         where: { id },
         data: Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (data.name !== undefined ? { name: data.name } : {})), (data.icon !== undefined ? { icon: data.icon } : {})), (data.displayOrder !== undefined ? { displayOrder: data.displayOrder } : {})), (data.description !== undefined ? { description: data.description } : {})), (data.status !== undefined ? { status: data.status } : {})),
         select: moduleSelect,
@@ -72,5 +71,5 @@ ModuleService.update = (0, catchServiceAsync_1.catchServiceAsync)(async (id, dat
 });
 // ── Delete ────────────────────────────────────────────────────────────────
 ModuleService.delete = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.module.delete({ where: { id } });
+    return prisma_1.prisma.module.delete({ where: { id } });
 });

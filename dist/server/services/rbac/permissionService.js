@@ -2,9 +2,8 @@
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PermissionService = void 0;
-const client_1 = require("@prisma/client");
+const prisma_1 = require("../../config/prisma");
 const catchServiceAsync_1 = require("../../utils/catchServiceAsync");
-const prisma = new client_1.PrismaClient();
 const permissionSelect = {
     id: true,
     name: true,
@@ -22,7 +21,7 @@ exports.PermissionService = PermissionService;
 _a = PermissionService;
 // ── List ──────────────────────────────────────────────────────────────────
 PermissionService.getAll = (0, catchServiceAsync_1.catchServiceAsync)(async (filters) => {
-    return prisma.permission.findMany({
+    return prisma_1.prisma.permission.findMany({
         where: Object.assign(Object.assign(Object.assign({}, ((filters === null || filters === void 0 ? void 0 : filters.moduleId) ? { moduleId: filters.moduleId } : {})), ((filters === null || filters === void 0 ? void 0 : filters.action) ? { action: filters.action } : {})), ((filters === null || filters === void 0 ? void 0 : filters.status) ? { status: filters.status } : {})),
         select: Object.assign(Object.assign({}, permissionSelect), { module: { select: { id: true, name: true, code: true } } }),
         orderBy: [{ moduleId: 'asc' }, { name: 'asc' }],
@@ -30,14 +29,14 @@ PermissionService.getAll = (0, catchServiceAsync_1.catchServiceAsync)(async (fil
 });
 // ── Detail ────────────────────────────────────────────────────────────────
 PermissionService.getById = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.permission.findUnique({
+    return prisma_1.prisma.permission.findUnique({
         where: { id },
         select: Object.assign(Object.assign({}, permissionSelect), { module: { select: { id: true, name: true, code: true } } }),
     });
 });
 // ── Create ────────────────────────────────────────────────────────────────
 PermissionService.create = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
-    const permission = await prisma.permission.create({
+    const permission = await prisma_1.prisma.permission.create({
         data: {
             name: data.name,
             code: data.code.toUpperCase(),
@@ -49,7 +48,7 @@ PermissionService.create = (0, catchServiceAsync_1.catchServiceAsync)(async (dat
         select: permissionSelect,
     });
     // Auto-create ModulePermission join
-    await prisma.modulePermission.upsert({
+    await prisma_1.prisma.modulePermission.upsert({
         where: { moduleId_permissionId: { moduleId: data.moduleId, permissionId: permission.id } },
         update: {},
         create: { moduleId: data.moduleId, permissionId: permission.id },
@@ -58,7 +57,7 @@ PermissionService.create = (0, catchServiceAsync_1.catchServiceAsync)(async (dat
 });
 // ── Update ────────────────────────────────────────────────────────────────
 PermissionService.update = (0, catchServiceAsync_1.catchServiceAsync)(async (id, data) => {
-    return prisma.permission.update({
+    return prisma_1.prisma.permission.update({
         where: { id },
         data: Object.assign(Object.assign(Object.assign(Object.assign({}, (data.name !== undefined ? { name: data.name } : {})), (data.description !== undefined ? { description: data.description } : {})), (data.action !== undefined ? { action: data.action } : {})), (data.status !== undefined ? { status: data.status } : {})),
         select: permissionSelect,
@@ -66,5 +65,5 @@ PermissionService.update = (0, catchServiceAsync_1.catchServiceAsync)(async (id,
 });
 // ── Delete ────────────────────────────────────────────────────────────────
 PermissionService.delete = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.permission.delete({ where: { id } });
+    return prisma_1.prisma.permission.delete({ where: { id } });
 });

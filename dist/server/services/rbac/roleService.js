@@ -2,9 +2,8 @@
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RbacRoleService = void 0;
-const client_1 = require("@prisma/client");
+const prisma_1 = require("../../config/prisma");
 const catchServiceAsync_1 = require("../../utils/catchServiceAsync");
-const prisma = new client_1.PrismaClient();
 // ─────────────────────────────────────────────────────────────────────────────
 // Safe select — fields returned in list / detail responses
 // ─────────────────────────────────────────────────────────────────────────────
@@ -28,7 +27,7 @@ exports.RbacRoleService = RbacRoleService;
 _a = RbacRoleService;
 // ── List ──────────────────────────────────────────────────────────────────
 RbacRoleService.getAll = (0, catchServiceAsync_1.catchServiceAsync)(async (filters) => {
-    return prisma.role.findMany({
+    return prisma_1.prisma.role.findMany({
         where: Object.assign(Object.assign({ deletedAt: null }, ((filters === null || filters === void 0 ? void 0 : filters.status) ? { status: filters.status } : {})), ((filters === null || filters === void 0 ? void 0 : filters.roleType) ? { roleType: filters.roleType } : {})),
         select: roleSelect,
         orderBy: { priority: 'desc' },
@@ -36,13 +35,13 @@ RbacRoleService.getAll = (0, catchServiceAsync_1.catchServiceAsync)(async (filte
 });
 // ── Detail ────────────────────────────────────────────────────────────────
 RbacRoleService.getById = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.role.findFirst({
+    return prisma_1.prisma.role.findFirst({
         where: { id, deletedAt: null },
         select: roleSelect,
     });
 });
 RbacRoleService.getByCode = (0, catchServiceAsync_1.catchServiceAsync)(async (code) => {
-    return prisma.role.findFirst({
+    return prisma_1.prisma.role.findFirst({
         where: { code, deletedAt: null },
         select: roleSelect,
     });
@@ -50,7 +49,7 @@ RbacRoleService.getByCode = (0, catchServiceAsync_1.catchServiceAsync)(async (co
 // ── Create ────────────────────────────────────────────────────────────────
 RbacRoleService.create = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
     var _b, _c;
-    return prisma.role.create({
+    return prisma_1.prisma.role.create({
         data: {
             name: data.name,
             code: data.code.toUpperCase(),
@@ -66,7 +65,7 @@ RbacRoleService.create = (0, catchServiceAsync_1.catchServiceAsync)(async (data)
 });
 // ── Update ────────────────────────────────────────────────────────────────
 RbacRoleService.update = (0, catchServiceAsync_1.catchServiceAsync)(async (id, data) => {
-    return prisma.role.update({
+    return prisma_1.prisma.role.update({
         where: { id },
         data: Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (data.name !== undefined ? { name: data.name } : {})), (data.description !== undefined ? { description: data.description } : {})), (data.roleType !== undefined ? { roleType: data.roleType } : {})), (data.priority !== undefined ? { priority: data.priority } : {})), (data.status !== undefined ? { status: data.status } : {})), (data.updatedBy !== undefined ? { updatedBy: data.updatedBy } : {})),
         select: roleSelect,
@@ -75,11 +74,11 @@ RbacRoleService.update = (0, catchServiceAsync_1.catchServiceAsync)(async (id, d
 // ── Soft Delete ───────────────────────────────────────────────────────────
 RbacRoleService.softDelete = (0, catchServiceAsync_1.catchServiceAsync)(async (id, deletedBy) => {
     // Prevent deletion of system roles
-    const role = await prisma.role.findUnique({ where: { id }, select: { isSystem: true } });
+    const role = await prisma_1.prisma.role.findUnique({ where: { id }, select: { isSystem: true } });
     if (role === null || role === void 0 ? void 0 : role.isSystem) {
         throw Object.assign(new Error('System roles cannot be deleted.'), { statusCode: 403 });
     }
-    return prisma.role.update({
+    return prisma_1.prisma.role.update({
         where: { id },
         data: { deletedAt: new Date(), updatedBy: deletedBy },
         select: roleSelect,
@@ -87,7 +86,7 @@ RbacRoleService.softDelete = (0, catchServiceAsync_1.catchServiceAsync)(async (i
 });
 // ── Permissions for a role ─────────────────────────────────────────────────
 RbacRoleService.getPermissions = (0, catchServiceAsync_1.catchServiceAsync)(async (roleId) => {
-    return prisma.rolePermission.findMany({
+    return prisma_1.prisma.rolePermission.findMany({
         where: { roleId },
         include: {
             permission: {
