@@ -113,3 +113,81 @@ model UserAddress {
 
   @@index([userId]) 
 }
+
+model Service {
+  id            Int      @id @default(autoincrement())
+  name          String
+  description   String?
+  price         Float?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  categoryId    Int?
+  category      ServiceCategory? @relation(fields: [categoryId], references: [id])
+}
+
+model ServiceCategory {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  services    Service[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ServiceSubCategory {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  categoryId  Int?
+  category    ServiceCategory? @relation(fields: [categoryId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ServiceType {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ServiceOption {
+  id          Int      @id @default(autoincrement())
+  name        String
+  value       String?
+  serviceId   Int?
+  service     Service? @relation(fields: [serviceId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ServiceConfiguration {
+  id          Int      @id @default(autoincrement())
+  key         String
+  value       String?
+  serviceId   Int?
+  service     Service? @relation(fields: [serviceId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ServiceVariant {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  serviceId   Int?
+  service     Service? @relation(fields: [serviceId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ServiceCoverage {
+  id          Int      @id @default(autoincrement())
+  region      String
+  details     String?
+  serviceId   Int?
+  service     Service? @relation(fields: [serviceId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

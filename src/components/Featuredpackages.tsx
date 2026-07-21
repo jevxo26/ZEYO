@@ -9,6 +9,72 @@ import type { EventPackage } from "@/types/package";
 // `${process.env.NEXT_PUBLIC_API_URL}/api/packages?featured=true&limit=3`
 const FEATURED_PACKAGES_ENDPOINT = "/api/packages?featured=true&limit=3";
 
+function normalizePackageItem(raw: Record<string, unknown>): EventPackage {
+  const packageCategory = raw.packageCategory as { name?: unknown } | undefined;
+  const packageSubCategory = raw.packageSubCategory as
+    | { name?: unknown }
+    | undefined;
+  const event = raw.event as { name?: unknown } | undefined;
+  const pricings = raw.pricings as
+    | Array<{
+        finalPrice?: unknown;
+        currency?: unknown;
+      }>
+    | undefined;
+  const setting = raw.setting as { isFeatured?: unknown } | undefined;
+
+  const included = Array.from(
+    new Set(
+      Array.isArray(raw.included)
+        ? raw.included.filter(
+            (item): item is string => typeof item === "string",
+          )
+        : [
+            typeof packageCategory?.name === "string"
+              ? String(packageCategory.name)
+              : undefined,
+            typeof packageSubCategory?.name === "string"
+              ? String(packageSubCategory.name)
+              : undefined,
+            typeof event?.name === "string" ? String(event.name) : undefined,
+          ].filter((item): item is string => Boolean(item)),
+    ),
+  );
+
+  const price = Number(
+    raw.activePrice ??
+      raw.startingPrice ??
+      raw.price ??
+      pricings?.[0]?.finalPrice ??
+      0,
+  );
+
+  return {
+    id: Number(raw.id ?? 0),
+    title: String(raw.name ?? raw.title ?? `Package ${raw.id ?? ""}`),
+    subtitle: typeof raw.description === "string" ? raw.description : undefined,
+    price: Number.isFinite(price) ? price : 0,
+    currency:
+      typeof pricings?.[0]?.currency === "string"
+        ? String(pricings[0].currency)
+        : typeof raw.currency === "string"
+          ? raw.currency
+          : "BDT",
+    imageUrl:
+      typeof raw.thumbnail === "string"
+        ? raw.thumbnail
+        : typeof raw.banner === "string"
+          ? raw.banner
+          : typeof raw.imageUrl === "string"
+            ? raw.imageUrl
+            : undefined,
+    included,
+    popular: Boolean(setting?.isFeatured ?? raw.popular),
+    tier: typeof raw.tier === "string" ? raw.tier : undefined,
+    maxGuests: typeof raw.maxGuests === "number" ? raw.maxGuests : undefined,
+  };
+}
+
 function CardSkeleton() {
   return (
     <div className="animate-pulse overflow-hidden rounded-2xl border border-slate-200 bg-white">
@@ -23,6 +89,11 @@ function CardSkeleton() {
 }
 
 function FeaturedCard({ pkg }: { pkg: EventPackage }) {
+  const title = pkg.title ?? "Package";
+  const price = pkg.price ?? 0;
+  const currency = pkg.currency ?? "BDT";
+  const included = pkg.included ?? [];
+
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
       <div className="relative h-48 w-full bg-slate-100">
@@ -30,7 +101,7 @@ function FeaturedCard({ pkg }: { pkg: EventPackage }) {
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={pkg.imageUrl}
-            alt={pkg.title}
+            alt={title}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
@@ -46,18 +117,18 @@ function FeaturedCard({ pkg }: { pkg: EventPackage }) {
       </div>
 
       <div className="flex flex-1 flex-col p-6">
-        <h3 className="text-lg font-semibold text-slate-900">{pkg.title}</h3>
+        <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
         <p className="mt-1 text-sm text-slate-500">
-          {(pkg.price ?? 0).toLocaleString("en-BD")}{" "}
+          {price.toLocaleString("en-BD")}{" "}
           <span className="font-normal text-slate-400">
-            {pkg.currency} / Starting
+            {currency} / Starting
           </span>
         </p>
 
         <ul className="mt-4 space-y-1.5">
-          {(pkg.included ?? []).slice(0, 4).map((item) => (
+          {included.slice(0, 4).map((item, index) => (
             <li
-              key={item}
+              key={`${pkg.id}-${item}-${index}`}
               className="flex items-start gap-2 text-sm text-slate-600"
             >
               <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gradient-to-r from-violet-500 to-blue-500" />
@@ -80,7 +151,7 @@ function FeaturedCard({ pkg }: { pkg: EventPackage }) {
 export function FeaturedPackages() {
   const [packages, setPackages] = useState<EventPackage[]>([]);
   const [status, setStatus] = useState<"loading" | "error" | "ready">(
-    "loading"
+    "loading",
   );
 
   useEffect(() => {
@@ -94,9 +165,12 @@ export function FeaturedPackages() {
         });
         if (!res.ok) throw new Error(`Request failed: ${res.status}`);
         const payload = await res.json();
-        const list: EventPackage[] = Array.isArray(payload)
-          ? payload
-          : (payload.data ?? []);
+        const rawList = Array.isArray(payload) ? payload : (payload.data ?? []);
+        const list: EventPackage[] = Array.isArray(rawList)
+          ? rawList.map((item) =>
+              normalizePackageItem(item as Record<string, unknown>),
+            )
+          : [];
 
         if (!cancelled) {
           setPackages(list);
@@ -123,8 +197,8 @@ export function FeaturedPackages() {
               Featured Planning Packages
             </h2>
             <p className="mt-2 max-w-lg text-slate-500">
-              Pre-negotiated rates with top-tier vendors to provide you with
-              the best value without compromising on luxury.
+              Pre-negotiated rates with top-tier vendors to provide you with the
+              best value without compromising on luxury.
             </p>
           </div>
 

@@ -5,16 +5,15 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserSecurityService = void 0;
-const client_1 = require("@prisma/client");
+const prisma_1 = require("../../config/prisma");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const catchServiceAsync_1 = require("../../utils/catchServiceAsync");
-const prisma = new client_1.PrismaClient();
 class UserSecurityService {
 }
 exports.UserSecurityService = UserSecurityService;
 _a = UserSecurityService;
 UserSecurityService.getSecurity = (0, catchServiceAsync_1.catchServiceAsync)(async (userId) => {
-    const sec = await prisma.userSecurity.upsert({
+    const sec = await prisma_1.prisma.userSecurity.upsert({
         where: { userId },
         update: {},
         create: { userId },
@@ -35,7 +34,7 @@ UserSecurityService.getSecurity = (0, catchServiceAsync_1.catchServiceAsync)(asy
     return sec;
 });
 UserSecurityService.toggle2FA = (0, catchServiceAsync_1.catchServiceAsync)(async (userId, enabled, method) => {
-    return prisma.userSecurity.upsert({
+    return prisma_1.prisma.userSecurity.upsert({
         where: { userId },
         update: { twoFactorEnabled: enabled, twoFactorMethod: enabled ? (method || 'totp') : null },
         create: { userId, twoFactorEnabled: enabled, twoFactorMethod: enabled ? (method || 'totp') : null },
@@ -43,21 +42,21 @@ UserSecurityService.toggle2FA = (0, catchServiceAsync_1.catchServiceAsync)(async
 });
 UserSecurityService.setSecurityQuestion = (0, catchServiceAsync_1.catchServiceAsync)(async (userId, question, answer) => {
     const hashedAnswer = await bcrypt_1.default.hash(answer.toLowerCase().trim(), 10);
-    return prisma.userSecurity.upsert({
+    return prisma_1.prisma.userSecurity.upsert({
         where: { userId },
         update: { securityQuestion: question, securityAnswer: hashedAnswer },
         create: { userId, securityQuestion: question, securityAnswer: hashedAnswer },
     });
 });
 UserSecurityService.recordFailedLogin = (0, catchServiceAsync_1.catchServiceAsync)(async (userId) => {
-    const sec = await prisma.userSecurity.upsert({
+    const sec = await prisma_1.prisma.userSecurity.upsert({
         where: { userId },
         update: { failedLoginAttempts: { increment: 1 } },
         create: { userId, failedLoginAttempts: 1 },
     });
     // Lock account after 5 failed attempts for 30 minutes
     if (sec.failedLoginAttempts >= 5) {
-        await prisma.userSecurity.update({
+        await prisma_1.prisma.userSecurity.update({
             where: { userId },
             data: { accountLockedUntil: new Date(Date.now() + 30 * 60 * 1000) },
         });
@@ -65,7 +64,7 @@ UserSecurityService.recordFailedLogin = (0, catchServiceAsync_1.catchServiceAsyn
     return sec;
 });
 UserSecurityService.resetFailedLogins = (0, catchServiceAsync_1.catchServiceAsync)(async (userId) => {
-    return prisma.userSecurity.upsert({
+    return prisma_1.prisma.userSecurity.upsert({
         where: { userId },
         update: { failedLoginAttempts: 0, accountLockedUntil: null },
         create: { userId },

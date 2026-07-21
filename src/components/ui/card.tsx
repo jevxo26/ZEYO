@@ -5,14 +5,20 @@ import { cn } from "@/lib/utils"
 function Card({
   className,
   size = "default",
+  accent,
   ...props
-}: React.ComponentProps<"div"> & { size?: "default" | "sm" }) {
+}: React.ComponentProps<"div"> & { size?: "default" | "sm"; accent?: string }) {
   return (
     <div
       data-slot="card"
       data-size={size}
+      data-accent={accent}
       className={cn(
         "group/card flex flex-col gap-(--card-spacing) overflow-hidden rounded-xl bg-card py-(--card-spacing) text-sm text-card-foreground ring-1 ring-foreground/10 [--card-spacing:--spacing(4)] has-data-[slot=card-footer]:pb-0 has-[>img:first-child]:pt-0 data-[size=sm]:[--card-spacing:--spacing(3)] data-[size=sm]:has-data-[slot=card-footer]:pb-0 *:[img:first-child]:rounded-t-xl *:[img:last-child]:rounded-b-xl",
+        accent === "blue" && "border-l-4 border-l-blue-500",
+        accent === "purple" && "border-l-4 border-l-purple-500",
+        accent === "green" && "border-l-4 border-l-emerald-500",
+        accent === "rose" && "border-l-4 border-l-rose-500",
         className
       )}
       {...props}

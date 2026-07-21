@@ -2,16 +2,15 @@
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RolePermissionService = void 0;
-const client_1 = require("@prisma/client");
+const prisma_1 = require("../../config/prisma");
 const catchServiceAsync_1 = require("../../utils/catchServiceAsync");
-const prisma = new client_1.PrismaClient();
 class RolePermissionService {
 }
 exports.RolePermissionService = RolePermissionService;
 _a = RolePermissionService;
 // ── Get all permissions assigned to a role ────────────────────────────────
 RolePermissionService.getByRole = (0, catchServiceAsync_1.catchServiceAsync)(async (roleId) => {
-    return prisma.rolePermission.findMany({
+    return prisma_1.prisma.rolePermission.findMany({
         where: { roleId },
         include: {
             permission: {
@@ -38,7 +37,7 @@ RolePermissionService.assign = (0, catchServiceAsync_1.catchServiceAsync)(async 
         canImport: (_j = data.canImport) !== null && _j !== void 0 ? _j : false,
         canManage: (_k = data.canManage) !== null && _k !== void 0 ? _k : false,
     };
-    return prisma.rolePermission.upsert({
+    return prisma_1.prisma.rolePermission.upsert({
         where: {
             roleId_permissionId: { roleId: data.roleId, permissionId: data.permissionId },
         },
@@ -48,7 +47,7 @@ RolePermissionService.assign = (0, catchServiceAsync_1.catchServiceAsync)(async 
 });
 // ── Bulk assign permissions to a role ─────────────────────────────────────
 RolePermissionService.bulkAssign = (0, catchServiceAsync_1.catchServiceAsync)(async (roleId, permissionIds) => {
-    const ops = permissionIds.map((permissionId) => prisma.rolePermission.upsert({
+    const ops = permissionIds.map((permissionId) => prisma_1.prisma.rolePermission.upsert({
         where: { roleId_permissionId: { roleId, permissionId } },
         update: { canRead: true },
         create: { roleId, permissionId, canRead: true },
@@ -57,11 +56,11 @@ RolePermissionService.bulkAssign = (0, catchServiceAsync_1.catchServiceAsync)(as
 });
 // ── Revoke a permission from a role ───────────────────────────────────────
 RolePermissionService.revoke = (0, catchServiceAsync_1.catchServiceAsync)(async (roleId, permissionId) => {
-    return prisma.rolePermission.delete({
+    return prisma_1.prisma.rolePermission.delete({
         where: { roleId_permissionId: { roleId, permissionId } },
     });
 });
 // ── Revoke all permissions from a role ────────────────────────────────────
 RolePermissionService.revokeAll = (0, catchServiceAsync_1.catchServiceAsync)(async (roleId) => {
-    return prisma.rolePermission.deleteMany({ where: { roleId } });
+    return prisma_1.prisma.rolePermission.deleteMany({ where: { roleId } });
 });
