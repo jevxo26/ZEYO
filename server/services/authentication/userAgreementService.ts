@@ -1,7 +1,8 @@
+import { prisma } from '../../config/prisma';
 import { PrismaClient } from '@prisma/client';
 import { catchServiceAsync } from '../../utils/catchServiceAsync';
 
-const prisma = new PrismaClient();
+
 
 export class UserAgreementService {
   static getAgreements = catchServiceAsync(async (userId: number) => {

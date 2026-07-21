@@ -3,13 +3,13 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const prisma_1 = require("./config/prisma");
 const express_1 = __importDefault(require("express"));
 const next_1 = __importDefault(require("next"));
 const cors_1 = __importDefault(require("cors"));
 const helmet_1 = __importDefault(require("helmet"));
 const morgan_1 = __importDefault(require("morgan"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
-const client_1 = require("@prisma/client");
 const path_1 = __importDefault(require("path"));
 const userRoutes_1 = __importDefault(require("./routes/authentication/userRoutes"));
 const authRoutes_1 = __importDefault(require("./routes/authentication/authRoutes"));
@@ -34,13 +34,13 @@ const bookingAdminRoutes_1 = __importDefault(require("./routes/booking/bookingAd
 const assignmentRoutes_1 = __importDefault(require("./routes/vendor/assignmentRoutes"));
 const vendorWorkRoutes_1 = __importDefault(require("./routes/vendor/vendorWorkRoutes"));
 const paymentRoutes_1 = __importDefault(require("./routes/payment/paymentRoutes"));
+const reviewRoutes_1 = __importDefault(require("./routes/review/reviewRoutes"));
 // ─── RBAC Routes ────────────────────────────────────────────────────────────
 const roleRoutes_2 = __importDefault(require("./routes/rbac/roleRoutes"));
 const moduleRoutes_1 = __importDefault(require("./routes/rbac/moduleRoutes"));
 const permissionRoutes_1 = __importDefault(require("./routes/rbac/permissionRoutes"));
 const rolePermissionRoutes_1 = __importDefault(require("./routes/rbac/rolePermissionRoutes"));
 const userRoleRoutes_1 = __importDefault(require("./routes/rbac/userRoleRoutes"));
-const prisma = new client_1.PrismaClient();
 const dev = process.env.NODE_ENV !== 'production';
 const app = (0, next_1.default)({ dev });
 const handle = app.getRequestHandler();
@@ -82,7 +82,7 @@ app.prepare().then(async () => {
     server.use((0, cookie_parser_1.default)());
     // ─── Database Connection ────────────────────────────────────────────────
     try {
-        await prisma.$connect();
+        await prisma_1.prisma.$connect();
         console.log('✅ Prisma connected to the database successfully!');
     }
     catch (err) {
@@ -118,6 +118,7 @@ app.prepare().then(async () => {
     server.use('/api/admin/assignments', assignmentRoutes_1.default); // Vendor Assignment (admin)
     server.use('/api/vendor/work', vendorWorkRoutes_1.default); // Vendor work operations
     server.use('/api/admin/payments', paymentRoutes_1.default); // Payment & Billing (admin)
+    server.use('/api/reviews', reviewRoutes_1.default); // Review, Rating & Feedback
     // ─── RBAC API ─────────────────────────────────────────────────────────────
     server.use('/api/rbac/roles', roleRoutes_2.default);
     server.use('/api/rbac/modules', moduleRoutes_1.default);

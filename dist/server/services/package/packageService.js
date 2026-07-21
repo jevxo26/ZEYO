@@ -13,14 +13,8 @@ var __rest = (this && this.__rest) || function (s, e) {
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PackageService = void 0;
-// ─────────────────────────────────────────────────────────────────────────────
-// PackageService
-// Service layer for Package and all sub-entities.
-// Handles business logic for zone-wise packages, pricing mapping, and sub-entity CRUD.
-// ─────────────────────────────────────────────────────────────────────────────
-const client_1 = require("@prisma/client");
+const prisma_1 = require("../../config/prisma");
 const catchServiceAsync_1 = require("../../utils/catchServiceAsync");
-const prisma = new client_1.PrismaClient();
 class PackageService {
 }
 exports.PackageService = PackageService;
@@ -50,7 +44,7 @@ PackageService.getAllPackages = (0, catchServiceAsync_1.catchServiceAsync)(async
             }
         };
     }
-    const packages = await prisma.package.findMany({
+    const packages = await prisma_1.prisma.package.findMany({
         where: whereClause,
         include: {
             packageCategory: true,
@@ -59,11 +53,16 @@ PackageService.getAllPackages = (0, catchServiceAsync_1.catchServiceAsync)(async
             setting: true,
             pricings: { orderBy: { createdAt: 'desc' }, take: 1 },
             zonePricings: (filters === null || filters === void 0 ? void 0 : filters.zoneId) ? { where: { zoneId: filters.zoneId, status: 'active' } } : false,
+            features: { orderBy: { displayOrder: 'asc' } }, // used to build "included" list for frontend
         },
         orderBy: { displayOrder: 'asc' },
     });
-    // Map zone-specific prices if zoneId is provided
+    // Map zone-specific prices if zoneId is provided, and normalize the
+    // response shape so the frontend (EventPackage type) always gets
+    // consistent, predictable field names regardless of the underlying
+    // Prisma model naming.
     return packages.map((pkg) => {
+        var _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
         let activePrice = pkg.startingPrice;
         let activeDiscount = 0;
         let isZonePriced = false;
@@ -74,11 +73,14 @@ PackageService.getAllPackages = (0, catchServiceAsync_1.catchServiceAsync)(async
         }
         return Object.assign(Object.assign({}, pkg), { activePrice,
             activeDiscount,
-            isZonePriced });
+            isZonePriced, 
+            // ── Normalized fields for the frontend ──────────────────────────
+            id: pkg.id, title: pkg.name, subtitle: (_b = pkg.description) !== null && _b !== void 0 ? _b : undefined, price: activePrice, currency: (_e = (_d = (_c = pkg.pricings) === null || _c === void 0 ? void 0 : _c[0]) === null || _d === void 0 ? void 0 : _d.currency) !== null && _e !== void 0 ? _e : 'BDT', imageUrl: (_g = (_f = pkg.thumbnail) !== null && _f !== void 0 ? _f : pkg.banner) !== null && _g !== void 0 ? _g : undefined, included: ((_h = pkg.features) !== null && _h !== void 0 ? _h : []).map((f) => f.title), popular: (_k = (_j = pkg.setting) === null || _j === void 0 ? void 0 : _j.isFeatured) !== null && _k !== void 0 ? _k : false, tier: (_m = (_l = pkg.packageCategory) === null || _l === void 0 ? void 0 : _l.name) !== null && _m !== void 0 ? _m : undefined });
     });
 });
 PackageService.getPackageById = (0, catchServiceAsync_1.catchServiceAsync)(async (id, zoneId) => {
-    const pkg = await prisma.package.findFirst({
+    var _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
+    const pkg = await prisma_1.prisma.package.findFirst({
         where: { id, deletedAt: null },
         include: {
             packageCategory: true,
@@ -121,11 +123,13 @@ PackageService.getPackageById = (0, catchServiceAsync_1.catchServiceAsync)(async
     }
     return Object.assign(Object.assign({}, pkg), { activePrice,
         activeDiscount,
-        isZonePriced });
+        isZonePriced, 
+        // ── Normalized fields for the frontend ──────────────────────────
+        id: pkg.id, title: pkg.name, subtitle: (_b = pkg.description) !== null && _b !== void 0 ? _b : undefined, price: activePrice, currency: (_e = (_d = (_c = pkg.pricings) === null || _c === void 0 ? void 0 : _c[0]) === null || _d === void 0 ? void 0 : _d.currency) !== null && _e !== void 0 ? _e : 'BDT', imageUrl: (_g = (_f = pkg.thumbnail) !== null && _f !== void 0 ? _f : pkg.banner) !== null && _g !== void 0 ? _g : undefined, included: ((_h = pkg.features) !== null && _h !== void 0 ? _h : []).map((f) => f.title), popular: (_k = (_j = pkg.setting) === null || _j === void 0 ? void 0 : _j.isFeatured) !== null && _k !== void 0 ? _k : false, tier: (_m = (_l = pkg.packageCategory) === null || _l === void 0 ? void 0 : _l.name) !== null && _m !== void 0 ? _m : undefined });
 });
 PackageService.createPackage = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
     const { settings } = data, packageData = __rest(data, ["settings"]);
-    return prisma.$transaction(async (tx) => {
+    return prisma_1.prisma.$transaction(async (tx) => {
         var _b, _c, _d, _e, _f, _g, _h, _j;
         const pkg = await tx.package.create({
             data: Object.assign(Object.assign({}, packageData), { status: (_b = packageData.status) !== null && _b !== void 0 ? _b : 'active', displayOrder: (_c = packageData.displayOrder) !== null && _c !== void 0 ? _c : 0 })
@@ -147,7 +151,7 @@ PackageService.createPackage = (0, catchServiceAsync_1.catchServiceAsync)(async 
 });
 PackageService.updatePackage = (0, catchServiceAsync_1.catchServiceAsync)(async (id, data) => {
     const { settings } = data, packageData = __rest(data, ["settings"]);
-    return prisma.$transaction(async (tx) => {
+    return prisma_1.prisma.$transaction(async (tx) => {
         var _b, _c, _d, _e, _f, _g;
         const pkg = await tx.package.update({
             where: { id },
@@ -172,57 +176,57 @@ PackageService.updatePackage = (0, catchServiceAsync_1.catchServiceAsync)(async 
     });
 });
 PackageService.deletePackage = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.package.update({
+    return prisma_1.prisma.package.update({
         where: { id },
         data: { deletedAt: new Date() }
     });
 });
 // ── PackageCategories ──────────────────────────────────────────────────────
 PackageService.getAllCategories = (0, catchServiceAsync_1.catchServiceAsync)(async () => {
-    return prisma.packageCategory.findMany({
+    return prisma_1.prisma.packageCategory.findMany({
         include: { subCategories: true },
         orderBy: { displayOrder: 'asc' },
     });
 });
 PackageService.createCategory = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
-    return prisma.packageCategory.create({ data });
+    return prisma_1.prisma.packageCategory.create({ data });
 });
 PackageService.updateCategory = (0, catchServiceAsync_1.catchServiceAsync)(async (id, data) => {
-    return prisma.packageCategory.update({ where: { id }, data });
+    return prisma_1.prisma.packageCategory.update({ where: { id }, data });
 });
 PackageService.deleteCategory = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.packageCategory.delete({ where: { id } });
+    return prisma_1.prisma.packageCategory.delete({ where: { id } });
 });
 // ── PackageSubCategories ───────────────────────────────────────────────────
 PackageService.getAllSubCategories = (0, catchServiceAsync_1.catchServiceAsync)(async (categoryId) => {
-    return prisma.packageSubCategory.findMany({
+    return prisma_1.prisma.packageSubCategory.findMany({
         where: categoryId ? { packageCategoryId: categoryId } : {},
         orderBy: { displayOrder: 'asc' },
     });
 });
 PackageService.createSubCategory = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
-    return prisma.packageSubCategory.create({ data });
+    return prisma_1.prisma.packageSubCategory.create({ data });
 });
 PackageService.updateSubCategory = (0, catchServiceAsync_1.catchServiceAsync)(async (id, data) => {
-    return prisma.packageSubCategory.update({ where: { id }, data });
+    return prisma_1.prisma.packageSubCategory.update({ where: { id }, data });
 });
 PackageService.deleteSubCategory = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.packageSubCategory.delete({ where: { id } });
+    return prisma_1.prisma.packageSubCategory.delete({ where: { id } });
 });
 // ── PackageTypes ───────────────────────────────────────────────────────────
 PackageService.createPackageType = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
-    return prisma.packageType.create({ data });
+    return prisma_1.prisma.packageType.create({ data });
 });
 PackageService.updatePackageType = (0, catchServiceAsync_1.catchServiceAsync)(async (id, data) => {
-    return prisma.packageType.update({ where: { id }, data });
+    return prisma_1.prisma.packageType.update({ where: { id }, data });
 });
 PackageService.deletePackageType = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.packageType.delete({ where: { id } });
+    return prisma_1.prisma.packageType.delete({ where: { id } });
 });
 // ── PackageServices & Items ───────────────────────────────────────────────
 PackageService.createPackageService = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
     const { items } = data, serviceData = __rest(data, ["items"]);
-    return prisma.$transaction(async (tx) => {
+    return prisma_1.prisma.$transaction(async (tx) => {
         const service = await tx.packageService.create({
             data: serviceData,
         });
@@ -248,119 +252,119 @@ PackageService.createPackageService = (0, catchServiceAsync_1.catchServiceAsync)
     });
 });
 PackageService.updatePackageService = (0, catchServiceAsync_1.catchServiceAsync)(async (id, data) => {
-    return prisma.packageService.update({ where: { id }, data });
+    return prisma_1.prisma.packageService.update({ where: { id }, data });
 });
 PackageService.deletePackageService = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.packageService.delete({ where: { id } });
+    return prisma_1.prisma.packageService.delete({ where: { id } });
 });
 PackageService.createServiceItem = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
-    return prisma.packageServiceItem.create({ data });
+    return prisma_1.prisma.packageServiceItem.create({ data });
 });
 PackageService.updateServiceItem = (0, catchServiceAsync_1.catchServiceAsync)(async (id, data) => {
-    return prisma.packageServiceItem.update({ where: { id }, data });
+    return prisma_1.prisma.packageServiceItem.update({ where: { id }, data });
 });
 PackageService.deleteServiceItem = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.packageServiceItem.delete({ where: { id } });
+    return prisma_1.prisma.packageServiceItem.delete({ where: { id } });
 });
 // ── PackagePricing & Zone Pricing ──────────────────────────────────────────
 PackageService.createPricing = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
-    return prisma.packagePricing.create({ data });
+    return prisma_1.prisma.packagePricing.create({ data });
 });
 PackageService.createZonePricing = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
-    return prisma.packageZonePricing.create({ data });
+    return prisma_1.prisma.packageZonePricing.create({ data });
 });
 PackageService.updateZonePricing = (0, catchServiceAsync_1.catchServiceAsync)(async (id, data) => {
-    return prisma.packageZonePricing.update({ where: { id }, data });
+    return prisma_1.prisma.packageZonePricing.update({ where: { id }, data });
 });
 PackageService.deleteZonePricing = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.packageZonePricing.delete({ where: { id } });
+    return prisma_1.prisma.packageZonePricing.delete({ where: { id } });
 });
 // ── Addons ─────────────────────────────────────────────────────────────────
 PackageService.createAddon = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
-    return prisma.packageAddon.create({ data });
+    return prisma_1.prisma.packageAddon.create({ data });
 });
 PackageService.updateAddon = (0, catchServiceAsync_1.catchServiceAsync)(async (id, data) => {
-    return prisma.packageAddon.update({ where: { id }, data });
+    return prisma_1.prisma.packageAddon.update({ where: { id }, data });
 });
 PackageService.deleteAddon = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.packageAddon.delete({ where: { id } });
+    return prisma_1.prisma.packageAddon.delete({ where: { id } });
 });
 // ── Features ───────────────────────────────────────────────────────────────
 PackageService.createFeature = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
-    return prisma.packageFeature.create({ data });
+    return prisma_1.prisma.packageFeature.create({ data });
 });
 PackageService.updateFeature = (0, catchServiceAsync_1.catchServiceAsync)(async (id, data) => {
-    return prisma.packageFeature.update({ where: { id }, data });
+    return prisma_1.prisma.packageFeature.update({ where: { id }, data });
 });
 PackageService.deleteFeature = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.packageFeature.delete({ where: { id } });
+    return prisma_1.prisma.packageFeature.delete({ where: { id } });
 });
 // ── Gallery ────────────────────────────────────────────────────────────────
 PackageService.createGalleryItem = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
-    return prisma.packageGallery.create({ data });
+    return prisma_1.prisma.packageGallery.create({ data });
 });
 PackageService.deleteGalleryItem = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.packageGallery.delete({ where: { id } });
+    return prisma_1.prisma.packageGallery.delete({ where: { id } });
 });
 // ── FAQ ────────────────────────────────────────────────────────────────────
 PackageService.createFAQ = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
-    return prisma.packageFAQ.create({ data });
+    return prisma_1.prisma.packageFAQ.create({ data });
 });
 PackageService.updateFAQ = (0, catchServiceAsync_1.catchServiceAsync)(async (id, data) => {
-    return prisma.packageFAQ.update({ where: { id }, data });
+    return prisma_1.prisma.packageFAQ.update({ where: { id }, data });
 });
 PackageService.deleteFAQ = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.packageFAQ.delete({ where: { id } });
+    return prisma_1.prisma.packageFAQ.delete({ where: { id } });
 });
 // ── Policies & Terms ───────────────────────────────────────────────────────
 PackageService.createPolicy = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
-    return prisma.packagePolicy.create({ data });
+    return prisma_1.prisma.packagePolicy.create({ data });
 });
 PackageService.updatePolicy = (0, catchServiceAsync_1.catchServiceAsync)(async (id, data) => {
-    return prisma.packagePolicy.update({ where: { id }, data });
+    return prisma_1.prisma.packagePolicy.update({ where: { id }, data });
 });
 PackageService.deletePolicy = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.packagePolicy.delete({ where: { id } });
+    return prisma_1.prisma.packagePolicy.delete({ where: { id } });
 });
 PackageService.createTerms = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
-    return prisma.packageTerms.create({ data });
+    return prisma_1.prisma.packageTerms.create({ data });
 });
 PackageService.updateTerms = (0, catchServiceAsync_1.catchServiceAsync)(async (id, data) => {
-    return prisma.packageTerms.update({ where: { id }, data });
+    return prisma_1.prisma.packageTerms.update({ where: { id }, data });
 });
 PackageService.deleteTerms = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.packageTerms.delete({ where: { id } });
+    return prisma_1.prisma.packageTerms.delete({ where: { id } });
 });
 // ── Availability ───────────────────────────────────────────────────────────
 PackageService.createAvailability = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
-    return prisma.packageAvailability.create({ data });
+    return prisma_1.prisma.packageAvailability.create({ data });
 });
 PackageService.updateAvailability = (0, catchServiceAsync_1.catchServiceAsync)(async (id, data) => {
-    return prisma.packageAvailability.update({ where: { id }, data });
+    return prisma_1.prisma.packageAvailability.update({ where: { id }, data });
 });
 PackageService.deleteAvailability = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.packageAvailability.delete({ where: { id } });
+    return prisma_1.prisma.packageAvailability.delete({ where: { id } });
 });
 // ── Discounts ──────────────────────────────────────────────────────────────
 PackageService.createDiscount = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
-    return prisma.packageDiscount.create({ data });
+    return prisma_1.prisma.packageDiscount.create({ data });
 });
 PackageService.updateDiscount = (0, catchServiceAsync_1.catchServiceAsync)(async (id, data) => {
-    return prisma.packageDiscount.update({ where: { id }, data });
+    return prisma_1.prisma.packageDiscount.update({ where: { id }, data });
 });
 PackageService.deleteDiscount = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.packageDiscount.delete({ where: { id } });
+    return prisma_1.prisma.packageDiscount.delete({ where: { id } });
 });
 // ── Reviews ────────────────────────────────────────────────────────────────
 PackageService.getReviewsByPackage = (0, catchServiceAsync_1.catchServiceAsync)(async (packageId) => {
-    return prisma.packageReview.findMany({
+    return prisma_1.prisma.packageReview.findMany({
         where: { packageId, status: 'active' },
         include: { customer: { include: { user: { select: { name: true, profileImage: true } } } } },
         orderBy: { createdAt: 'desc' },
     });
 });
 PackageService.submitReview = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
-    return prisma.packageReview.create({
+    return prisma_1.prisma.packageReview.create({
         data: {
             packageId: data.packageId,
             customerId: data.customerId,
@@ -371,22 +375,22 @@ PackageService.submitReview = (0, catchServiceAsync_1.catchServiceAsync)(async (
     });
 });
 PackageService.updateReviewStatus = (0, catchServiceAsync_1.catchServiceAsync)(async (id, status) => {
-    return prisma.packageReview.update({
+    return prisma_1.prisma.packageReview.update({
         where: { id },
         data: { status }
     });
 });
 // ── Analytics ──────────────────────────────────────────────────────────────
 PackageService.getAnalyticsByPackage = (0, catchServiceAsync_1.catchServiceAsync)(async (packageId) => {
-    return prisma.packageAnalytics.findFirst({
+    return prisma_1.prisma.packageAnalytics.findFirst({
         where: { packageId },
         orderBy: { createdAt: 'desc' }
     });
 });
 PackageService.updateAnalytics = (0, catchServiceAsync_1.catchServiceAsync)(async (packageId, data) => {
-    const existing = await prisma.packageAnalytics.findFirst({ where: { packageId } });
+    const existing = await prisma_1.prisma.packageAnalytics.findFirst({ where: { packageId } });
     if (existing) {
-        return prisma.packageAnalytics.update({ where: { id: existing.id }, data });
+        return prisma_1.prisma.packageAnalytics.update({ where: { id: existing.id }, data });
     }
-    return prisma.packageAnalytics.create({ data: Object.assign({ packageId }, data) });
+    return prisma_1.prisma.packageAnalytics.create({ data: Object.assign({ packageId }, data) });
 });

@@ -13,15 +13,14 @@ var __rest = (this && this.__rest) || function (s, e) {
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.VendorEmployeeService = void 0;
-const client_1 = require("@prisma/client");
+const prisma_1 = require("../../config/prisma");
 const catchServiceAsync_1 = require("../../utils/catchServiceAsync");
-const prisma = new client_1.PrismaClient();
 class VendorEmployeeService {
 }
 exports.VendorEmployeeService = VendorEmployeeService;
 _a = VendorEmployeeService;
 VendorEmployeeService.addEmployee = (0, catchServiceAsync_1.catchServiceAsync)(async (vendorId, data) => {
-    return prisma.vendorEmployee.create({
+    return prisma_1.prisma.vendorEmployee.create({
         data: {
             vendorId,
             employeeName: data.employeeName,
@@ -34,19 +33,19 @@ VendorEmployeeService.addEmployee = (0, catchServiceAsync_1.catchServiceAsync)(a
     });
 });
 VendorEmployeeService.getEmployees = (0, catchServiceAsync_1.catchServiceAsync)(async (vendorId) => {
-    return prisma.vendorEmployee.findMany({
+    return prisma_1.prisma.vendorEmployee.findMany({
         where: { vendorId },
     });
 });
 VendorEmployeeService.updateEmployee = (0, catchServiceAsync_1.catchServiceAsync)(async (id, data) => {
     const { joinedAt } = data, rest = __rest(data, ["joinedAt"]);
-    return prisma.vendorEmployee.update({
+    return prisma_1.prisma.vendorEmployee.update({
         where: { id },
         data: Object.assign(Object.assign({}, rest), (joinedAt ? { joinedAt: new Date(joinedAt) } : {})),
     });
 });
 VendorEmployeeService.deleteEmployee = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.vendorEmployee.delete({
+    return prisma_1.prisma.vendorEmployee.delete({
         where: { id },
     });
 });

@@ -45,6 +45,7 @@ model Service {
   assignmentItems  AssignmentItem[]
   assignmentServices AssignmentService[]
   invoiceItems     InvoiceItem[]
+  serviceReviews   ServiceReview[]    @relation("serviceReviews")
 
   @@index([categoryId])
   @@index([slug])

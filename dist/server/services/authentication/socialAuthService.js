@@ -16,12 +16,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SocialAuthService = void 0;
-const client_1 = require("@prisma/client");
+const prisma_1 = require("../../config/prisma");
 const google_auth_library_1 = require("google-auth-library");
 const axios_1 = __importDefault(require("axios"));
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const catchServiceAsync_1 = require("../../utils/catchServiceAsync");
-const prisma = new client_1.PrismaClient();
 const googleClient = new google_auth_library_1.OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 // Use same secret constants as authService for consistency
 const JWT_SECRET = process.env.JWT_SECRET || 'ZEYO_access_secret_2026_please_change_in_production';
@@ -31,13 +30,13 @@ const JWT_REFRESH_EXPIRES_IN = (process.env.JWT_REFRESH_EXPIRES_IN || '7d');
 class SocialAuthService {
     static async findOrCreateUser(params) {
         const { email, name, provider, providerId, profileImage } = params;
-        let user = await prisma.user.findUnique({
+        let user = await prisma_1.prisma.user.findUnique({
             where: { email },
         });
         if (user) {
             // Update provider info if user is logging in via social for first time with existing email
             if (user.provider !== provider) {
-                user = await prisma.user.update({
+                user = await prisma_1.prisma.user.update({
                     where: { email },
                     data: Object.assign({ provider, providerId }, (profileImage ? { profileImage } : {})),
                 });
@@ -45,7 +44,7 @@ class SocialAuthService {
         }
         else {
             // Create new user
-            user = await prisma.user.create({
+            user = await prisma_1.prisma.user.create({
                 data: Object.assign({ email,
                     name,
                     provider,
@@ -53,7 +52,7 @@ class SocialAuthService {
             });
             // Auto-create UserProfile for social login users
             try {
-                await prisma.userProfile.create({ data: { userId: user.id } });
+                await prisma_1.prisma.userProfile.create({ data: { userId: user.id } });
             }
             catch (_b) {
                 // Ignore if already exists
@@ -63,7 +62,7 @@ class SocialAuthService {
         const token = jsonwebtoken_1.default.sign({ userId: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
         // Also generate and store a refresh token for social login users
         const refreshToken = jsonwebtoken_1.default.sign({ userId: user.id }, JWT_REFRESH_SECRET, { expiresIn: JWT_REFRESH_EXPIRES_IN });
-        await prisma.user.update({
+        await prisma_1.prisma.user.update({
             where: { id: user.id },
             data: { refreshToken, lastLoginAt: new Date(), lastActiveAt: new Date() },
         });

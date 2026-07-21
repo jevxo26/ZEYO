@@ -1,0 +1,24 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// SatisfactionSurvey — post-event customer satisfaction survey
+// wouldRecommend: yes | no | maybe
+// ─────────────────────────────────────────────────────────────────────────────
+
+model SatisfactionSurvey {
+  id                 Int      @id @default(autoincrement())
+  bookingId          Int
+  booking            Booking  @relation("satisfactionSurveys", fields: [bookingId], references: [id])
+  customerId         Int
+  customer           Customer @relation("customerSurveys", fields: [customerId], references: [id])
+  overallExperience  Int      // 1-10
+  serviceQuality     Int      // 1-10
+  supportExperience  Int      // 1-10
+  wouldRecommend     String   @default("yes")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  // Relations
+  npsScore NPSScore?
+
+  @@index([bookingId])
+  @@index([customerId])
+}

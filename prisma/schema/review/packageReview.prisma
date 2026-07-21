@@ -1,0 +1,18 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// ReviewPackageFeedback — package rating within a unified Review
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ReviewPackageFeedback {
+  id         Int      @id @default(autoincrement())
+  reviewId   Int
+  review     Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  packageId  Int?
+  package    Package? @relation("reviewPackageFeedbacks", fields: [packageId], references: [id], onDelete: SetNull)
+  rating     Decimal  @db.Decimal(3, 2)
+  reviewText String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([reviewId])
+  @@index([packageId])
+}

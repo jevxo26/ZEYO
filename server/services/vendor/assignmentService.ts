@@ -1,10 +1,11 @@
+import { prisma } from '../../config/prisma';
 // ─────────────────────────────────────────────────────────────────────────────
 // AssignmentService — Core service for Part 11: Vendor Assignment & Operations
 // ─────────────────────────────────────────────────────────────────────────────
 import { PrismaClient } from '@prisma/client';
 import { catchServiceAsync } from '../../utils/catchServiceAsync';
 
-const prisma = new PrismaClient();
+
 
 async function generateAssignmentNumber(): Promise<string> {
   const count = await prisma.vendorAssignment.count();

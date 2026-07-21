@@ -1,0 +1,14 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// ReviewAnalytics — engagement metrics per review
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ReviewAnalytics {
+  id           Int      @id @default(autoincrement())
+  reviewId     Int      @unique
+  review       Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  views        Int      @default(0)
+  likes        Int      @default(0)
+  helpfulCount Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

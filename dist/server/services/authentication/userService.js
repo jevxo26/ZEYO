@@ -5,10 +5,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserService = void 0;
-const client_1 = require("@prisma/client");
+const prisma_1 = require("../../config/prisma");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const catchServiceAsync_1 = require("../../utils/catchServiceAsync");
-const prisma = new client_1.PrismaClient();
 // Safe user select — never exposes password or sensitive token fields
 const safeUserSelect = {
     id: true,
@@ -51,14 +50,14 @@ class UserService {
 exports.UserService = UserService;
 _a = UserService;
 UserService.getAllUsers = (0, catchServiceAsync_1.catchServiceAsync)(async () => {
-    return prisma.user.findMany({
+    return prisma_1.prisma.user.findMany({
         where: { deletedAt: null },
         select: safeUserSelect,
     });
 });
 // id comes in as string from req.params — parse to Int for Prisma
 UserService.getUserProfile = (0, catchServiceAsync_1.catchServiceAsync)(async (userId) => {
-    return prisma.user.findUnique({
+    return prisma_1.prisma.user.findUnique({
         where: {
             id: userId,
         },
@@ -82,10 +81,10 @@ UserService.createUser = (0, catchServiceAsync_1.catchServiceAsync)(async (data)
     const dataToSave = Object.assign(Object.assign({}, data), { name, fullName: fullName || null, firstName: firstName || null, lastName: lastName || null, password: data.password ? await bcrypt_1.default.hash(data.password.toString(), 10) : undefined, userRole: createData.roleId
             ? { connect: { id: Number(createData.roleId) } }
             : { connect: { name: 'employee' } } });
-    const user = await prisma.user.create({ data: dataToSave, select: safeUserSelect });
+    const user = await prisma_1.prisma.user.create({ data: dataToSave, select: safeUserSelect });
     // Auto-create empty UserProfile for new users created via admin panel
     try {
-        await prisma.userProfile.create({ data: { userId: user.id } });
+        await prisma_1.prisma.userProfile.create({ data: { userId: user.id } });
     }
     catch (_g) {
         // Profile may already exist — ignore duplicate
@@ -112,7 +111,7 @@ UserService.updateUser = (0, catchServiceAsync_1.catchServiceAsync)(async (id, d
         : {})), (updateData.roleId !== undefined && updateData.roleId !== null
         ? { userRole: { connect: { id: Number(updateData.roleId) } } }
         : {}));
-    return prisma.user.update({
+    return prisma_1.prisma.user.update({
         where: { id: numericId },
         data: dataToSave,
         select: safeUserSelect,
@@ -123,7 +122,7 @@ UserService.deleteUser = (0, catchServiceAsync_1.catchServiceAsync)(async (id) =
     const numericId = parseInt(id, 10);
     if (isNaN(numericId))
         throw new Error('Invalid user id');
-    return prisma.user.update({
+    return prisma_1.prisma.user.update({
         where: { id: numericId },
         data: {
             deletedAt: new Date(),
@@ -137,7 +136,7 @@ UserService.getUserById = (0, catchServiceAsync_1.catchServiceAsync)(async (id) 
     if (isNaN(numericId)) {
         throw new Error("Invalid user id");
     }
-    return prisma.user.findFirst({
+    return prisma_1.prisma.user.findFirst({
         where: {
             id: numericId,
             deletedAt: null,
@@ -164,7 +163,7 @@ UserService.upsertUserProfile = (0, catchServiceAsync_1.catchServiceAsync)(async
     if (Object.keys(userData).length > 0) {
         // Recompute fullName/name if firstName or lastName changed
         if (userData.firstName || userData.lastName) {
-            const existingUser = await prisma.user.findUnique({ where: { id: userId } });
+            const existingUser = await prisma_1.prisma.user.findUnique({ where: { id: userId } });
             const firstName = (_c = (_b = userData.firstName) !== null && _b !== void 0 ? _b : existingUser === null || existingUser === void 0 ? void 0 : existingUser.firstName) !== null && _c !== void 0 ? _c : '';
             const lastName = (_e = (_d = userData.lastName) !== null && _d !== void 0 ? _d : existingUser === null || existingUser === void 0 ? void 0 : existingUser.lastName) !== null && _e !== void 0 ? _e : '';
             const fullName = [firstName, lastName].filter(Boolean).join(' ').trim();
@@ -176,19 +175,19 @@ UserService.upsertUserProfile = (0, catchServiceAsync_1.catchServiceAsync)(async
         if (userData.dateOfBirth) {
             userData.dateOfBirth = new Date(userData.dateOfBirth);
         }
-        await prisma.user.update({
+        await prisma_1.prisma.user.update({
             where: { id: userId },
             data: userData,
         });
     }
     // Update/create UserProfile table
-    const profile = await prisma.userProfile.upsert({
+    const profile = await prisma_1.prisma.userProfile.upsert({
         where: { userId },
         update: profileData,
         create: Object.assign(Object.assign({}, profileData), { userId }),
     });
     // Return combined data so frontend gets everything back
-    const updatedUser = await prisma.user.findUnique({
+    const updatedUser = await prisma_1.prisma.user.findUnique({
         where: { id: userId },
         select: safeUserSelect,
     });

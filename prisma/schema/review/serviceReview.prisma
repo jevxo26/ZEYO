@@ -1,0 +1,18 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// ServiceReview — rating per individual booked service
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ServiceReview {
+  id        Int      @id @default(autoincrement())
+  reviewId  Int
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  serviceId Int?
+  service   Service? @relation("serviceReviews", fields: [serviceId], references: [id], onDelete: SetNull)
+  rating    Decimal  @db.Decimal(3, 2)
+  reviewText String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([reviewId])
+  @@index([serviceId])
+}

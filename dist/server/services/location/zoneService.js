@@ -2,18 +2,8 @@
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ZoneService = void 0;
-// ─────────────────────────────────────────────────────────────────────────────
-// ZoneService
-// CRUD for Zone and all sub-entities (pricing, packages, services, holidays,
-// taxes, delivery charges, coverage, polygons, geo-fences, analytics, settings).
-// Also includes:
-//   - calculatePrice(): smart pricing calculator with taxes + delivery
-//   - getAvailableVendors(): zone-scoped vendor finder
-//   - resolveZoneFromCoords(): geofence-based zone resolver
-// ─────────────────────────────────────────────────────────────────────────────
-const client_1 = require("@prisma/client");
+const prisma_1 = require("../../config/prisma");
 const catchServiceAsync_1 = require("../../utils/catchServiceAsync");
-const prisma = new client_1.PrismaClient();
 // ── Helpers ───────────────────────────────────────────────────────────────────
 /** Haversine distance in km between two lat/lng points */
 function haversineKm(lat1, lng1, lat2, lng2) {
@@ -45,7 +35,7 @@ exports.ZoneService = ZoneService;
 _a = ZoneService;
 // ── Zones ─────────────────────────────────────────────────────────────────
 ZoneService.getAllZones = (0, catchServiceAsync_1.catchServiceAsync)(async (filters) => {
-    return prisma.zone.findMany({
+    return prisma_1.prisma.zone.findMany({
         where: Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, ((filters === null || filters === void 0 ? void 0 : filters.status) ? { status: filters.status } : {})), ((filters === null || filters === void 0 ? void 0 : filters.countryId) ? { countryId: filters.countryId } : {})), ((filters === null || filters === void 0 ? void 0 : filters.divisionId) ? { divisionId: filters.divisionId } : {})), ((filters === null || filters === void 0 ? void 0 : filters.districtId) ? { districtId: filters.districtId } : {})), ((filters === null || filters === void 0 ? void 0 : filters.cityId) ? { cityId: filters.cityId } : {})), ((filters === null || filters === void 0 ? void 0 : filters.zoneGroupId) ? { zoneGroupId: filters.zoneGroupId } : {})),
         include: {
             country: { select: { id: true, name: true, currency: true } },
@@ -59,7 +49,7 @@ ZoneService.getAllZones = (0, catchServiceAsync_1.catchServiceAsync)(async (filt
     });
 });
 ZoneService.getZoneById = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.zone.findUnique({
+    return prisma_1.prisma.zone.findUnique({
         where: { id },
         include: {
             country: { select: { id: true, name: true, currency: true } },
@@ -78,39 +68,39 @@ ZoneService.getZoneById = (0, catchServiceAsync_1.catchServiceAsync)(async (id) 
     });
 });
 ZoneService.getZoneByCode = (0, catchServiceAsync_1.catchServiceAsync)(async (zoneCode) => {
-    return prisma.zone.findUnique({ where: { zoneCode } });
+    return prisma_1.prisma.zone.findUnique({ where: { zoneCode } });
 });
 ZoneService.createZone = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
-    return prisma.zone.create({
+    return prisma_1.prisma.zone.create({
         data: Object.assign(Object.assign({}, data), { status: 'active' }),
     });
 });
 ZoneService.updateZone = (0, catchServiceAsync_1.catchServiceAsync)(async (id, data) => {
-    return prisma.zone.update({ where: { id }, data });
+    return prisma_1.prisma.zone.update({ where: { id }, data });
 });
 ZoneService.deleteZone = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.zone.delete({ where: { id } });
+    return prisma_1.prisma.zone.delete({ where: { id } });
 });
 // ── ZoneGroups ────────────────────────────────────────────────────────────
 ZoneService.getAllZoneGroups = (0, catchServiceAsync_1.catchServiceAsync)(async (status) => {
-    return prisma.zoneGroup.findMany({
+    return prisma_1.prisma.zoneGroup.findMany({
         where: status ? { status } : {},
         include: { zones: { where: { status: 'active' }, select: { id: true, name: true, zoneCode: true } } },
         orderBy: { name: 'asc' },
     });
 });
 ZoneService.createZoneGroup = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
-    return prisma.zoneGroup.create({ data: Object.assign(Object.assign({}, data), { status: 'active' }) });
+    return prisma_1.prisma.zoneGroup.create({ data: Object.assign(Object.assign({}, data), { status: 'active' }) });
 });
 ZoneService.updateZoneGroup = (0, catchServiceAsync_1.catchServiceAsync)(async (id, data) => {
-    return prisma.zoneGroup.update({ where: { id }, data });
+    return prisma_1.prisma.zoneGroup.update({ where: { id }, data });
 });
 ZoneService.deleteZoneGroup = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.zoneGroup.delete({ where: { id } });
+    return prisma_1.prisma.zoneGroup.delete({ where: { id } });
 });
 // ── ZonePricing ───────────────────────────────────────────────────────────
 ZoneService.getPricingByZone = (0, catchServiceAsync_1.catchServiceAsync)(async (zoneId, serviceId) => {
-    return prisma.zonePricing.findMany({
+    return prisma_1.prisma.zonePricing.findMany({
         where: Object.assign(Object.assign({ zoneId, status: 'active' }, (serviceId ? { serviceId } : {})), { OR: [
                 { effectiveFrom: null },
                 { effectiveFrom: { lte: new Date() } },
@@ -122,21 +112,21 @@ ZoneService.getPricingByZone = (0, catchServiceAsync_1.catchServiceAsync)(async 
 });
 ZoneService.createZonePricing = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
     var _b;
-    return prisma.zonePricing.create({ data: Object.assign(Object.assign({}, data), { currency: (_b = data.currency) !== null && _b !== void 0 ? _b : 'BDT', status: 'active' }) });
+    return prisma_1.prisma.zonePricing.create({ data: Object.assign(Object.assign({}, data), { currency: (_b = data.currency) !== null && _b !== void 0 ? _b : 'BDT', status: 'active' }) });
 });
 ZoneService.updateZonePricing = (0, catchServiceAsync_1.catchServiceAsync)(async (id, data) => {
-    return prisma.zonePricing.update({ where: { id }, data });
+    return prisma_1.prisma.zonePricing.update({ where: { id }, data });
 });
 ZoneService.deleteZonePricing = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.zonePricing.delete({ where: { id } });
+    return prisma_1.prisma.zonePricing.delete({ where: { id } });
 });
 // ── ZoneService (availability) ────────────────────────────────────────────
 ZoneService.getServicesByZone = (0, catchServiceAsync_1.catchServiceAsync)(async (zoneId) => {
-    return prisma.zoneService.findMany({ where: { zoneId }, orderBy: { priority: 'asc' } });
+    return prisma_1.prisma.zoneService.findMany({ where: { zoneId }, orderBy: { priority: 'asc' } });
 });
 ZoneService.upsertZoneService = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
     var _b;
-    return prisma.zoneService.upsert({
+    return prisma_1.prisma.zoneService.upsert({
         where: { zoneId_serviceId: { zoneId: data.zoneId, serviceId: data.serviceId } },
         update: { isAvailable: data.isAvailable, priority: data.priority, remarks: data.remarks },
         create: Object.assign(Object.assign({}, data), { priority: (_b = data.priority) !== null && _b !== void 0 ? _b : 0 }),
@@ -144,109 +134,109 @@ ZoneService.upsertZoneService = (0, catchServiceAsync_1.catchServiceAsync)(async
 });
 // ── ZonePackage ───────────────────────────────────────────────────────────
 ZoneService.getPackagesByZone = (0, catchServiceAsync_1.catchServiceAsync)(async (zoneId) => {
-    return prisma.zonePackage.findMany({ where: { zoneId, status: 'active' } });
+    return prisma_1.prisma.zonePackage.findMany({ where: { zoneId, status: 'active' } });
 });
 ZoneService.createZonePackage = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
     var _b;
-    return prisma.zonePackage.create({ data: Object.assign(Object.assign({}, data), { discount: (_b = data.discount) !== null && _b !== void 0 ? _b : 0, status: 'active' }) });
+    return prisma_1.prisma.zonePackage.create({ data: Object.assign(Object.assign({}, data), { discount: (_b = data.discount) !== null && _b !== void 0 ? _b : 0, status: 'active' }) });
 });
 ZoneService.updateZonePackage = (0, catchServiceAsync_1.catchServiceAsync)(async (id, data) => {
-    return prisma.zonePackage.update({ where: { id }, data });
+    return prisma_1.prisma.zonePackage.update({ where: { id }, data });
 });
 ZoneService.deleteZonePackage = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.zonePackage.delete({ where: { id } });
+    return prisma_1.prisma.zonePackage.delete({ where: { id } });
 });
 // ── ZoneHoliday ───────────────────────────────────────────────────────────
 ZoneService.getHolidaysByZone = (0, catchServiceAsync_1.catchServiceAsync)(async (zoneId) => {
-    return prisma.zoneHoliday.findMany({
+    return prisma_1.prisma.zoneHoliday.findMany({
         where: { zoneId, status: 'active' },
         orderBy: { holidayDate: 'asc' },
     });
 });
 ZoneService.createZoneHoliday = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
-    return prisma.zoneHoliday.create({ data: Object.assign(Object.assign({}, data), { status: 'active' }) });
+    return prisma_1.prisma.zoneHoliday.create({ data: Object.assign(Object.assign({}, data), { status: 'active' }) });
 });
 ZoneService.deleteZoneHoliday = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.zoneHoliday.delete({ where: { id } });
+    return prisma_1.prisma.zoneHoliday.delete({ where: { id } });
 });
 // ── ZoneTax ───────────────────────────────────────────────────────────────
 ZoneService.getTaxesByZone = (0, catchServiceAsync_1.catchServiceAsync)(async (zoneId) => {
-    return prisma.zoneTax.findMany({ where: { zoneId, status: 'active' } });
+    return prisma_1.prisma.zoneTax.findMany({ where: { zoneId, status: 'active' } });
 });
 ZoneService.createZoneTax = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
-    return prisma.zoneTax.create({ data: Object.assign(Object.assign({}, data), { status: 'active' }) });
+    return prisma_1.prisma.zoneTax.create({ data: Object.assign(Object.assign({}, data), { status: 'active' }) });
 });
 ZoneService.updateZoneTax = (0, catchServiceAsync_1.catchServiceAsync)(async (id, data) => {
-    return prisma.zoneTax.update({ where: { id }, data });
+    return prisma_1.prisma.zoneTax.update({ where: { id }, data });
 });
 ZoneService.deleteZoneTax = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.zoneTax.delete({ where: { id } });
+    return prisma_1.prisma.zoneTax.delete({ where: { id } });
 });
 // ── ZoneDeliveryCharge ────────────────────────────────────────────────────
 ZoneService.getDeliveryChargesByZone = (0, catchServiceAsync_1.catchServiceAsync)(async (zoneId) => {
-    return prisma.zoneDeliveryCharge.findMany({ where: { zoneId } });
+    return prisma_1.prisma.zoneDeliveryCharge.findMany({ where: { zoneId } });
 });
 ZoneService.createZoneDeliveryCharge = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
-    return prisma.zoneDeliveryCharge.create({ data });
+    return prisma_1.prisma.zoneDeliveryCharge.create({ data });
 });
 ZoneService.deleteZoneDeliveryCharge = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.zoneDeliveryCharge.delete({ where: { id } });
+    return prisma_1.prisma.zoneDeliveryCharge.delete({ where: { id } });
 });
 // ── ZoneCoverage ──────────────────────────────────────────────────────────
 ZoneService.getCoverageByZone = (0, catchServiceAsync_1.catchServiceAsync)(async (zoneId) => {
-    return prisma.zoneCoverage.findMany({ where: { zoneId, status: 'active' } });
+    return prisma_1.prisma.zoneCoverage.findMany({ where: { zoneId, status: 'active' } });
 });
 ZoneService.createZoneCoverage = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
-    return prisma.zoneCoverage.create({ data: Object.assign(Object.assign({}, data), { status: 'active' }) });
+    return prisma_1.prisma.zoneCoverage.create({ data: Object.assign(Object.assign({}, data), { status: 'active' }) });
 });
 ZoneService.deleteZoneCoverage = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.zoneCoverage.delete({ where: { id } });
+    return prisma_1.prisma.zoneCoverage.delete({ where: { id } });
 });
 // ── ZonePolygon ───────────────────────────────────────────────────────────
 ZoneService.getPolygonsByZone = (0, catchServiceAsync_1.catchServiceAsync)(async (zoneId) => {
-    return prisma.zonePolygon.findMany({ where: { zoneId } });
+    return prisma_1.prisma.zonePolygon.findMany({ where: { zoneId } });
 });
 ZoneService.createZonePolygon = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
-    return prisma.zonePolygon.create({ data });
+    return prisma_1.prisma.zonePolygon.create({ data });
 });
 ZoneService.deleteZonePolygon = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.zonePolygon.delete({ where: { id } });
+    return prisma_1.prisma.zonePolygon.delete({ where: { id } });
 });
 // ── GeoLocation ───────────────────────────────────────────────────────────
 ZoneService.getGeoLocationsByZone = (0, catchServiceAsync_1.catchServiceAsync)(async (zoneId) => {
-    return prisma.geoLocation.findMany({ where: { zoneId } });
+    return prisma_1.prisma.geoLocation.findMany({ where: { zoneId } });
 });
 ZoneService.createGeoLocation = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
-    return prisma.geoLocation.create({ data });
+    return prisma_1.prisma.geoLocation.create({ data });
 });
 // ── GeoFence ──────────────────────────────────────────────────────────────
 ZoneService.getGeoFencesByZone = (0, catchServiceAsync_1.catchServiceAsync)(async (zoneId) => {
-    return prisma.geoFence.findMany({ where: { zoneId, status: 'active' } });
+    return prisma_1.prisma.geoFence.findMany({ where: { zoneId, status: 'active' } });
 });
 ZoneService.createGeoFence = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
-    return prisma.geoFence.create({ data: Object.assign(Object.assign({}, data), { status: 'active' }) });
+    return prisma_1.prisma.geoFence.create({ data: Object.assign(Object.assign({}, data), { status: 'active' }) });
 });
 ZoneService.deleteGeoFence = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.geoFence.delete({ where: { id } });
+    return prisma_1.prisma.geoFence.delete({ where: { id } });
 });
 // ── ZoneAnalytics ─────────────────────────────────────────────────────────
 ZoneService.getAnalyticsByZone = (0, catchServiceAsync_1.catchServiceAsync)(async (zoneId) => {
-    return prisma.zoneAnalytics.findFirst({ where: { zoneId }, orderBy: { createdAt: 'desc' } });
+    return prisma_1.prisma.zoneAnalytics.findFirst({ where: { zoneId }, orderBy: { createdAt: 'desc' } });
 });
 ZoneService.updateZoneAnalytics = (0, catchServiceAsync_1.catchServiceAsync)(async (zoneId, data) => {
-    const existing = await prisma.zoneAnalytics.findFirst({ where: { zoneId } });
+    const existing = await prisma_1.prisma.zoneAnalytics.findFirst({ where: { zoneId } });
     if (existing) {
-        return prisma.zoneAnalytics.update({ where: { id: existing.id }, data });
+        return prisma_1.prisma.zoneAnalytics.update({ where: { id: existing.id }, data });
     }
-    return prisma.zoneAnalytics.create({ data: Object.assign({ zoneId }, data) });
+    return prisma_1.prisma.zoneAnalytics.create({ data: Object.assign({ zoneId }, data) });
 });
 // ── ZoneSetting ───────────────────────────────────────────────────────────
 ZoneService.getSettingByZone = (0, catchServiceAsync_1.catchServiceAsync)(async (zoneId) => {
-    return prisma.zoneSetting.findUnique({ where: { zoneId } });
+    return prisma_1.prisma.zoneSetting.findUnique({ where: { zoneId } });
 });
 ZoneService.upsertZoneSetting = (0, catchServiceAsync_1.catchServiceAsync)(async (zoneId, data) => {
     var _b, _c, _d, _e, _f;
-    return prisma.zoneSetting.upsert({
+    return prisma_1.prisma.zoneSetting.upsert({
         where: { zoneId },
         update: data,
         create: {
@@ -261,13 +251,13 @@ ZoneService.upsertZoneSetting = (0, catchServiceAsync_1.catchServiceAsync)(async
 });
 // ── ServiceZone ───────────────────────────────────────────────────────────
 ZoneService.getZonesByService = (0, catchServiceAsync_1.catchServiceAsync)(async (serviceId) => {
-    return prisma.serviceZone.findMany({
+    return prisma_1.prisma.serviceZone.findMany({
         where: { serviceId, status: 'active' },
         include: { zone: { select: { id: true, name: true, zoneCode: true } } },
     });
 });
 ZoneService.createServiceZone = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
-    return prisma.serviceZone.upsert({
+    return prisma_1.prisma.serviceZone.upsert({
         where: { serviceId_zoneId: { serviceId: data.serviceId, zoneId: data.zoneId } },
         update: { status: 'active' },
         create: Object.assign(Object.assign({}, data), { status: 'active' }),
@@ -288,14 +278,14 @@ ZoneService.createServiceZone = (0, catchServiceAsync_1.catchServiceAsync)(async
 ZoneService.calculatePrice = (0, catchServiceAsync_1.catchServiceAsync)(async (params) => {
     const { zoneId, serviceId, packageId, distanceKm = 0 } = params;
     // 1. Active pricing record
-    const pricing = await prisma.zonePricing.findFirst({
+    const pricing = await prisma_1.prisma.zonePricing.findFirst({
         where: Object.assign(Object.assign({ zoneId, serviceId, status: 'active' }, (packageId ? { packageId } : {})), { OR: [{ effectiveFrom: null }, { effectiveFrom: { lte: new Date() } }], AND: [{ OR: [{ effectiveTo: null }, { effectiveTo: { gte: new Date() } }] }] }),
     });
     if (!pricing)
         throw new Error(`No active pricing found for zoneId=${zoneId} serviceId=${serviceId}`);
     const basePrice = pricing.basePrice;
     // 2. Taxes
-    const taxes = await prisma.zoneTax.findMany({ where: { zoneId, status: 'active' } });
+    const taxes = await prisma_1.prisma.zoneTax.findMany({ where: { zoneId, status: 'active' } });
     let taxAmount = 0;
     const taxBreakdown = [];
     for (const tax of taxes) {
@@ -306,7 +296,7 @@ ZoneService.calculatePrice = (0, catchServiceAsync_1.catchServiceAsync)(async (p
         taxBreakdown.push({ name: tax.taxName, type: tax.taxType, value: tax.taxValue, amount });
     }
     // 3. Delivery charges
-    const deliveryCharges = await prisma.zoneDeliveryCharge.findMany({ where: { zoneId } });
+    const deliveryCharges = await prisma_1.prisma.zoneDeliveryCharge.findMany({ where: { zoneId } });
     let deliveryAmount = 0;
     const deliveryBreakdown = [];
     for (const dc of deliveryCharges) {
@@ -339,7 +329,7 @@ ZoneService.calculatePrice = (0, catchServiceAsync_1.catchServiceAsync)(async (p
  * Returns vendors operating in a given zone (via VendorServiceZone).
  */
 ZoneService.getAvailableVendors = (0, catchServiceAsync_1.catchServiceAsync)(async (zoneId, serviceId) => {
-    const zones = await prisma.vendorServiceZone.findMany({
+    const zones = await prisma_1.prisma.vendorServiceZone.findMany({
         where: { zoneId, status: 'active' },
         include: {
             vendorService: {
@@ -373,7 +363,7 @@ ZoneService.getAvailableVendors = (0, catchServiceAsync_1.catchServiceAsync)(asy
 ZoneService.resolveZoneFromCoords = (0, catchServiceAsync_1.catchServiceAsync)(async (latitude, longitude) => {
     const matched = [];
     // 1. Check GeoFences
-    const fences = await prisma.geoFence.findMany({
+    const fences = await prisma_1.prisma.geoFence.findMany({
         where: { status: 'active' },
         include: { zone: { select: { id: true, name: true, zoneCode: true } } },
     });
@@ -390,7 +380,7 @@ ZoneService.resolveZoneFromCoords = (0, catchServiceAsync_1.catchServiceAsync)(a
     }
     // 2. Check Polygons (if no fence match)
     if (matched.length === 0) {
-        const polygons = await prisma.zonePolygon.findMany({
+        const polygons = await prisma_1.prisma.zonePolygon.findMany({
             include: { zone: { select: { id: true, name: true, zoneCode: true } } },
         });
         for (const poly of polygons) {

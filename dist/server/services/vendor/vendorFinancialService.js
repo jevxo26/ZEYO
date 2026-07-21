@@ -2,16 +2,15 @@
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.VendorFinancialService = void 0;
-const client_1 = require("@prisma/client");
+const prisma_1 = require("../../config/prisma");
 const catchServiceAsync_1 = require("../../utils/catchServiceAsync");
-const prisma = new client_1.PrismaClient();
 class VendorFinancialService {
 }
 exports.VendorFinancialService = VendorFinancialService;
 _a = VendorFinancialService;
 // ─── Bank Accounts ────────────────────────────────────────────────────────
 VendorFinancialService.addBankAccount = (0, catchServiceAsync_1.catchServiceAsync)(async (vendorId, data) => {
-    return prisma.$transaction(async (tx) => {
+    return prisma_1.prisma.$transaction(async (tx) => {
         // If default is true, reset other accounts
         if (data.isDefault) {
             await tx.vendorBankAccount.updateMany({
@@ -35,12 +34,12 @@ VendorFinancialService.addBankAccount = (0, catchServiceAsync_1.catchServiceAsyn
     });
 });
 VendorFinancialService.getBankAccounts = (0, catchServiceAsync_1.catchServiceAsync)(async (vendorId) => {
-    return prisma.vendorBankAccount.findMany({
+    return prisma_1.prisma.vendorBankAccount.findMany({
         where: { vendorId },
     });
 });
 VendorFinancialService.setDefaultBankAccount = (0, catchServiceAsync_1.catchServiceAsync)(async (id, vendorId) => {
-    return prisma.$transaction(async (tx) => {
+    return prisma_1.prisma.$transaction(async (tx) => {
         await tx.vendorBankAccount.updateMany({
             where: { vendorId },
             data: { isDefault: false },
@@ -52,18 +51,18 @@ VendorFinancialService.setDefaultBankAccount = (0, catchServiceAsync_1.catchServ
     });
 });
 VendorFinancialService.deleteBankAccount = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.vendorBankAccount.delete({
+    return prisma_1.prisma.vendorBankAccount.delete({
         where: { id },
     });
 });
 // ─── Wallet Operations ───────────────────────────────────────────────────
 VendorFinancialService.getWallet = (0, catchServiceAsync_1.catchServiceAsync)(async (vendorId) => {
-    return prisma.vendorWallet.findFirst({
+    return prisma_1.prisma.vendorWallet.findFirst({
         where: { vendorId },
     });
 });
 VendorFinancialService.createTransaction = (0, catchServiceAsync_1.catchServiceAsync)(async (vendorId, data) => {
-    return prisma.$transaction(async (tx) => {
+    return prisma_1.prisma.$transaction(async (tx) => {
         const wallet = await tx.vendorWallet.findUnique({
             where: { vendorId },
         });
@@ -106,7 +105,7 @@ VendorFinancialService.createTransaction = (0, catchServiceAsync_1.catchServiceA
 });
 // ─── Payout Operations ───────────────────────────────────────────────────
 VendorFinancialService.requestPayout = (0, catchServiceAsync_1.catchServiceAsync)(async (vendorId, data) => {
-    return prisma.$transaction(async (tx) => {
+    return prisma_1.prisma.$transaction(async (tx) => {
         const wallet = await tx.vendorWallet.findUnique({
             where: { vendorId },
         });
@@ -136,19 +135,19 @@ VendorFinancialService.requestPayout = (0, catchServiceAsync_1.catchServiceAsync
     });
 });
 VendorFinancialService.getPayouts = (0, catchServiceAsync_1.catchServiceAsync)(async (vendorId) => {
-    return prisma.vendorPayout.findMany({
+    return prisma_1.prisma.vendorPayout.findMany({
         where: { vendorId },
         orderBy: { createdAt: 'desc' },
     });
 });
 VendorFinancialService.getTransactions = (0, catchServiceAsync_1.catchServiceAsync)(async (vendorId) => {
-    return prisma.vendorTransaction.findMany({
+    return prisma_1.prisma.vendorTransaction.findMany({
         where: { vendorId },
         orderBy: { createdAt: 'desc' },
     });
 });
 VendorFinancialService.processPayout = (0, catchServiceAsync_1.catchServiceAsync)(async (payoutId, processedBy, status) => {
-    return prisma.$transaction(async (tx) => {
+    return prisma_1.prisma.$transaction(async (tx) => {
         const payout = await tx.vendorPayout.findUnique({
             where: { id: payoutId },
         });

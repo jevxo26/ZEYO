@@ -13,11 +13,10 @@ var __rest = (this && this.__rest) || function (s, e) {
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BookingController = void 0;
-const client_1 = require("@prisma/client");
+const prisma_1 = require("../../config/prisma");
 const catchAsync_1 = require("../../utils/catchAsync");
 const sendResponse_1 = require("../../utils/sendResponse");
 const bookingService_1 = require("../../services/booking/bookingService");
-const prisma = new client_1.PrismaClient();
 class BookingController {
 }
 exports.BookingController = BookingController;
@@ -30,7 +29,7 @@ BookingController.create = (0, catchAsync_1.catchAsync)(async (req, res) => {
     if (!customerId) {
         const userId = (_b = req.user) === null || _b === void 0 ? void 0 : _b.userId;
         if (userId) {
-            const customer = await prisma.customer.findFirst({ where: { userId } });
+            const customer = await prisma_1.prisma.customer.findFirst({ where: { userId } });
             customerId = customer === null || customer === void 0 ? void 0 : customer.id;
         }
     }

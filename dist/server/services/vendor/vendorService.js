@@ -13,9 +13,8 @@ var __rest = (this && this.__rest) || function (s, e) {
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.VendorService = void 0;
-const client_1 = require("@prisma/client");
+const prisma_1 = require("../../config/prisma");
 const catchServiceAsync_1 = require("../../utils/catchServiceAsync");
-const prisma = new client_1.PrismaClient();
 const defaultVendorSelect = {
     id: true,
     vendorCode: true,
@@ -51,7 +50,7 @@ exports.VendorService = VendorService;
 _a = VendorService;
 VendorService.createVendor = (0, catchServiceAsync_1.catchServiceAsync)(async (data) => {
     // Check if email already exists
-    const existing = await prisma.vendor.findFirst({
+    const existing = await prisma_1.prisma.vendor.findFirst({
         where: {
             OR: [
                 { email: data.email },
@@ -63,7 +62,7 @@ VendorService.createVendor = (0, catchServiceAsync_1.catchServiceAsync)(async (d
         throw new Error('Vendor already exists with this email');
     }
     const code = _a.generateVendorCode();
-    const newVendor = await prisma.$transaction(async (tx) => {
+    const newVendor = await prisma_1.prisma.$transaction(async (tx) => {
         var _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5;
         const vendor = await tx.vendor.create({
             data: {
@@ -147,31 +146,31 @@ VendorService.createVendor = (0, catchServiceAsync_1.catchServiceAsync)(async (d
         });
         return vendor;
     });
-    return prisma.vendor.findUnique({
+    return prisma_1.prisma.vendor.findUnique({
         where: { id: newVendor.id },
         select: defaultVendorSelect,
     });
 });
 VendorService.getVendorById = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.vendor.findFirst({
+    return prisma_1.prisma.vendor.findFirst({
         where: { id, deletedAt: null },
         select: defaultVendorSelect,
     });
 });
 VendorService.getVendorByCode = (0, catchServiceAsync_1.catchServiceAsync)(async (vendorCode) => {
-    return prisma.vendor.findFirst({
+    return prisma_1.prisma.vendor.findFirst({
         where: { vendorCode, deletedAt: null },
         select: defaultVendorSelect,
     });
 });
 VendorService.getAllVendors = (0, catchServiceAsync_1.catchServiceAsync)(async () => {
-    return prisma.vendor.findMany({
+    return prisma_1.prisma.vendor.findMany({
         where: { deletedAt: null },
         select: defaultVendorSelect,
     });
 });
 VendorService.updateVendor = (0, catchServiceAsync_1.catchServiceAsync)(async (id, data) => {
-    return prisma.$transaction(async (tx) => {
+    return prisma_1.prisma.$transaction(async (tx) => {
         // Update core
         const coreFields = {
             businessName: data.businessName,
@@ -225,7 +224,7 @@ VendorService.updateVendor = (0, catchServiceAsync_1.catchServiceAsync)(async (i
     });
 });
 VendorService.deleteVendor = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.vendor.update({
+    return prisma_1.prisma.vendor.update({
         where: { id },
         data: {
             deletedAt: new Date(),
@@ -236,7 +235,7 @@ VendorService.deleteVendor = (0, catchServiceAsync_1.catchServiceAsync)(async (i
 });
 // ─── Document Verification ────────────────────────────────────────────────
 VendorService.uploadDocument = (0, catchServiceAsync_1.catchServiceAsync)(async (vendorId, data) => {
-    return prisma.vendorDocument.create({
+    return prisma_1.prisma.vendorDocument.create({
         data: {
             vendorId,
             documentType: data.documentType,
@@ -248,12 +247,12 @@ VendorService.uploadDocument = (0, catchServiceAsync_1.catchServiceAsync)(async 
     });
 });
 VendorService.getDocuments = (0, catchServiceAsync_1.catchServiceAsync)(async (vendorId) => {
-    return prisma.vendorDocument.findMany({
+    return prisma_1.prisma.vendorDocument.findMany({
         where: { vendorId },
     });
 });
 VendorService.verifyDocument = (0, catchServiceAsync_1.catchServiceAsync)(async (documentId, verifiedBy, status) => {
-    return prisma.vendorDocument.update({
+    return prisma_1.prisma.vendorDocument.update({
         where: { id: documentId },
         data: {
             verificationStatus: status, // approved | rejected
@@ -264,7 +263,7 @@ VendorService.verifyDocument = (0, catchServiceAsync_1.catchServiceAsync)(async 
 });
 // ─── Vendor General Verification ─────────────────────────────────────────
 VendorService.verifyVendor = (0, catchServiceAsync_1.catchServiceAsync)(async (vendorId, verifiedBy, data) => {
-    return prisma.$transaction(async (tx) => {
+    return prisma_1.prisma.$transaction(async (tx) => {
         // Add verification log
         const log = await tx.vendorVerification.create({
             data: {

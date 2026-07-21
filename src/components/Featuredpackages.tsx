@@ -10,6 +10,19 @@ import type { EventPackage } from "@/types/package";
 const FEATURED_PACKAGES_ENDPOINT = "/api/packages?featured=true&limit=3";
 
 function normalizePackageItem(raw: Record<string, unknown>): EventPackage {
+  const packageCategory = raw.packageCategory as { name?: unknown } | undefined;
+  const packageSubCategory = raw.packageSubCategory as
+    | { name?: unknown }
+    | undefined;
+  const event = raw.event as { name?: unknown } | undefined;
+  const pricings = raw.pricings as
+    | Array<{
+        finalPrice?: unknown;
+        currency?: unknown;
+      }>
+    | undefined;
+  const setting = raw.setting as { isFeatured?: unknown } | undefined;
+
   const included = Array.from(
     new Set(
       Array.isArray(raw.included)
@@ -17,15 +30,13 @@ function normalizePackageItem(raw: Record<string, unknown>): EventPackage {
             (item): item is string => typeof item === "string",
           )
         : [
-            typeof raw.packageCategory?.name === "string"
-              ? String(raw.packageCategory.name)
+            typeof packageCategory?.name === "string"
+              ? String(packageCategory.name)
               : undefined,
-            typeof raw.packageSubCategory?.name === "string"
-              ? String(raw.packageSubCategory.name)
+            typeof packageSubCategory?.name === "string"
+              ? String(packageSubCategory.name)
               : undefined,
-            typeof raw.event?.name === "string"
-              ? String(raw.event.name)
-              : undefined,
+            typeof event?.name === "string" ? String(event.name) : undefined,
           ].filter((item): item is string => Boolean(item)),
     ),
   );
@@ -34,7 +45,7 @@ function normalizePackageItem(raw: Record<string, unknown>): EventPackage {
     raw.activePrice ??
       raw.startingPrice ??
       raw.price ??
-      raw.pricings?.[0]?.finalPrice ??
+      pricings?.[0]?.finalPrice ??
       0,
   );
 
@@ -44,8 +55,8 @@ function normalizePackageItem(raw: Record<string, unknown>): EventPackage {
     subtitle: typeof raw.description === "string" ? raw.description : undefined,
     price: Number.isFinite(price) ? price : 0,
     currency:
-      typeof raw.pricings?.[0]?.currency === "string"
-        ? String(raw.pricings[0].currency)
+      typeof pricings?.[0]?.currency === "string"
+        ? String(pricings[0].currency)
         : typeof raw.currency === "string"
           ? raw.currency
           : "BDT",
@@ -58,7 +69,7 @@ function normalizePackageItem(raw: Record<string, unknown>): EventPackage {
             ? raw.imageUrl
             : undefined,
     included,
-    popular: Boolean(raw.setting?.isFeatured ?? raw.popular),
+    popular: Boolean(setting?.isFeatured ?? raw.popular),
     tier: typeof raw.tier === "string" ? raw.tier : undefined,
     maxGuests: typeof raw.maxGuests === "number" ? raw.maxGuests : undefined,
   };

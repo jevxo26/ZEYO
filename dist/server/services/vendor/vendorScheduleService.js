@@ -2,16 +2,15 @@
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.VendorScheduleService = void 0;
-const client_1 = require("@prisma/client");
+const prisma_1 = require("../../config/prisma");
 const catchServiceAsync_1 = require("../../utils/catchServiceAsync");
-const prisma = new client_1.PrismaClient();
 class VendorScheduleService {
 }
 exports.VendorScheduleService = VendorScheduleService;
 _a = VendorScheduleService;
 // ─── Vendor Availability ──────────────────────────────────────────────────
 VendorScheduleService.setAvailability = (0, catchServiceAsync_1.catchServiceAsync)(async (vendorId, data) => {
-    return prisma.vendorAvailability.create({
+    return prisma_1.prisma.vendorAvailability.create({
         data: {
             vendorId,
             availableFrom: new Date(data.availableFrom),
@@ -22,19 +21,19 @@ VendorScheduleService.setAvailability = (0, catchServiceAsync_1.catchServiceAsyn
     });
 });
 VendorScheduleService.getAvailability = (0, catchServiceAsync_1.catchServiceAsync)(async (vendorId) => {
-    return prisma.vendorAvailability.findMany({
+    return prisma_1.prisma.vendorAvailability.findMany({
         where: { vendorId },
         orderBy: { availableFrom: 'asc' },
     });
 });
 VendorScheduleService.deleteAvailability = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.vendorAvailability.delete({
+    return prisma_1.prisma.vendorAvailability.delete({
         where: { id },
     });
 });
 // ─── Vendor Calendar ─────────────────────────────────────────────────────
 VendorScheduleService.addCalendarBlock = (0, catchServiceAsync_1.catchServiceAsync)(async (vendorId, data) => {
-    return prisma.vendorCalendar.create({
+    return prisma_1.prisma.vendorCalendar.create({
         data: {
             vendorId,
             bookingDate: new Date(data.bookingDate),
@@ -46,13 +45,13 @@ VendorScheduleService.addCalendarBlock = (0, catchServiceAsync_1.catchServiceAsy
     });
 });
 VendorScheduleService.getCalendar = (0, catchServiceAsync_1.catchServiceAsync)(async (vendorId) => {
-    return prisma.vendorCalendar.findMany({
+    return prisma_1.prisma.vendorCalendar.findMany({
         where: { vendorId },
         orderBy: { bookingDate: 'asc' },
     });
 });
 VendorScheduleService.removeCalendarBlock = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.vendorCalendar.delete({
+    return prisma_1.prisma.vendorCalendar.delete({
         where: { id },
     });
 });

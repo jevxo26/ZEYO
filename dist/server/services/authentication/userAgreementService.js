@@ -2,26 +2,25 @@
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserAgreementService = void 0;
-const client_1 = require("@prisma/client");
+const prisma_1 = require("../../config/prisma");
 const catchServiceAsync_1 = require("../../utils/catchServiceAsync");
-const prisma = new client_1.PrismaClient();
 class UserAgreementService {
 }
 exports.UserAgreementService = UserAgreementService;
 _a = UserAgreementService;
 UserAgreementService.getAgreements = (0, catchServiceAsync_1.catchServiceAsync)(async (userId) => {
-    return prisma.userAgreement.findMany({
+    return prisma_1.prisma.userAgreement.findMany({
         where: { userId },
         orderBy: { acceptedAt: 'desc' },
     });
 });
 UserAgreementService.acceptAgreement = (0, catchServiceAsync_1.catchServiceAsync)(async (userId, data) => {
-    return prisma.userAgreement.create({
+    return prisma_1.prisma.userAgreement.create({
         data: Object.assign(Object.assign({ userId }, data), { acceptedAt: new Date() }),
     });
 });
 UserAgreementService.hasAccepted = (0, catchServiceAsync_1.catchServiceAsync)(async (userId, agreementType, version) => {
-    const agreement = await prisma.userAgreement.findFirst({
+    const agreement = await prisma_1.prisma.userAgreement.findFirst({
         where: { userId, agreementType, version },
     });
     return !!agreement;

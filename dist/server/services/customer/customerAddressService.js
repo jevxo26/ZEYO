@@ -2,26 +2,25 @@
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CustomerAddressService = void 0;
-const client_1 = require("@prisma/client");
+const prisma_1 = require("../../config/prisma");
 const catchServiceAsync_1 = require("../../utils/catchServiceAsync");
-const prisma = new client_1.PrismaClient();
 class CustomerAddressService {
 }
 exports.CustomerAddressService = CustomerAddressService;
 _a = CustomerAddressService;
 CustomerAddressService.getAddresses = (0, catchServiceAsync_1.catchServiceAsync)(async (customerId) => {
-    return prisma.customerAddress.findMany({
+    return prisma_1.prisma.customerAddress.findMany({
         where: { customerId },
         orderBy: { isDefault: 'desc' },
     });
 });
 CustomerAddressService.getAddressById = (0, catchServiceAsync_1.catchServiceAsync)(async (id, customerId) => {
-    return prisma.customerAddress.findFirst({
+    return prisma_1.prisma.customerAddress.findFirst({
         where: { id, customerId },
     });
 });
 CustomerAddressService.createAddress = (0, catchServiceAsync_1.catchServiceAsync)(async (customerId, data) => {
-    return prisma.$transaction(async (tx) => {
+    return prisma_1.prisma.$transaction(async (tx) => {
         // If setting this one to default, clear previous default addresses
         if (data.isDefault) {
             await tx.customerAddress.updateMany({
@@ -39,7 +38,7 @@ CustomerAddressService.createAddress = (0, catchServiceAsync_1.catchServiceAsync
     });
 });
 CustomerAddressService.updateAddress = (0, catchServiceAsync_1.catchServiceAsync)(async (id, customerId, data) => {
-    return prisma.$transaction(async (tx) => {
+    return prisma_1.prisma.$transaction(async (tx) => {
         if (data.isDefault) {
             await tx.customerAddress.updateMany({
                 where: { customerId, isDefault: true },
@@ -53,7 +52,7 @@ CustomerAddressService.updateAddress = (0, catchServiceAsync_1.catchServiceAsync
     });
 });
 CustomerAddressService.deleteAddress = (0, catchServiceAsync_1.catchServiceAsync)(async (id, customerId) => {
-    return prisma.$transaction(async (tx) => {
+    return prisma_1.prisma.$transaction(async (tx) => {
         const address = await tx.customerAddress.findFirst({
             where: { id, customerId },
         });
@@ -79,7 +78,7 @@ CustomerAddressService.deleteAddress = (0, catchServiceAsync_1.catchServiceAsync
     });
 });
 CustomerAddressService.setDefaultAddress = (0, catchServiceAsync_1.catchServiceAsync)(async (id, customerId) => {
-    return prisma.$transaction(async (tx) => {
+    return prisma_1.prisma.$transaction(async (tx) => {
         // Clear default status of existing default addresses
         await tx.customerAddress.updateMany({
             where: { customerId, isDefault: true },

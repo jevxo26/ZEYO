@@ -1,0 +1,16 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// ReviewCriteria — individual criteria ratings within a review
+// criteriaName: quality | professionalism | communication | timeliness | value_for_money
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ReviewCriteria {
+  id           Int      @id @default(autoincrement())
+  reviewId     Int
+  review       Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  criteriaName String
+  rating       Decimal  @db.Decimal(3, 2)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([reviewId])
+}

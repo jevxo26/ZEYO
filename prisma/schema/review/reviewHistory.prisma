@@ -1,0 +1,17 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// ReviewHistory — audit trail of changes to a review
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ReviewHistory {
+  id          Int      @id @default(autoincrement())
+  reviewId    Int
+  review      Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  action      String
+  performedBy Int?
+  performedByUser User? @relation("ReviewHistoryBy", fields: [performedBy], references: [id], onDelete: SetNull)
+  oldValue    String?
+  newValue    String?
+  createdAt   DateTime @default(now())
+
+  @@index([reviewId])
+}

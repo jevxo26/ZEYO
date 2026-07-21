@@ -1,3 +1,4 @@
+import { prisma } from '../../config/prisma';
 import { PrismaClient, Prisma } from '@prisma/client';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
@@ -6,7 +7,7 @@ import { catchServiceAsync } from '../../utils/catchServiceAsync';
 import { sendTemplateEmail } from '../emailService';
 import { sendSMS } from '../smsService';
 
-const prisma = new PrismaClient();
+
 
 // Single source of truth for JWT secrets — consistent across sign & verify
 const JWT_SECRET = process.env.JWT_SECRET || 'ZEYO_access_secret_2026_please_change_in_production';

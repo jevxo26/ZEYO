@@ -2,26 +2,25 @@
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CustomerWalletService = void 0;
-const client_1 = require("@prisma/client");
+const prisma_1 = require("../../config/prisma");
 const catchServiceAsync_1 = require("../../utils/catchServiceAsync");
-const prisma = new client_1.PrismaClient();
 class CustomerWalletService {
 }
 exports.CustomerWalletService = CustomerWalletService;
 _a = CustomerWalletService;
 CustomerWalletService.getWallet = (0, catchServiceAsync_1.catchServiceAsync)(async (customerId) => {
-    return prisma.customerWallet.findUnique({
+    return prisma_1.prisma.customerWallet.findUnique({
         where: { customerId },
     });
 });
 CustomerWalletService.getTransactions = (0, catchServiceAsync_1.catchServiceAsync)(async (customerId) => {
-    return prisma.customerTransaction.findMany({
+    return prisma_1.prisma.customerTransaction.findMany({
         where: { customerId },
         orderBy: { createdAt: 'desc' },
     });
 });
 CustomerWalletService.getRewards = (0, catchServiceAsync_1.catchServiceAsync)(async (customerId) => {
-    return prisma.customerReward.findMany({
+    return prisma_1.prisma.customerReward.findMany({
         where: { customerId },
         orderBy: { createdAt: 'desc' },
     });
@@ -29,7 +28,7 @@ CustomerWalletService.getRewards = (0, catchServiceAsync_1.catchServiceAsync)(as
 CustomerWalletService.createTransaction = (0, catchServiceAsync_1.catchServiceAsync)(async (customerId, data) => {
     if (data.amount <= 0)
         throw new Error('Transaction amount must be greater than zero');
-    return prisma.$transaction(async (tx) => {
+    return prisma_1.prisma.$transaction(async (tx) => {
         const wallet = await tx.customerWallet.findUnique({
             where: { customerId },
         });
@@ -69,7 +68,7 @@ CustomerWalletService.addReward = (0, catchServiceAsync_1.catchServiceAsync)(asy
         expiryDate = new Date();
         expiryDate.setDate(expiryDate.getDate() + data.expiryDays);
     }
-    return prisma.$transaction(async (tx) => {
+    return prisma_1.prisma.$transaction(async (tx) => {
         const wallet = await tx.customerWallet.findUnique({
             where: { customerId },
         });
@@ -97,7 +96,7 @@ CustomerWalletService.addReward = (0, catchServiceAsync_1.catchServiceAsync)(asy
     });
 });
 CustomerWalletService.redeemReward = (0, catchServiceAsync_1.catchServiceAsync)(async (rewardId, customerId) => {
-    return prisma.$transaction(async (tx) => {
+    return prisma_1.prisma.$transaction(async (tx) => {
         const reward = await tx.customerReward.findFirst({
             where: { id: rewardId, customerId, status: 'active' },
         });

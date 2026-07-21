@@ -1,0 +1,19 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// ReviewModeration — admin moderation actions on reviews
+// action: approved | hidden | removed | flagged
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ReviewModeration {
+  id          Int      @id @default(autoincrement())
+  reviewId    Int
+  review      Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  moderatedBy Int?
+  moderator   User?    @relation("ReviewModerator", fields: [moderatedBy], references: [id], onDelete: SetNull)
+  action      String
+  remarks     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([reviewId])
+  @@index([action])
+}

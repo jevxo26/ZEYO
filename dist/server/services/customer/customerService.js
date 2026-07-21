@@ -13,9 +13,8 @@ var __rest = (this && this.__rest) || function (s, e) {
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CustomerService = void 0;
-const client_1 = require("@prisma/client");
+const prisma_1 = require("../../config/prisma");
 const catchServiceAsync_1 = require("../../utils/catchServiceAsync");
-const prisma = new client_1.PrismaClient();
 const defaultCustomerSelect = {
     id: true,
     userId: true,
@@ -41,14 +40,14 @@ exports.CustomerService = CustomerService;
 _a = CustomerService;
 CustomerService.createCustomer = (0, catchServiceAsync_1.catchServiceAsync)(async (userId, data) => {
     // Check if customer already exists for this user
-    const existing = await prisma.customer.findUnique({
+    const existing = await prisma_1.prisma.customer.findUnique({
         where: { userId },
     });
     if (existing) {
         throw new Error('Customer profile already exists for this user');
     }
     const code = data.customerCode || _a.generateCustomerCode();
-    const newCustomer = await prisma.$transaction(async (tx) => {
+    const newCustomer = await prisma_1.prisma.$transaction(async (tx) => {
         var _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6;
         const customer = await tx.customer.create({
             data: {
@@ -112,31 +111,31 @@ CustomerService.createCustomer = (0, catchServiceAsync_1.catchServiceAsync)(asyn
         });
         return customer;
     });
-    return prisma.customer.findUnique({
+    return prisma_1.prisma.customer.findUnique({
         where: { id: newCustomer.id },
         select: defaultCustomerSelect,
     });
 });
 CustomerService.getAllCustomers = (0, catchServiceAsync_1.catchServiceAsync)(async () => {
-    return prisma.customer.findMany({
+    return prisma_1.prisma.customer.findMany({
         where: { deletedAt: null },
         select: defaultCustomerSelect,
     });
 });
 CustomerService.getCustomerById = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.customer.findFirst({
+    return prisma_1.prisma.customer.findFirst({
         where: { id, deletedAt: null },
         select: defaultCustomerSelect,
     });
 });
 CustomerService.getCustomerByUserId = (0, catchServiceAsync_1.catchServiceAsync)(async (userId) => {
-    return prisma.customer.findFirst({
+    return prisma_1.prisma.customer.findFirst({
         where: { userId, deletedAt: null },
         select: defaultCustomerSelect,
     });
 });
 CustomerService.updateCustomer = (0, catchServiceAsync_1.catchServiceAsync)(async (id, data) => {
-    return prisma.$transaction(async (tx) => {
+    return prisma_1.prisma.$transaction(async (tx) => {
         // Update core customer fields
         if (data.membershipLevel || data.status) {
             await tx.customer.update({
@@ -176,7 +175,7 @@ CustomerService.updateCustomer = (0, catchServiceAsync_1.catchServiceAsync)(asyn
     });
 });
 CustomerService.deleteCustomer = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.customer.update({
+    return prisma_1.prisma.customer.update({
         where: { id },
         data: {
             deletedAt: new Date(),
@@ -187,7 +186,7 @@ CustomerService.deleteCustomer = (0, catchServiceAsync_1.catchServiceAsync)(asyn
 });
 // ─── Customer Activity Log ────────────────────────────────────────────────
 CustomerService.logActivity = (0, catchServiceAsync_1.catchServiceAsync)(async (customerId, activityType, description, ipAddress, deviceId) => {
-    return prisma.customerActivity.create({
+    return prisma_1.prisma.customerActivity.create({
         data: {
             customerId,
             activityType,
@@ -198,7 +197,7 @@ CustomerService.logActivity = (0, catchServiceAsync_1.catchServiceAsync)(async (
     });
 });
 CustomerService.getActivities = (0, catchServiceAsync_1.catchServiceAsync)(async (customerId) => {
-    return prisma.customerActivity.findMany({
+    return prisma_1.prisma.customerActivity.findMany({
         where: { customerId },
         orderBy: { createdAt: 'desc' },
     });

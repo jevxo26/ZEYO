@@ -2,16 +2,15 @@
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.VendorPortfolioService = void 0;
-const client_1 = require("@prisma/client");
+const prisma_1 = require("../../config/prisma");
 const catchServiceAsync_1 = require("../../utils/catchServiceAsync");
-const prisma = new client_1.PrismaClient();
 class VendorPortfolioService {
 }
 exports.VendorPortfolioService = VendorPortfolioService;
 _a = VendorPortfolioService;
 // ─── Portfolios ──────────────────────────────────────────────────────────
 VendorPortfolioService.createPortfolio = (0, catchServiceAsync_1.catchServiceAsync)(async (vendorId, data) => {
-    return prisma.vendorPortfolio.create({
+    return prisma_1.prisma.vendorPortfolio.create({
         data: {
             vendorId,
             title: data.title,
@@ -22,7 +21,7 @@ VendorPortfolioService.createPortfolio = (0, catchServiceAsync_1.catchServiceAsy
     });
 });
 VendorPortfolioService.getPortfolios = (0, catchServiceAsync_1.catchServiceAsync)(async (vendorId) => {
-    return prisma.vendorPortfolio.findMany({
+    return prisma_1.prisma.vendorPortfolio.findMany({
         where: { vendorId },
         include: {
             gallery: true,
@@ -30,19 +29,19 @@ VendorPortfolioService.getPortfolios = (0, catchServiceAsync_1.catchServiceAsync
     });
 });
 VendorPortfolioService.updatePortfolio = (0, catchServiceAsync_1.catchServiceAsync)(async (id, data) => {
-    return prisma.vendorPortfolio.update({
+    return prisma_1.prisma.vendorPortfolio.update({
         where: { id },
         data,
     });
 });
 VendorPortfolioService.deletePortfolio = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.vendorPortfolio.delete({
+    return prisma_1.prisma.vendorPortfolio.delete({
         where: { id },
     });
 });
 // ─── Gallery ─────────────────────────────────────────────────────────────
 VendorPortfolioService.addToGallery = (0, catchServiceAsync_1.catchServiceAsync)(async (vendorId, data) => {
-    return prisma.vendorGallery.create({
+    return prisma_1.prisma.vendorGallery.create({
         data: {
             vendorId,
             portfolioId: data.portfolioId || null,
@@ -53,7 +52,7 @@ VendorPortfolioService.addToGallery = (0, catchServiceAsync_1.catchServiceAsync)
     });
 });
 VendorPortfolioService.getGallery = (0, catchServiceAsync_1.catchServiceAsync)(async (vendorId, portfolioId) => {
-    return prisma.vendorGallery.findMany({
+    return prisma_1.prisma.vendorGallery.findMany({
         where: {
             vendorId,
             portfolioId: portfolioId !== undefined ? portfolioId : undefined,
@@ -62,7 +61,7 @@ VendorPortfolioService.getGallery = (0, catchServiceAsync_1.catchServiceAsync)(a
     });
 });
 VendorPortfolioService.removeFromGallery = (0, catchServiceAsync_1.catchServiceAsync)(async (id) => {
-    return prisma.vendorGallery.delete({
+    return prisma_1.prisma.vendorGallery.delete({
         where: { id },
     });
 });
