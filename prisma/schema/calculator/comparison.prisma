@@ -4,9 +4,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Comparison {
-  id               Int          @id @default(autoincrement())
+  id               Int           @id @default(autoincrement())
   customerId       Int
-  customer         Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customer         Customer      @relation(fields: [customerId], references: [id], onDelete: Cascade)
   estimateOneId    Int
   estimateOne      SavedEstimate @relation("ComparisonEstimateOne", fields: [estimateOneId], references: [id])
   estimateTwoId    Int

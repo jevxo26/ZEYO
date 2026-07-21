@@ -7,10 +7,10 @@ model EventSchedule {
   id          Int      @id @default(autoincrement())
   eventId     Int
   event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  dayNumber   Int      // e.g. 1, 2, 3
+  dayNumber   Int // e.g. 1, 2, 3
   title       String
-  startTime   String?  // HH:mm format
-  endTime     String?  // HH:mm format
+  startTime   String? // HH:mm format
+  endTime     String? // HH:mm format
   description String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

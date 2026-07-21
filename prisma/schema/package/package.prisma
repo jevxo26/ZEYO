@@ -25,26 +25,26 @@ model Package {
   deletedAt            DateTime?
 
   // Relations
-  types                PackageType[]
-  services             PackageService[]
-  pricings             PackagePricing[]
-  zonePricings         PackageZonePricing[]
-  guestRanges          PackageGuestRange[]
-  coverages            PackageCoverage[]
-  addons               PackageAddon[]
-  features             PackageFeature[]
-  gallery              PackageGallery[]
-  faqs                 PackageFAQ[]
-  policies             PackagePolicy[]
-  terms                PackageTerms[]
-  availabilities       PackageAvailability[]
-  discounts            PackageDiscount[]
-  analytics            PackageAnalytics[]
-  reviews              PackageReview[]
-  setting              PackageSetting?
-  favoriteCustomers    CustomerFavoritePackage[]
-  bookings             Booking[]
-  reviewPackageFeedbacks ReviewPackageFeedback[] @relation("reviewPackageFeedbacks")
+  types                  PackageType[]
+  services               PackageService[]
+  pricings               PackagePricing[]
+  zonePricings           PackageZonePricing[]
+  guestRanges            PackageGuestRange[]
+  coverages              PackageCoverage[]
+  addons                 PackageAddon[]
+  features               PackageFeature[]
+  gallery                PackageGallery[]
+  faqs                   PackageFAQ[]
+  policies               PackagePolicy[]
+  terms                  PackageTerms[]
+  availabilities         PackageAvailability[]
+  discounts              PackageDiscount[]
+  analytics              PackageAnalytics[]
+  reviews                PackageReview[]
+  setting                PackageSetting?
+  favoriteCustomers      CustomerFavoritePackage[]
+  bookings               Booking[]
+  reviewPackageFeedbacks ReviewPackageFeedback[]   @relation("reviewPackageFeedbacks")
 
   @@index([eventId])
   @@index([packageCategoryId])

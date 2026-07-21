@@ -7,7 +7,7 @@ model VendorPricing {
   basePrice       Float
   minimumPrice    Float?
   maximumPrice    Float?
-  priceType       String        // e.g. flat | hourly | daily | per_person
+  priceType       String // e.g. flat | hourly | daily | per_person
   status          String        @default("active") // active | inactive
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt

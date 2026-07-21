@@ -6,19 +6,19 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model RoleHierarchy {
-  id           Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
   parentRoleId Int
   childRoleId  Int
-  level        Int      @default(0)   // Depth from root role
+  level        Int @default(0) // Depth from root role
 
   // ── Timestamps ─────────────────────────────────────────────────────────────
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // ── Relations ──────────────────────────────────────────────────────────────
-  parentRole   Role     @relation("ParentRole", fields: [parentRoleId], references: [id], onDelete: Cascade)
-  childRole    Role     @relation("ChildRole",  fields: [childRoleId],  references: [id], onDelete: Cascade)
+  parentRole Role @relation("ParentRole", fields: [parentRoleId], references: [id], onDelete: Cascade)
+  childRole  Role @relation("ChildRole", fields: [childRoleId], references: [id], onDelete: Cascade)
 
   // ── Constraints ────────────────────────────────────────────────────────────
   @@unique([parentRoleId, childRoleId])

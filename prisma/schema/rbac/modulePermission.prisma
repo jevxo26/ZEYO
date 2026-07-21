@@ -5,18 +5,18 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model ModulePermission {
-  id           Int        @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
   moduleId     Int
   permissionId Int
 
   // ── Relations ──────────────────────────────────────────────────────────────
-  module       Module     @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  module     Module     @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 
   // ── Timestamps ─────────────────────────────────────────────────────────────
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // ── Constraints ────────────────────────────────────────────────────────────
   @@unique([moduleId, permissionId])

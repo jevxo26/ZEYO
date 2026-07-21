@@ -3,9 +3,9 @@ model PackageAddon {
   packageId   Int
   package     Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
   serviceId   Int
-  name        String   // e.g. Drone | Live Streaming | Extra Photographer
+  name        String // e.g. Drone | Live Streaming | Extra Photographer
   price       Float
-  pricingType String   // flat | hourly | daily
+  pricingType String // flat | hourly | daily
   status      String   @default("active")
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

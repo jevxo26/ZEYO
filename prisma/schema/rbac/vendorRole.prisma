@@ -5,25 +5,25 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model VendorRole {
-  id         Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  vendorId   Int                    // Will FK to Vendor.id (future module)
-  roleId     Int
+  vendorId Int // Will FK to Vendor.id (future module)
+  roleId   Int
 
   // ── Assignment Metadata ────────────────────────────────────────────────────
-  assignedBy Int?                   // User ID who performed the assignment
+  assignedBy Int? // User ID who performed the assignment
   assignedAt DateTime @default(now())
 
   // ── Status ─────────────────────────────────────────────────────────────────
-  status     String   @default("active") // active | revoked | suspended
+  status String @default("active") // active | revoked | suspended
 
   // ── Timestamps ─────────────────────────────────────────────────────────────
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // ── Relations ──────────────────────────────────────────────────────────────
-  role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  vendor     Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  role   Role   @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  vendor Vendor @relation(fields: [vendorId], references: [id], onDelete: Cascade)
 
   // ── Indexes ────────────────────────────────────────────────────────────────
   @@index([vendorId])

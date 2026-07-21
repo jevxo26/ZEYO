@@ -7,7 +7,7 @@ model EventPackageType {
   id           Int      @id @default(autoincrement())
   eventId      Int
   event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  packageType  String   // e.g. basic | standard | premium | luxury
+  packageType  String // e.g. basic | standard | premium | luxury
   description  String?
   displayOrder Int      @default(0)
   status       String   @default("active")

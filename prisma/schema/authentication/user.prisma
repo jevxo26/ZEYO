@@ -5,127 +5,136 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model User {
-  id            Int       @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
   // ── Identity ───────────────────────────────────────────────────────────────
-  name          String
-  firstName     String?
-  lastName      String?
-  fullName      String?
-  email         String    @unique
-  phone         String?
-  password      String?
-  profileImage  String?
-  dateOfBirth   DateTime?
-  gender        String?
+  name         String
+  firstName    String?
+  lastName     String?
+  fullName     String?
+  email        String    @unique
+  phone        String?
+  password     String?
+  profileImage String?
+  dateOfBirth  DateTime?
+  gender       String?
 
   // ── Role & Status ──────────────────────────────────────────────────────────
   // `role` (string) = quick-access slug (e.g. "admin", "employee")
   // `userRole` (FK) = normalised Role relation — keep both in sync
-  role          String    @default("employee")
-  roleId        Int?
-  userRole      Role?     @relation(fields: [roleId], references: [id], onDelete: SetNull)
-  status        String    @default("active") // active | inactive | suspended | deleted
+  role     String @default("employee")
+  roleId   Int?
+  userRole Role?  @relation(fields: [roleId], references: [id], onDelete: SetNull)
+  status   String @default("active") // active | inactive | suspended | deleted
 
   // ── Verification Flags ─────────────────────────────────────────────────────
-  isVerified      Boolean @default(false)
-  emailVerified   Boolean @default(false)
-  phoneVerified   Boolean @default(false)
+  isVerified    Boolean @default(false)
+  emailVerified Boolean @default(false)
+  phoneVerified Boolean @default(false)
 
   // ── Activity ───────────────────────────────────────────────────────────────
-  lastLoginAt     DateTime?
-  lastActiveAt    DateTime?
-  issueDate       DateTime  @default(now())
+  lastLoginAt  DateTime?
+  lastActiveAt DateTime?
+  issueDate    DateTime  @default(now())
 
   // ── OAuth / Social Login ───────────────────────────────────────────────────
-  provider        String    @default("local")
-  providerId      String?   @unique
+  provider   String  @default("local")
+  providerId String? @unique
 
   // ── Legacy Auth Tokens (kept for backward compat — prefer UserToken/UserSession) ──
   // TODO: migrate to UserToken + UserSession models and remove these fields
-  loginLog                  Json?
-  resetPasswordToken        String?
-  resetPasswordExpires      DateTime?
-  emailVerificationToken    String?
-  emailVerificationExpires  DateTime?
-  phoneVerificationToken    String?
-  phoneVerificationExpires  DateTime?
-  refreshToken              String?
+  loginLog                 Json?
+  resetPasswordToken       String?
+  resetPasswordExpires     DateTime?
+  emailVerificationToken   String?
+  emailVerificationExpires DateTime?
+  phoneVerificationToken   String?
+  phoneVerificationExpires DateTime?
+  refreshToken             String?
 
   // ── Soft Delete ────────────────────────────────────────────────────────────
-  deletedAt       DateTime?
+  deletedAt DateTime?
 
   // ── One-to-One Relations ───────────────────────────────────────────────────
-  profile                  UserProfile?
-  notificationSetting      UserNotificationSetting?
-  security                 UserSecurity?
-  preference               UserPreference?
-  customer                 Customer?
+  profile             UserProfile?
+  notificationSetting UserNotificationSetting?
+  security            UserSecurity?
+  preference          UserPreference?
+  customer            Customer?
 
   // ── One-to-Many Relations ──────────────────────────────────────────────────
-  addresses                UserAddress[]
-  devices                  UserDevice[]
-  sessions                 UserSession[]
-  tokens                   UserToken[]
-  otps                     UserOTP[]
-  loginHistories           UserLoginHistory[]
-  favoriteZones            UserFavoriteZone[]
-  savedEvents              UserSavedEvent[]
-  activities               UserActivity[]
-  attachments              UserAttachment[]
-  agreements               UserAgreement[]
-  consents                 UserConsent[]
-  identityVerifications    UserIdentityVerification[]
+  addresses             UserAddress[]
+  devices               UserDevice[]
+  sessions              UserSession[]
+  tokens                UserToken[]
+  otps                  UserOTP[]
+  loginHistories        UserLoginHistory[]
+  favoriteZones         UserFavoriteZone[]
+  savedEvents           UserSavedEvent[]
+  activities            UserActivity[]
+  attachments           UserAttachment[]
+  agreements            UserAgreement[]
+  consents              UserConsent[]
+  identityVerifications UserIdentityVerification[]
 
   // ── Self-referencing Relations (named to avoid Prisma ambiguity) ───────────
   // UserSupportTicket: tickets created by this user
-  supportTickets           UserSupportTicket[]  @relation("UserTickets")
+  supportTickets          UserSupportTicket[] @relation("UserTickets")
   // UserSupportTicket: tickets assigned to this admin user
-  assignedTickets          UserSupportTicket[]  @relation("AdminTickets")
+  assignedTickets         UserSupportTicket[] @relation("AdminTickets")
   // UserStatusHistory: status change records for this user
-  statusHistories          UserStatusHistory[]  @relation("UserStatusLogs")
+  statusHistories         UserStatusHistory[] @relation("UserStatusLogs")
   // UserStatusHistory: status changes made BY this admin user
-  adminStatusChanges       UserStatusHistory[]  @relation("AdminStatusChanges")
+  adminStatusChanges      UserStatusHistory[] @relation("AdminStatusChanges")
   // CustomerSupport tickets assigned to this admin user
-  assignedCustomerSupport  CustomerSupport[]    @relation("CustomerSupportAssignedAdmin")
+  assignedCustomerSupport CustomerSupport[]   @relation("CustomerSupportAssignedAdmin")
 
   // ── Booking Relations ───────────────────────────────────────────────────────
-  bookingStatusUpdates     BookingStatus[]      @relation
-  bookingTimelineEntries   BookingTimeline[]    @relation
+  bookingStatusUpdates      BookingStatus[]     @relation
+  bookingTimelineEntries    BookingTimeline[]   @relation
   bookingRescheduleApproval BookingReschedule[] @relation
-  bookingAttachments       BookingAttachment[]  @relation
-  bookingNotes             BookingNote[]        @relation
-  bookingHistories         BookingHistory[]     @relation
+  bookingAttachments        BookingAttachment[] @relation
+  bookingNotes              BookingNote[]       @relation
+  bookingHistories          BookingHistory[]    @relation
 
   // ── Assignment Relations ───────────────────────────────────────────────────────
-  createdAssignments       VendorAssignment[]        @relation("AssignmentCreatedBy")
-  assignmentStatusUpdates  AssignmentStatus[]        @relation("AssignmentStatusUpdatedBy")
-  assignmentTimelines      AssignmentTimeline[]      @relation("AssignmentTimelineCreatedBy")
-  assignmentNotes          AssignmentNote[]          @relation("AssignmentNoteCreatedBy")
-  assignmentAttachments    AssignmentAttachment[]    @relation("AssignmentAttachmentUploadedBy")
-  assignmentHistories      AssignmentHistory[]       @relation("AssignmentHistoryBy")
-  vendorAssignedBy         AssignedVendor[]          @relation("VendorAssignedBy")
-  deliverables             Deliverable[]             @relation("DeliverableUploadedBy")
-  completionReports        CompletionReport[]        @relation("CompletionReportBy")
-  vendorReplacementsApproved VendorReplacement[]     @relation("VendorReplacementApprovedBy")
-  assignmentCancellations  AssignmentCancellation[]  @relation("AssignmentCancelledBy")
+  createdAssignments         VendorAssignment[]       @relation("AssignmentCreatedBy")
+  assignmentStatusUpdates    AssignmentStatus[]       @relation("AssignmentStatusUpdatedBy")
+  assignmentTimelines        AssignmentTimeline[]     @relation("AssignmentTimelineCreatedBy")
+  assignmentNotes            AssignmentNote[]         @relation("AssignmentNoteCreatedBy")
+  assignmentAttachments      AssignmentAttachment[]   @relation("AssignmentAttachmentUploadedBy")
+  assignmentHistories        AssignmentHistory[]      @relation("AssignmentHistoryBy")
+  vendorAssignedBy           AssignedVendor[]         @relation("VendorAssignedBy")
+  deliverables               Deliverable[]            @relation("DeliverableUploadedBy")
+  completionReports          CompletionReport[]       @relation("CompletionReportBy")
+  vendorReplacementsApproved VendorReplacement[]      @relation("VendorReplacementApprovedBy")
+  assignmentCancellations    AssignmentCancellation[] @relation("AssignmentCancelledBy")
 
   // ── Payment Relations ─────────────────────────────────────────────────────
-  paymentVerifications   PaymentVerification[]  @relation("PaymentVerifiedBy")
-  paymentHistories       PaymentHistory[]       @relation("PaymentHistoryBy")
-  refundsRequested       Refund[]               @relation("RefundRequestedBy")
-  refundsApproved        Refund[]               @relation("RefundApprovedBy")
+  paymentVerifications PaymentVerification[] @relation("PaymentVerifiedBy")
+  paymentHistories     PaymentHistory[]      @relation("PaymentHistoryBy")
+  refundsRequested     Refund[]              @relation("RefundRequestedBy")
+  refundsApproved      Refund[]              @relation("RefundApprovedBy")
 
   // ── Review Relations ──────────────────────────────────────────────────────
-  reviewReplies          ReviewReply[]          @relation("ReviewReplyAdmin")
-  reviewReports          ReviewReport[]         @relation("ReviewReportedBy")
-  reviewModerations      ReviewModeration[]     @relation("ReviewModerator")
-  reviewVerifications    ReviewVerification[]   @relation("ReviewVerifiedBy")
-  reviewHistories        ReviewHistory[]        @relation("ReviewHistoryBy")
+  reviewReplies       ReviewReply[]        @relation("ReviewReplyAdmin")
+  reviewReports       ReviewReport[]       @relation("ReviewReportedBy")
+  reviewModerations   ReviewModeration[]   @relation("ReviewModerator")
+  reviewVerifications ReviewVerification[] @relation("ReviewVerifiedBy")
+  reviewHistories     ReviewHistory[]      @relation("ReviewHistoryBy")
 
   // ── Timestamps ─────────────────────────────────────────────────────────────
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  conversations Conversation[] @relation("adminConversations")
+
+  // ── Admin & CMS Relations ─────────────────────────────────────────────────
+  adminProfile AdminProfile?
+  auditLogs    AuditLog[]
+  blogs        Blog[]
+
+  reports         Report[]
+  exportHistories ExportHistory[]
 
   // ── Indexes ────────────────────────────────────────────────────────────────
   @@index([resetPasswordToken])

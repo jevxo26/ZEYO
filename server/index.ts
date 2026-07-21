@@ -32,6 +32,20 @@ import vendorWorkRoutes   from './routes/vendor/vendorWorkRoutes';
 import paymentRoutes      from './routes/payment/paymentRoutes';
 import reviewRoutes       from './routes/review/reviewRoutes';
 
+// ─── Notification & Communication Routes ────────────────────────────────────
+import notificationRoutes      from './routes/notification/notificationRoutes';
+import communicationRoutes     from './routes/notification/communicationRoutes';
+import adminNotificationRoutes from './routes/notification/adminNotificationRoutes';
+
+// ─── Admin CMS & Config Routes (Part 15) ──────────────────────────────────
+import adminCmsRoutes       from './routes/admin/cmsRoutes';
+import adminConfigRoutes    from './routes/admin/configRoutes';
+import adminDashboardRoutes from './routes/admin/dashboardRoutes';
+
+// ─── Analytics & Reporting Routes (Part 16) ───────────────────────────────
+import analyticsRoutes      from './routes/analytics/analyticsRoutes';
+
+
 // ─── RBAC Routes ────────────────────────────────────────────────────────────
 import rbacRoleRoutes           from './routes/rbac/roleRoutes';
 import rbacModuleRoutes         from './routes/rbac/moduleRoutes';
@@ -129,6 +143,19 @@ app.prepare().then(async () => {
   server.use('/api/vendor/work',       vendorWorkRoutes);   // Vendor work operations
   server.use('/api/admin/payments',    paymentRoutes);      // Payment & Billing (admin)
   server.use('/api/reviews',           reviewRoutes);       // Review, Rating & Feedback
+
+  // ─── Notification & Communication API ─────────────────────────────────────
+  server.use('/api/notifications',       notificationRoutes);
+  server.use('/api/communications',      communicationRoutes);
+  server.use('/api/admin/notifications', adminNotificationRoutes);
+
+  // ─── Admin CMS, Config & Dashboard API ────────────────────────────────────
+  server.use('/api/admin/cms',        adminCmsRoutes);
+  server.use('/api/admin/config',     adminConfigRoutes);
+  server.use('/api/admin/dashboards', adminDashboardRoutes);
+
+  // ─── Analytics & Reporting API ────────────────────────────────────────────
+  server.use('/api/admin/analytics',  analyticsRoutes);
 
   // ─── RBAC API ─────────────────────────────────────────────────────────────
   server.use('/api/rbac/roles',            rbacRoleRoutes);

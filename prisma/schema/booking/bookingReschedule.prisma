@@ -4,17 +4,17 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model BookingReschedule {
-  id           Int      @id @default(autoincrement())
-  bookingId    Int
-  booking      Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  oldEventDate DateTime?
-  newEventDate DateTime?
-  reason       String?
-  approvedBy   Int?
-  approvedByUser User?  @relation(fields: [approvedBy], references: [id], onDelete: SetNull)
-  status       String   @default("pending")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id             Int       @id @default(autoincrement())
+  bookingId      Int
+  booking        Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  oldEventDate   DateTime?
+  newEventDate   DateTime?
+  reason         String?
+  approvedBy     Int?
+  approvedByUser User?     @relation(fields: [approvedBy], references: [id], onDelete: SetNull)
+  status         String    @default("pending")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   @@index([bookingId])
   @@index([status])

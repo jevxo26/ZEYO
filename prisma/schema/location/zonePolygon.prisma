@@ -2,7 +2,7 @@ model ZonePolygon {
   id              Int      @id @default(autoincrement())
   zoneId          Int
   zone            Zone     @relation(fields: [zoneId], references: [id], onDelete: Cascade)
-  polygonData     Json     // Stores coordinates list
+  polygonData     Json // Stores coordinates list
   centerLatitude  Float?
   centerLongitude Float?
   createdAt       DateTime @default(now())

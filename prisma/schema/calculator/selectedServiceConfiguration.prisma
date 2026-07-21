@@ -4,15 +4,15 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model SelectedServiceConfiguration {
-  id                 Int             @id @default(autoincrement())
+  id                 Int                  @id @default(autoincrement())
   selectedServiceId  Int
-  selectedService    SelectedService @relation(fields: [selectedServiceId], references: [id], onDelete: Cascade)
+  selectedService    SelectedService      @relation(fields: [selectedServiceId], references: [id], onDelete: Cascade)
   configurationId    Int
   configuration      ServiceConfiguration @relation(fields: [configurationId], references: [id])
   configurationValue String
-  additionalPrice    Decimal?        @db.Decimal(12, 2)
-  createdAt          DateTime        @default(now())
-  updatedAt          DateTime        @updatedAt
+  additionalPrice    Decimal?             @db.Decimal(12, 2)
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
 
   @@unique([selectedServiceId, configurationId])
   @@index([selectedServiceId])

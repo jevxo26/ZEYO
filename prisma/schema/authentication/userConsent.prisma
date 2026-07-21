@@ -5,26 +5,26 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model UserConsent {
-  id           Int       @id @default(autoincrement())
-  userId       Int
+  id     Int @id @default(autoincrement())
+  userId Int
 
   // ── Consent Info ───────────────────────────────────────────────────────────
-  consentType  String    // marketing | data_processing | analytics | third_party_sharing | cookies
+  consentType String // marketing | data_processing | analytics | third_party_sharing | cookies
 
   // ── State ──────────────────────────────────────────────────────────────────
-  status       String    @default("accepted") // accepted | withdrawn
+  status String @default("accepted") // accepted | withdrawn
 
   // ── Audit Trail ────────────────────────────────────────────────────────────
-  acceptedAt   DateTime  @default(now())
-  withdrawnAt  DateTime?
-  ipAddress    String?
+  acceptedAt  DateTime  @default(now())
+  withdrawnAt DateTime?
+  ipAddress   String?
 
   // ── Relations ──────────────────────────────────────────────────────────────
-  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // ── Timestamps ─────────────────────────────────────────────────────────────
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([userId, consentType]) // One active consent record per type per user
   @@index([userId])

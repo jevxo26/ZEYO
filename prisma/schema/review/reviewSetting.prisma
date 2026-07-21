@@ -3,14 +3,14 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model ReviewSetting {
-  id                        Int      @id @default(autoincrement())
-  allowReview               Boolean  @default(true)
-  allowPhotoUpload          Boolean  @default(true)
-  allowVideoUpload          Boolean  @default(true)
-  allowReply                Boolean  @default(true)
-  allowEdit                 Boolean  @default(false)
-  requireBookingVerification Boolean @default(true)
-  status                    String   @default("active")
-  createdAt                 DateTime @default(now())
-  updatedAt                 DateTime @updatedAt
+  id                         Int      @id @default(autoincrement())
+  allowReview                Boolean  @default(true)
+  allowPhotoUpload           Boolean  @default(true)
+  allowVideoUpload           Boolean  @default(true)
+  allowReply                 Boolean  @default(true)
+  allowEdit                  Boolean  @default(false)
+  requireBookingVerification Boolean  @default(true)
+  status                     String   @default("active")
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
 }

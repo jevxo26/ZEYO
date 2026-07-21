@@ -5,29 +5,29 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model RolePermission {
-  id           Int        @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
   roleId       Int
   permissionId Int
 
   // ── Action Flags ───────────────────────────────────────────────────────────
-  canCreate    Boolean    @default(false)
-  canRead      Boolean    @default(false)
-  canUpdate    Boolean    @default(false)
-  canDelete    Boolean    @default(false)
-  canApprove   Boolean    @default(false)
-  canAssign    Boolean    @default(false)
-  canExport    Boolean    @default(false)
-  canImport    Boolean    @default(false)
-  canManage    Boolean    @default(false)  // Full management override
+  canCreate  Boolean @default(false)
+  canRead    Boolean @default(false)
+  canUpdate  Boolean @default(false)
+  canDelete  Boolean @default(false)
+  canApprove Boolean @default(false)
+  canAssign  Boolean @default(false)
+  canExport  Boolean @default(false)
+  canImport  Boolean @default(false)
+  canManage  Boolean @default(false) // Full management override
 
   // ── Relations ──────────────────────────────────────────────────────────────
-  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 
   // ── Timestamps ─────────────────────────────────────────────────────────────
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // ── Constraints ────────────────────────────────────────────────────────────
   @@unique([roleId, permissionId])

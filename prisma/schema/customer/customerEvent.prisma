@@ -1,18 +1,18 @@
 model CustomerEvent {
-  id              Int            @id @default(autoincrement())
+  id              Int             @id @default(autoincrement())
   customerId      Int
-  customer        Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customer        Customer        @relation(fields: [customerId], references: [id], onDelete: Cascade)
   eventTypeId     Int?
   eventTitle      String
   eventDate       DateTime?
   guestCount      Int?
   zoneId          Int?
-  zone            Zone?          @relation(fields: [zoneId], references: [id])
+  zone            Zone?           @relation(fields: [zoneId], references: [id])
   estimatedBudget Float?
-  status          String         @default("draft") // e.g. draft | planned
+  status          String          @default("draft") // e.g. draft | planned
   guests          CustomerGuest[]
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 
   @@index([customerId])
 }

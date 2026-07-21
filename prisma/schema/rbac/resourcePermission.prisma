@@ -6,21 +6,21 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model ResourcePermission {
-  id              Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  roleId          Int
+  roleId Int
 
   // ── Resource Target ────────────────────────────────────────────────────────
-  resourceType    String             // booking | vendor | package | user | zone | …
-  resourceId      String             // ID of the specific resource (string for flexibility)
-  permissionLevel String             // read | write | admin
+  resourceType    String // booking | vendor | package | user | zone | …
+  resourceId      String // ID of the specific resource (string for flexibility)
+  permissionLevel String // read | write | admin
 
   // ── Timestamps ─────────────────────────────────────────────────────────────
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // ── Relations ──────────────────────────────────────────────────────────────
-  role            Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   // ── Indexes ────────────────────────────────────────────────────────────────
   @@index([roleId])

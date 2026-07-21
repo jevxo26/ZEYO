@@ -29,7 +29,14 @@ $endpoints = @(
     @{ name="Smart Calculator Module"; url="http://localhost:3000/api/calculator/settings" },
     @{ name="Booking Module"; url="http://localhost:3000/api/bookings" },
     @{ name="Payment & Billing Module"; url="http://localhost:3000/api/admin/payments" },
-    @{ name="Review & Feedback Module"; url="http://localhost:3000/api/reviews" }
+    @{ name="Review & Feedback Module"; url="http://localhost:3000/api/reviews" },
+    @{ name="Notification Module"; url="http://localhost:3000/api/notifications/in-app" },
+    @{ name="Communication Module"; url="http://localhost:3000/api/communications/conversations" },
+    @{ name="Admin Notification Module"; url="http://localhost:3000/api/admin/notifications/broadcasts" },
+    @{ name="CMS Module"; url="http://localhost:3000/api/admin/cms/banners" },
+    @{ name="Config Module"; url="http://localhost:3000/api/admin/config/settings" },
+    @{ name="Dashboard Module"; url="http://localhost:3000/api/admin/dashboards/" },
+    @{ name="Analytics Module"; url="http://localhost:3000/api/admin/analytics/dashboards" }
 )
 
 $i = 2
@@ -47,3 +54,6 @@ Write-Host ""
 Write-Host "=============================================="
 Write-Host "             HEALTH CHECK COMPLETE            "
 Write-Host "=============================================="
+
+
+

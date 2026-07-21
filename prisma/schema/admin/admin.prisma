@@ -1,0 +1,53 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Admin Module
+// Profiles, Audit Logs, and Dashboards for Admins.
+// Note: 'Admin' identity, roles, and sessions are mapped to the core 'User' model.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model AdminProfile {
+  id          Int       @id @default(autoincrement())
+  userId      Int       @unique
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  designation String?
+  department  String?
+  address     String?
+  joiningDate DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model AuditLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  module    String
+  entity    String
+  entityId  String?
+  action    String // e.g. CREATE, UPDATE, DELETE
+  oldData   Json?
+  newData   Json?
+  ipAddress String?
+  createdAt DateTime @default(now())
+}
+
+model Dashboard {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  status      String   @default("active")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  widgets DashboardWidget[]
+}
+
+model DashboardWidget {
+  id           Int       @id @default(autoincrement())
+  dashboardId  Int
+  dashboard    Dashboard @relation(fields: [dashboardId], references: [id], onDelete: Cascade)
+  widgetName   String
+  displayOrder Int       @default(0)
+  status       String    @default("active")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}

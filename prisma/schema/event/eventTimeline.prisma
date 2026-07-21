@@ -9,8 +9,8 @@ model EventTimeline {
   event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   title        String
   description  String?
-  startTime    String?  // HH:mm format
-  endTime      String?  // HH:mm format
+  startTime    String? // HH:mm format
+  endTime      String? // HH:mm format
   displayOrder Int      @default(0)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt

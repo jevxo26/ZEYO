@@ -3,16 +3,16 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model BookingSchedule {
-  id            Int      @id @default(autoincrement())
-  bookingId     Int      @unique
-  booking       Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  id            Int       @id @default(autoincrement())
+  bookingId     Int       @unique
+  booking       Booking   @relation(fields: [bookingId], references: [id], onDelete: Cascade)
   startDate     DateTime?
   endDate       DateTime?
   startTime     String?
   endTime       String?
   eventDuration String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   @@index([bookingId])
 }

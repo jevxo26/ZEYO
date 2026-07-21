@@ -6,24 +6,24 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model AdminRole {
-  id         Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  adminId    Int                    // User.id of the admin
-  roleId     Int
+  adminId Int // User.id of the admin
+  roleId  Int
 
   // ── Assignment Metadata ────────────────────────────────────────────────────
-  assignedBy Int?                   // User ID who performed the assignment
+  assignedBy Int? // User ID who performed the assignment
   assignedAt DateTime @default(now())
 
   // ── Status ─────────────────────────────────────────────────────────────────
-  status     String   @default("active") // active | revoked | suspended
+  status String @default("active") // active | revoked | suspended
 
   // ── Timestamps ─────────────────────────────────────────────────────────────
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // ── Relations ──────────────────────────────────────────────────────────────
-  role       Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   // ── Indexes ────────────────────────────────────────────────────────────────
   @@index([adminId])

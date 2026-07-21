@@ -6,19 +6,19 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model AccessPolicy {
-  id          Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
   // ── Identity ───────────────────────────────────────────────────────────────
-  name        String   @unique
-  policyType  String             // allow | deny | conditional
+  name        String  @unique
+  policyType  String // allow | deny | conditional
   description String?
 
   // ── Status ─────────────────────────────────────────────────────────────────
-  status      String   @default("active") // active | inactive | draft
+  status String @default("active") // active | inactive | draft
 
   // ── Timestamps ─────────────────────────────────────────────────────────────
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // ── Indexes ────────────────────────────────────────────────────────────────
   @@index([policyType])

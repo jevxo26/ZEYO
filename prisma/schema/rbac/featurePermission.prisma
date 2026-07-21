@@ -6,20 +6,20 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model FeaturePermission {
-  id          Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  roleId      Int
+  roleId Int
 
   // ── Feature Toggle ─────────────────────────────────────────────────────────
-  featureName String             // e.g. export_csv | bulk_delete | analytics_dashboard
+  featureName String // e.g. export_csv | bulk_delete | analytics_dashboard
   isEnabled   Boolean @default(false)
 
   // ── Timestamps ─────────────────────────────────────────────────────────────
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // ── Relations ──────────────────────────────────────────────────────────────
-  role        Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   // ── Constraints ────────────────────────────────────────────────────────────
   @@unique([roleId, featureName])

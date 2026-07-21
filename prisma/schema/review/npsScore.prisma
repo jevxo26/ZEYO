@@ -7,7 +7,7 @@ model NPSScore {
   id        Int                @id @default(autoincrement())
   surveyId  Int                @unique
   survey    SatisfactionSurvey @relation(fields: [surveyId], references: [id], onDelete: Cascade)
-  score     Int                // 0-10
+  score     Int // 0-10
   category  String             @default("passive")
   createdAt DateTime           @default(now())
 

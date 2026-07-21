@@ -2,7 +2,7 @@ model PackageDiscount {
   id            Int       @id @default(autoincrement())
   packageId     Int
   package       Package   @relation(fields: [packageId], references: [id], onDelete: Cascade)
-  discountType  String    // flat | percentage
+  discountType  String // flat | percentage
   discountValue Float
   minimumAmount Float     @default(0.0)
   startDate     DateTime?

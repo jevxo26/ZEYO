@@ -3,15 +3,15 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model BookingHistory {
-  id          Int      @id @default(autoincrement())
-  bookingId   Int
-  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  action      String
-  performedBy Int?
-  performedByUser User? @relation(fields: [performedBy], references: [id], onDelete: SetNull)
-  oldValue    Json?
-  newValue    Json?
-  createdAt   DateTime @default(now())
+  id              Int      @id @default(autoincrement())
+  bookingId       Int
+  booking         Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  action          String
+  performedBy     Int?
+  performedByUser User?    @relation(fields: [performedBy], references: [id], onDelete: SetNull)
+  oldValue        Json?
+  newValue        Json?
+  createdAt       DateTime @default(now())
 
   @@index([bookingId])
   @@index([performedBy])

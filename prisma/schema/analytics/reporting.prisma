@@ -1,0 +1,52 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Reporting Module
+// KPIs, Report Generation, Scheduling, and Export History.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model KPI {
+  id                    Int      @id @default(autoincrement())
+  kpiName               String   @unique
+  targetValue           Decimal  @db.Decimal(10, 2)
+  currentValue          Decimal  @default(0.00) @db.Decimal(10, 2)
+  achievementPercentage Decimal  @default(0.00) @db.Decimal(5, 2)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model Report {
+  id            Int      @id @default(autoincrement())
+  reportName    String
+  reportType    String // e.g. Monthly Sales, Vendor Earnings
+  generatedById Int?
+  generatedBy   User?    @relation(fields: [generatedById], references: [id], onDelete: SetNull)
+  fileUrl       String?
+  generatedAt   DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  schedules     ReportSchedule[]
+  exportHistory ExportHistory[]
+}
+
+model ReportSchedule {
+  id              Int      @id @default(autoincrement())
+  reportId        Int
+  report          Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  frequency       String // Daily, Weekly, Monthly
+  nextRun         DateTime
+  emailRecipients String // Comma-separated emails or JSON array
+  status          String   @default("active")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model ExportHistory {
+  id             Int      @id @default(autoincrement())
+  reportId       Int
+  report         Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  exportType     String // PDF, Excel, CSV
+  fileName       String
+  downloadedById Int?
+  downloadedBy   User?    @relation(fields: [downloadedById], references: [id], onDelete: SetNull)
+  downloadedAt   DateTime @default(now())
+  createdAt      DateTime @default(now())
+}

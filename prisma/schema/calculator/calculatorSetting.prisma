@@ -3,13 +3,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model CalculatorSetting {
-  id                      Int      @id @default(autoincrement())
-  allowSaveEstimate       Boolean  @default(true)
-  allowQuotation          Boolean  @default(true)
-  allowComparison         Boolean  @default(true)
-  allowInstantBooking     Boolean  @default(false)
-  allowPackageConversion  Boolean  @default(true)
-  status                  String   @default("active")
-  createdAt               DateTime @default(now())
-  updatedAt               DateTime @updatedAt
+  id                     Int      @id @default(autoincrement())
+  allowSaveEstimate      Boolean  @default(true)
+  allowQuotation         Boolean  @default(true)
+  allowComparison        Boolean  @default(true)
+  allowInstantBooking    Boolean  @default(false)
+  allowPackageConversion Boolean  @default(true)
+  status                 String   @default("active")
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
 }

@@ -5,7 +5,7 @@ model VendorEmployee {
   employeeName String
   phone        String
   email        String?
-  designation  String    // e.g. Photographer | Cameraman | Decorator | Chef | Driver | Event Manager
+  designation  String // e.g. Photographer | Cameraman | Decorator | Chef | Driver | Event Manager
   status       String    @default("active") // active | inactive
   joinedAt     DateTime?
   createdAt    DateTime  @default(now())

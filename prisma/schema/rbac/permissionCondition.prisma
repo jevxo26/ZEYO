@@ -8,20 +8,20 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model PermissionCondition {
-  id             Int        @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  permissionId   Int
+  permissionId Int
 
   // ── Condition ──────────────────────────────────────────────────────────────
-  conditionType  String             // time_range | status_filter | ip_whitelist | custom
-  conditionValue String             // JSON or plain value
+  conditionType  String // time_range | status_filter | ip_whitelist | custom
+  conditionValue String // JSON or plain value
 
   // ── Timestamps ─────────────────────────────────────────────────────────────
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // ── Relations ──────────────────────────────────────────────────────────────
-  permission     Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 
   // ── Indexes ────────────────────────────────────────────────────────────────
   @@index([permissionId])

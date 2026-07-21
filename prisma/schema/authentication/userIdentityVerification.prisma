@@ -5,30 +5,30 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model UserIdentityVerification {
-  id                  Int       @id @default(autoincrement())
-  userId              Int
+  id     Int @id @default(autoincrement())
+  userId Int
 
   // ── Document Info ──────────────────────────────────────────────────────────
-  documentType        String    // passport | national_id | driving_license | birth_certificate
-  documentNumber      String?
+  documentType   String // passport | national_id | driving_license | birth_certificate
+  documentNumber String?
 
   // ── Uploaded Files ─────────────────────────────────────────────────────────
-  documentFront       String?   // URL to front image
-  documentBack        String?   // URL to back image (optional for passports)
-  selfieImage         String?   // Selfie for liveness check
+  documentFront String? // URL to front image
+  documentBack  String? // URL to back image (optional for passports)
+  selfieImage   String? // Selfie for liveness check
 
   // ── Verification Status ────────────────────────────────────────────────────
-  verificationStatus  String    @default("pending") // pending | under_review | approved | rejected
-  verifiedBy          Int?      // Admin user ID who approved/rejected
-  verifiedAt          DateTime?
-  rejectionReason     String?
+  verificationStatus String    @default("pending") // pending | under_review | approved | rejected
+  verifiedBy         Int? // Admin user ID who approved/rejected
+  verifiedAt         DateTime?
+  rejectionReason    String?
 
   // ── Relations ──────────────────────────────────────────────────────────────
-  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // ── Timestamps ─────────────────────────────────────────────────────────────
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([verificationStatus])

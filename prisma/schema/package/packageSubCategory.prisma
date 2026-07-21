@@ -9,7 +9,7 @@ model PackageSubCategory {
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
 
-  packages          Package[]
+  packages Package[]
 
   @@index([packageCategoryId])
   @@index([status])
