@@ -4,20 +4,20 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Refund {
-  id            Int      @id @default(autoincrement())
-  paymentId     Int
-  payment       Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
-  bookingId     Int
-  booking       Booking  @relation("paymentRefunds", fields: [bookingId], references: [id])
-  refundReason  String?
-  refundAmount  Decimal  @db.Decimal(12, 2)
-  refundStatus  String   @default("requested")
-  requestedBy   Int?
-  requestedByUser User?  @relation("RefundRequestedBy", fields: [requestedBy], references: [id], onDelete: SetNull)
-  approvedBy    Int?
-  approvedByUser User?   @relation("RefundApprovedBy", fields: [approvedBy], references: [id], onDelete: SetNull)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id              Int      @id @default(autoincrement())
+  paymentId       Int
+  payment         Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  bookingId       Int
+  booking         Booking  @relation("paymentRefunds", fields: [bookingId], references: [id])
+  refundReason    String?
+  refundAmount    Decimal  @db.Decimal(12, 2)
+  refundStatus    String   @default("requested")
+  requestedBy     Int?
+  requestedByUser User?    @relation("RefundRequestedBy", fields: [requestedBy], references: [id], onDelete: SetNull)
+  approvedBy      Int?
+  approvedByUser  User?    @relation("RefundApprovedBy", fields: [approvedBy], references: [id], onDelete: SetNull)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   // Relations
   transactions RefundTransaction[]

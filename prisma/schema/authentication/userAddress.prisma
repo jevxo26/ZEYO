@@ -9,11 +9,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model UserAddress {
-  id     Int  @id @default(autoincrement())
+  id     Int @id @default(autoincrement())
   userId Int
 
   // ── Relation ───────────────────────────────────────────────────────────────
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // ── Label & Receiver Info ──────────────────────────────────────────────────
   label         String? // e.g. "Home", "Office"

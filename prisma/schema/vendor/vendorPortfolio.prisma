@@ -1,15 +1,15 @@
 model VendorPortfolio {
-  id          Int             @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   vendorId    Int
-  vendor      Vendor          @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  vendor      Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
   title       String
   description String?
   thumbnail   String?
   coverImage  String?
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  gallery     VendorGallery[]
+  gallery VendorGallery[]
 
   @@index([vendorId])
 }

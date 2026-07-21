@@ -9,44 +9,51 @@ model Customer {
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   customerCode    String    @unique
   membershipLevel String    @default("regular") // e.g. regular | silver | gold | platinum
-  status          String    @default("active")  // e.g. active | inactive | suspended
+  status          String    @default("active") // e.g. active | inactive | suspended
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   deletedAt       DateTime?
 
   // Relations
-  profile             CustomerProfile?
-  preference          CustomerPreference?
-  events              CustomerEvent[]
-  addresses           CustomerAddress[]
-  favoritePackages    CustomerFavoritePackage[]
-  savedCalculations   CustomerSavedCalculation[]
-  quotations          CustomerQuotation[]
-  bookings            CustomerBookingHistory[]
-  paymentMethods      CustomerPaymentMethod[]
-  wallet              CustomerWallet?
-  transactions        CustomerTransaction[]
-  notifications       CustomerNotification[]
-  supportTickets      CustomerSupport[]
-  activities          CustomerActivity[]
-  referralsSent       CustomerReferral[]         @relation("Referrer")
-  referralReceived    CustomerReferral?          @relation("Referred")
-  rewards             CustomerReward[]
-  reviews             CustomerReview[]
-  setting             CustomerSetting?
-  packageReviews      PackageReview[]
-  calculators         SmartEventCalculator[]
-  savedEstimates      SavedEstimate[]
-  comparisons         Comparison[]
-  eventBookings       Booking[]           @relation("eventBookings")
-  vendorAssignments   VendorAssignment[]  @relation("vendorAssignments")
-  payments            Payment[]           @relation("payments")
+  profile           CustomerProfile?
+  preference        CustomerPreference?
+  events            CustomerEvent[]
+  addresses         CustomerAddress[]
+  favoritePackages  CustomerFavoritePackage[]
+  savedCalculations CustomerSavedCalculation[]
+  quotations        CustomerQuotation[]
+  bookings          CustomerBookingHistory[]
+  paymentMethods    CustomerPaymentMethod[]
+  wallet            CustomerWallet?
+  transactions      CustomerTransaction[]
+  notifications     CustomerNotification[]
+  supportTickets    CustomerSupport[]
+  activities        CustomerActivity[]
+  referralsSent     CustomerReferral[]         @relation("Referrer")
+  referralReceived  CustomerReferral?          @relation("Referred")
+  rewards           CustomerReward[]
+  reviews           CustomerReview[]
+  setting           CustomerSetting?
+  packageReviews    PackageReview[]
+  calculators       SmartEventCalculator[]
+  savedEstimates    SavedEstimate[]
+  comparisons       Comparison[]
+  eventBookings     Booking[]                  @relation("eventBookings")
+  vendorAssignments VendorAssignment[]         @relation("vendorAssignments")
+  payments          Payment[]                  @relation("payments")
 
   // ── Review Relations ──────────────────────────────────────────────────────
-  customerReviews     Review[]            @relation("customerReviews")
-  reviewReactions     ReviewReaction[]    @relation("reviewReactions")
-  feedbacks           CustomerFeedback[]  @relation("customerFeedbacks")
-  surveys             SatisfactionSurvey[] @relation("customerSurveys")
+  customerReviews         Review[]                @relation("customerReviews")
+  reviewReactions         ReviewReaction[]        @relation("reviewReactions")
+  feedbacks               CustomerFeedback[]      @relation("customerFeedbacks")
+  surveys                 SatisfactionSurvey[]    @relation("customerSurveys")
+  systemNotifications     Notification[]          @relation("customerNotifications")
+  inAppNotifications      InAppNotification[]     @relation("customerInAppNotifications")
+  notificationPreferences NotificationPreference? @relation("customerNotificationPreferences")
+  notificationHistory     NotificationHistory[]   @relation("customerNotificationHistory")
+  reminders               Reminder[]              @relation("customerReminders")
+  conversations           Conversation[]          @relation("customerConversations")
+  communicationLogs       CommunicationLog[]      @relation("customerCommunicationLogs")
 
   @@index([deletedAt])
   @@index([status])

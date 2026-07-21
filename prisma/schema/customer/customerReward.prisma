@@ -2,7 +2,7 @@ model CustomerReward {
   id          Int       @id @default(autoincrement())
   customerId  Int
   customer    Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  rewardType  String    // e.g. cashback | coupon | points
+  rewardType  String // e.g. cashback | coupon | points
   points      Int       @default(0)
   amount      Float     @default(0)
   description String?

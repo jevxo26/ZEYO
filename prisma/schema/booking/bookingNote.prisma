@@ -4,14 +4,14 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model BookingNote {
-  id        Int      @id @default(autoincrement())
-  bookingId Int
-  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  note      String
-  noteType  String   @default("internal")
-  createdBy Int?
-  createdByUser User? @relation(fields: [createdBy], references: [id], onDelete: SetNull)
-  createdAt DateTime @default(now())
+  id            Int      @id @default(autoincrement())
+  bookingId     Int
+  booking       Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  note          String
+  noteType      String   @default("internal")
+  createdBy     Int?
+  createdByUser User?    @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+  createdAt     DateTime @default(now())
 
   @@index([bookingId])
   @@index([noteType])

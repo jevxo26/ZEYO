@@ -7,21 +7,21 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model RoleScope {
-  id          Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  roleId      Int
+  roleId Int
 
   // ── Scope Definition ───────────────────────────────────────────────────────
-  scopeType   String             // zone | vendor | region | city | global
-  scopeValue  String             // ID or identifier of the scoped resource
+  scopeType   String // zone | vendor | region | city | global
+  scopeValue  String // ID or identifier of the scoped resource
   description String?
 
   // ── Timestamps ─────────────────────────────────────────────────────────────
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // ── Relations ──────────────────────────────────────────────────────────────
-  role        Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   // ── Indexes ────────────────────────────────────────────────────────────────
   @@index([roleId])

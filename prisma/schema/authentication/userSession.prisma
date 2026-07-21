@@ -5,30 +5,30 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model UserSession {
-  id           Int       @id @default(autoincrement())
-  userId       Int
-  deviceId     Int?
+  id       Int  @id @default(autoincrement())
+  userId   Int
+  deviceId Int?
 
   // ── Token Pair ─────────────────────────────────────────────────────────────
-  accessToken  String    @db.Text
-  refreshToken String    @db.Text
+  accessToken  String @db.Text
+  refreshToken String @db.Text
 
   // ── Session Metadata ────────────────────────────────────────────────────────
-  ipAddress    String?
-  loginTime    DateTime  @default(now())
-  logoutTime   DateTime?
-  expiresAt    DateTime
+  ipAddress  String?
+  loginTime  DateTime  @default(now())
+  logoutTime DateTime?
+  expiresAt  DateTime
 
   // ── Status ─────────────────────────────────────────────────────────────────
-  status       String    @default("active") // active | expired | logged_out | revoked
+  status String @default("active") // active | expired | logged_out | revoked
 
   // ── Relations ──────────────────────────────────────────────────────────────
-  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  device       UserDevice? @relation(fields: [deviceId], references: [id], onDelete: SetNull)
+  user   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  device UserDevice? @relation(fields: [deviceId], references: [id], onDelete: SetNull)
 
   // ── Timestamps ─────────────────────────────────────────────────────────────
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([refreshToken])

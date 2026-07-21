@@ -6,34 +6,34 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model Role {
-  id          Int       @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
   // ── Identity ───────────────────────────────────────────────────────────────
-  name        String    @unique
-  code        String    @unique  // e.g. SUPER_ADMIN, VENDOR_EMPLOYEE
+  name        String  @unique
+  code        String  @unique // e.g. SUPER_ADMIN, VENDOR_EMPLOYEE
   description String?
 
   // ── Classification ─────────────────────────────────────────────────────────
-  roleType    String    @default("custom") // system | staff | vendor | customer | custom
-  priority    Int       @default(0)        // Higher = more privileged
-  isSystem    Boolean   @default(false)    // System roles cannot be deleted
+  roleType String  @default("custom") // system | staff | vendor | customer | custom
+  priority Int     @default(0) // Higher = more privileged
+  isSystem Boolean @default(false) // System roles cannot be deleted
 
   // ── Status ─────────────────────────────────────────────────────────────────
-  status      String    @default("active") // active | inactive
+  status String @default("active") // active | inactive
 
   // ── Audit ──────────────────────────────────────────────────────────────────
-  createdBy   Int?      // User ID who created this role (null = seeded)
-  updatedBy   Int?      // User ID who last updated this role
+  createdBy Int? // User ID who created this role (null = seeded)
+  updatedBy Int? // User ID who last updated this role
 
   // ── Soft Delete ────────────────────────────────────────────────────────────
-  deletedAt   DateTime?
+  deletedAt DateTime?
 
   // ── Timestamps ─────────────────────────────────────────────────────────────
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // ── Relations (Authentication) ─────────────────────────────────────────────
-  users       User[]    // Simple FK on User.roleId (quick-access)
+  users User[] // Simple FK on User.roleId (quick-access)
 
   // ── Relations (RBAC) ───────────────────────────────────────────────────────
   rolePermissions       RolePermission[]
@@ -41,8 +41,8 @@ model Role {
   adminRoles            AdminRole[]
   vendorRoles           VendorRole[]
   employeeRoles         EmployeeRole[]
-  parentHierarchies     RoleHierarchy[]   @relation("ParentRole")
-  childHierarchies      RoleHierarchy[]   @relation("ChildRole")
+  parentHierarchies     RoleHierarchy[]         @relation("ParentRole")
+  childHierarchies      RoleHierarchy[]         @relation("ChildRole")
   roleScopes            RoleScope[]
   roleAssignmentHistory RoleAssignmentHistory[]
   resourcePermissions   ResourcePermission[]

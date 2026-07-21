@@ -3,14 +3,14 @@ model VendorService {
   vendorId    Int
   vendor      Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
   serviceId   Int
-  serviceName String   // e.g. Photography | Videography | Catering | Decoration | Stage | Lighting | Tent | Sound | Makeup | Generator
+  serviceName String // e.g. Photography | Videography | Catering | Decoration | Stage | Lighting | Tent | Sound | Makeup | Generator
   status      String   @default("active") // active | inactive
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   // Relations
-  zones          VendorServiceZone[]
-  pricing        VendorPricing[]
+  zones           VendorServiceZone[]
+  pricing         VendorPricing[]
   assignedVendors AssignedVendor[]
 
   @@index([vendorId])

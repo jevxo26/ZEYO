@@ -2,12 +2,12 @@ model VendorDocument {
   id                 Int       @id @default(autoincrement())
   vendorId           Int
   vendor             Vendor    @relation(fields: [vendorId], references: [id], onDelete: Cascade)
-  documentType       String    // e.g. trade_license | nid | tin | bin
+  documentType       String // e.g. trade_license | nid | tin | bin
   documentName       String
   documentUrl        String
   expiryDate         DateTime?
   verificationStatus String    @default("pending") // pending | approved | rejected
-  verifiedBy         Int?      // Admin user ID
+  verifiedBy         Int? // Admin user ID
   verifiedAt         DateTime?
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt

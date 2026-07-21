@@ -7,7 +7,7 @@ model EventType {
   id           Int      @id @default(autoincrement())
   eventId      Int
   event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  type         String   // e.g. small | medium | large | corporate
+  type         String // e.g. small | medium | large | corporate
   description  String?
   minimumGuest Int?
   maximumGuest Int?

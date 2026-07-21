@@ -3,15 +3,15 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model BookingGuest {
-  id          Int      @id @default(autoincrement())
-  bookingId   Int      @unique
-  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  adultGuest  Int      @default(0)
-  childGuest  Int      @default(0)
-  vipGuest    Int      @default(0)
-  totalGuest  Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         Int      @id @default(autoincrement())
+  bookingId  Int      @unique
+  booking    Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  adultGuest Int      @default(0)
+  childGuest Int      @default(0)
+  vipGuest   Int      @default(0)
+  totalGuest Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@index([bookingId])
 }

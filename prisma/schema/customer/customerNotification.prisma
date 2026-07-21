@@ -4,7 +4,7 @@ model CustomerNotification {
   customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
   title      String
   message    String
-  type       String   // e.g. transactional | promotional | system
+  type       String // e.g. transactional | promotional | system
   isRead     Boolean  @default(false)
   sentAt     DateTime @default(now())
   createdAt  DateTime @default(now())

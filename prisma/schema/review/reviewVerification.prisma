@@ -3,14 +3,14 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model ReviewVerification {
-  id                Int      @id @default(autoincrement())
-  reviewId          Int      @unique
-  review            Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
-  isVerifiedBooking Boolean  @default(false)
+  id                Int       @id @default(autoincrement())
+  reviewId          Int       @unique
+  review            Review    @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  isVerifiedBooking Boolean   @default(false)
   verifiedBy        Int?
-  verifiedByUser    User?    @relation("ReviewVerifiedBy", fields: [verifiedBy], references: [id], onDelete: SetNull)
+  verifiedByUser    User?     @relation("ReviewVerifiedBy", fields: [verifiedBy], references: [id], onDelete: SetNull)
   verifiedAt        DateTime?
-  createdAt         DateTime @default(now())
+  createdAt         DateTime  @default(now())
 
   @@index([isVerifiedBooking])
 }

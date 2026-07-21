@@ -9,7 +9,7 @@ model EventRequirement {
   id              Int      @id @default(autoincrement())
   eventId         Int
   event           Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  serviceId       Int      // FK to Service catalog (added when Service module is built)
+  serviceId       Int // FK to Service catalog (added when Service module is built)
   isRequired      Boolean  @default(false)
   isOptional      Boolean  @default(true)
   minimumQuantity Int?

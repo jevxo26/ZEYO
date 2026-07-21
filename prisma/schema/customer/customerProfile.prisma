@@ -1,7 +1,7 @@
 model CustomerProfile {
-  id                Int      @id @default(autoincrement())
-  customerId        Int      @unique
-  customer          Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  id                Int       @id @default(autoincrement())
+  customerId        Int       @unique
+  customer          Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
   firstName         String?
   lastName          String?
   phone             String?
@@ -11,8 +11,8 @@ model CustomerProfile {
   profileImage      String?
   occupation        String?
   companyName       String?
-  preferredLanguage String   @default("bn")
-  preferredCurrency String   @default("BDT")
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  preferredLanguage String    @default("bn")
+  preferredCurrency String    @default("BDT")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 }

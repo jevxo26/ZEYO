@@ -2,11 +2,11 @@ model CustomerGuest {
   id              Int           @id @default(autoincrement())
   customerEventId Int
   customerEvent   CustomerEvent @relation(fields: [customerEventId], references: [id], onDelete: Cascade)
-  guestType       String        // e.g. VIP | Adult | Child
+  guestType       String // e.g. VIP | Adult | Child
   guestCount      Int
   remarks         String?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
 
   @@index([customerEventId])
 }

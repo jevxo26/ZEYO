@@ -4,18 +4,18 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model AssignmentItem {
-  id               Int              @id @default(autoincrement())
-  assignmentId     Int
-  assignment       VendorAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
-  bookingItemId    Int
-  bookingItem      BookingItem      @relation(fields: [bookingItemId], references: [id])
-  serviceId        Int
-  service          Service          @relation(fields: [serviceId], references: [id])
-  serviceName      String
-  quantity         Int              @default(1)
-  status           String           @default("pending")
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  id            Int              @id @default(autoincrement())
+  assignmentId  Int
+  assignment    VendorAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  bookingItemId Int
+  bookingItem   BookingItem      @relation(fields: [bookingItemId], references: [id])
+  serviceId     Int
+  service       Service          @relation(fields: [serviceId], references: [id])
+  serviceName   String
+  quantity      Int              @default(1)
+  status        String           @default("pending")
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
 
   // Relations
   assignedVendors   AssignedVendor[]

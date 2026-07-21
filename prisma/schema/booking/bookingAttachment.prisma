@@ -4,15 +4,15 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model BookingAttachment {
-  id         Int      @id @default(autoincrement())
-  bookingId  Int
-  booking    Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
-  fileName   String
-  fileType   String   @default("image")
-  fileUrl    String
-  uploadedBy Int?
-  uploadedByUser User? @relation(fields: [uploadedBy], references: [id], onDelete: SetNull)
-  createdAt  DateTime @default(now())
+  id             Int      @id @default(autoincrement())
+  bookingId      Int
+  booking        Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  fileName       String
+  fileType       String   @default("image")
+  fileUrl        String
+  uploadedBy     Int?
+  uploadedByUser User?    @relation(fields: [uploadedBy], references: [id], onDelete: SetNull)
+  createdAt      DateTime @default(now())
 
   @@index([bookingId])
   @@index([uploadedBy])

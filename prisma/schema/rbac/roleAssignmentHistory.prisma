@@ -5,23 +5,23 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model RoleAssignmentHistory {
-  id           Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  userId       Int                    // Target user whose role changed
-  roleId       Int                    // The role involved in this event
-  assignedBy   Int?                   // User ID who performed the action
+  userId     Int // Target user whose role changed
+  roleId     Int // The role involved in this event
+  assignedBy Int? // User ID who performed the action
 
   // ── Change Detail ──────────────────────────────────────────────────────────
-  previousRole String?                // Previous role code / name
-  newRole      String                 // New role code / name
-  reason       String?                // Admin note or system reason
+  previousRole String? // Previous role code / name
+  newRole      String // New role code / name
+  reason       String? // Admin note or system reason
 
   // ── Timestamps ─────────────────────────────────────────────────────────────
-  assignedAt   DateTime @default(now())
-  createdAt    DateTime @default(now())
+  assignedAt DateTime @default(now())
+  createdAt  DateTime @default(now())
 
   // ── Relations ──────────────────────────────────────────────────────────────
-  role         Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   // ── Indexes ────────────────────────────────────────────────────────────────
   @@index([userId])

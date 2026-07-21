@@ -6,7 +6,7 @@ model VendorCalendar {
   startTime          DateTime?
   endTime            DateTime?
   availabilityStatus String    @default("busy") // e.g. busy | available
-  bookingId          Int?      // Nullable booking reference
+  bookingId          Int? // Nullable booking reference
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 

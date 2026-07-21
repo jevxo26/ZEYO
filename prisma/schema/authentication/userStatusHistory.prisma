@@ -5,22 +5,22 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model UserStatusHistory {
-  id             Int      @id @default(autoincrement())
-  userId         Int
-  changedBy      Int?     // Admin User ID who made the change (null = system)
+  id        Int  @id @default(autoincrement())
+  userId    Int
+  changedBy Int? // Admin User ID who made the change (null = system)
 
   // ── Status Change ──────────────────────────────────────────────────────────
-  previousStatus String   // active | inactive | suspended | deleted
-  currentStatus  String   // active | inactive | suspended | deleted
-  reason         String?  // Admin note or system reason
+  previousStatus String // active | inactive | suspended | deleted
+  currentStatus  String // active | inactive | suspended | deleted
+  reason         String? // Admin note or system reason
 
   // ── Timestamps ─────────────────────────────────────────────────────────────
-  changedAt      DateTime @default(now())
-  createdAt      DateTime @default(now())
+  changedAt DateTime @default(now())
+  createdAt DateTime @default(now())
 
   // ── Relations ──────────────────────────────────────────────────────────────
-  user           User     @relation("UserStatusLogs",   fields: [userId],    references: [id], onDelete: Cascade)
-  changedByUser  User?    @relation("AdminStatusChanges", fields: [changedBy], references: [id], onDelete: SetNull)
+  user          User  @relation("UserStatusLogs", fields: [userId], references: [id], onDelete: Cascade)
+  changedByUser User? @relation("AdminStatusChanges", fields: [changedBy], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([changedBy])

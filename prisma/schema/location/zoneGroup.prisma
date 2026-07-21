@@ -6,5 +6,5 @@ model ZoneGroup {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  zones       Zone[]
+  zones Zone[]
 }

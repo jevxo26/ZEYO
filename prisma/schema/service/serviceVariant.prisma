@@ -5,15 +5,15 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model ServiceVariant {
-  id                    Int                  @id @default(autoincrement())
+  id                     Int                  @id @default(autoincrement())
   serviceConfigurationId Int
-  configuration         ServiceConfiguration @relation(fields: [serviceConfigurationId], references: [id], onDelete: Cascade)
-  name                  String
-  description           String?
-  additionalPrice       Decimal?             @db.Decimal(12, 2)
-  status                String               @default("active")
-  createdAt             DateTime             @default(now())
-  updatedAt             DateTime             @updatedAt
+  configuration          ServiceConfiguration @relation(fields: [serviceConfigurationId], references: [id], onDelete: Cascade)
+  name                   String
+  description            String?
+  additionalPrice        Decimal?             @db.Decimal(12, 2)
+  status                 String               @default("active")
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
 
   @@index([serviceConfigurationId])
   @@index([status])

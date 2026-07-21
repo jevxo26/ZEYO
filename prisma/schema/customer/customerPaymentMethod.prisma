@@ -2,7 +2,7 @@ model CustomerPaymentMethod {
   id            Int      @id @default(autoincrement())
   customerId    Int
   customer      Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  paymentType   String   // e.g. Card | Bkash | Nagad | Bank
+  paymentType   String // e.g. Card | Bkash | Nagad | Bank
   accountName   String
   accountNumber String
   provider      String?

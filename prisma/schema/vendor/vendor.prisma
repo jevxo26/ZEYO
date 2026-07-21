@@ -13,7 +13,7 @@ model Vendor {
   logo               String?
   coverImage         String?
   description        String?
-  businessType       String    // e.g. individual | agency | company
+  businessType       String // e.g. individual | agency | company
   tradeLicenseNumber String?
   status             String    @default("pending") // e.g. pending | active | suspended | inactive
   isVerified         Boolean   @default(false)
@@ -43,16 +43,18 @@ model Vendor {
   roles          VendorRole[]
 
   // ── Assignment Relations ─────────────────────────────────────────────────
-  assignedVendors   AssignedVendor[]
-  acceptances       VendorAcceptance[]
-  commissions       VendorCommission[]
-  performance       VendorPerformance?
-  replacedIn        VendorReplacement[] @relation("ReplacedVendor")
-  replacementFor    VendorReplacement[] @relation("ReplacementVendor")
+  assignedVendors AssignedVendor[]
+  acceptances     VendorAcceptance[]
+  commissions     VendorCommission[]
+  performance     VendorPerformance?
+  replacedIn      VendorReplacement[] @relation("ReplacedVendor")
+  replacementFor  VendorReplacement[] @relation("ReplacementVendor")
 
   // ── Payment Relations ───────────────────────────────────────────────────────────
-  vendorSettlements   VendorSettlement[]  @relation("vendorSettlements")
-  vendorCommissions   PlatformCommission[] @relation("vendorCommissions")
+  vendorSettlements VendorSettlement[]   @relation("vendorSettlements")
+  vendorCommissions PlatformCommission[] @relation("vendorCommissions")
+
+  vendorAnalytics VendorAnalytics?
 
   @@index([status])
   @@index([deletedAt])

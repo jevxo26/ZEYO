@@ -5,20 +5,20 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model PermissionGroup {
-  id           Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
   // ── Identity ───────────────────────────────────────────────────────────────
-  name         String   @unique
-  code         String   @unique   // e.g. USER_ACTIONS, FINANCIAL_OPS
+  name         String  @unique
+  code         String  @unique // e.g. USER_ACTIONS, FINANCIAL_OPS
   description  String?
-  displayOrder Int      @default(0)
+  displayOrder Int     @default(0)
 
   // ── Status ─────────────────────────────────────────────────────────────────
-  status       String   @default("active") // active | inactive
+  status String @default("active") // active | inactive
 
   // ── Timestamps ─────────────────────────────────────────────────────────────
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // ── Indexes ────────────────────────────────────────────────────────────────
   @@index([code])

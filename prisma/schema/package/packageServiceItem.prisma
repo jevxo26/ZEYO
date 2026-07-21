@@ -2,8 +2,8 @@ model PackageServiceItem {
   id               Int            @id @default(autoincrement())
   packageServiceId Int
   packageService   PackageService @relation(fields: [packageServiceId], references: [id], onDelete: Cascade)
-  serviceOptionId  Int            // References service option concept
-  coverageId       Int?           // References coverage concept
+  serviceOptionId  Int // References service option concept
+  coverageId       Int? // References coverage concept
   quantity         Int            @default(1)
   duration         Float          @default(1.0)
   remarks          String?

@@ -1,8 +1,8 @@
 model CustomerAddress {
-  id           Int      @id @default(autoincrement())
+  id           Int       @id @default(autoincrement())
   customerId   Int
-  customer     Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
-  label        String?  // e.g. Home | Office | Event
+  customer     Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  label        String? // e.g. Home | Office | Event
   receiverName String
   phone        String
   countryId    Int
@@ -21,9 +21,9 @@ model CustomerAddress {
   landmark     String?
   latitude     Float?
   longitude    Float?
-  isDefault    Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  isDefault    Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   @@index([customerId])
 }

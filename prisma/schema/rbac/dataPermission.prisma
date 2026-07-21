@@ -8,21 +8,21 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model DataPermission {
-  id          Int      @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  roleId      Int
+  roleId Int
 
   // ── Filter Definition ──────────────────────────────────────────────────────
-  dataType    String             // transaction | booking | vendor | user | …
-  filterType  String             // field_filter | status_filter | date_range | custom
-  filterValue String             // JSON-encoded filter criteria
+  dataType    String // transaction | booking | vendor | user | …
+  filterType  String // field_filter | status_filter | date_range | custom
+  filterValue String // JSON-encoded filter criteria
 
   // ── Timestamps ─────────────────────────────────────────────────────────────
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // ── Relations ──────────────────────────────────────────────────────────────
-  role        Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
 
   // ── Indexes ────────────────────────────────────────────────────────────────
   @@index([roleId])

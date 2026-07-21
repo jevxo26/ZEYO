@@ -3,7 +3,7 @@ model ZoneTax {
   zoneId    Int
   zone      Zone     @relation(fields: [zoneId], references: [id], onDelete: Cascade)
   taxName   String
-  taxType   String   // percentage | flat
+  taxType   String // percentage | flat
   taxValue  Float
   status    String   @default("active")
   createdAt DateTime @default(now())

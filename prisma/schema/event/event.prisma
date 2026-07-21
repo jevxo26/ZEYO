@@ -10,37 +10,39 @@ model Event {
   description  String?
   icon         String?
   banner       String?
-  status       String    @default("active")  // active | inactive | draft
+  status       String    @default("active") // active | inactive | draft
   displayOrder Int       @default(0)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   deletedAt    DateTime?
 
   // Relations
-  categories   EventCategory[]
-  types        EventType[]
-  themes       EventTheme[]
-  packageTypes EventPackageType[]
-  timelines    EventTimeline[]
-  schedules    EventSchedule[]
-  requirements EventRequirement[]
-  guestConfig  EventGuest[]
-  venues       EventVenue[]
-  checklists   EventChecklist[]
-  milestones   EventMilestone[]
-  policies     EventPolicy[]
-  terms        EventTerms[]
-  faqs         EventFAQ[]
-  gallery      EventGallery[]
-  tags         EventTag[]
-  features     EventFeature[]
-  setting      EventSetting?
-  packages     Package[]
+  categories          EventCategory[]
+  types               EventType[]
+  themes              EventTheme[]
+  packageTypes        EventPackageType[]
+  timelines           EventTimeline[]
+  schedules           EventSchedule[]
+  requirements        EventRequirement[]
+  guestConfig         EventGuest[]
+  venues              EventVenue[]
+  checklists          EventChecklist[]
+  milestones          EventMilestone[]
+  policies            EventPolicy[]
+  terms               EventTerms[]
+  faqs                EventFAQ[]
+  gallery             EventGallery[]
+  tags                EventTag[]
+  features            EventFeature[]
+  setting             EventSetting?
+  packages            Package[]
   serviceRequirements ServiceRequirement[]
   calculators         SmartEventCalculator[]
   selectedEvents      SelectedEvent[]
   bookings            Booking[]
   vendorAssignments   VendorAssignment[]
+
+  eventAnalytics EventAnalytics?
 
   @@index([slug])
   @@index([status])

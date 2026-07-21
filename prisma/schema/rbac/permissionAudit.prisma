@@ -6,22 +6,22 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 model PermissionAudit {
-  id           Int        @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
   roleId       Int
   permissionId Int
 
   // ── Audit Detail ───────────────────────────────────────────────────────────
-  action       String             // grant | revoke | modify
-  performedBy  Int?               // User ID who performed the action
-  reason       String?            // Optional admin note
+  action      String // grant | revoke | modify
+  performedBy Int? // User ID who performed the action
+  reason      String? // Optional admin note
 
   // ── Timestamps ─────────────────────────────────────────────────────────────
-  createdAt    DateTime   @default(now())  // Immutable — no updatedAt
+  createdAt DateTime @default(now()) // Immutable — no updatedAt
 
   // ── Relations ──────────────────────────────────────────────────────────────
-  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
-  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
 
   // ── Indexes ────────────────────────────────────────────────────────────────
   @@index([roleId])
