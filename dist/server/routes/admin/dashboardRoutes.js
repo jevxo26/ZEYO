@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const authMiddleware_1 = require("../../middlewares/authMiddleware");
+const dashboardController_1 = require("../../controllers/admin/dashboardController");
+const router = (0, express_1.Router)();
+router.use(authMiddleware_1.verifyToken, (0, authMiddleware_1.requireRole)('ADMIN', 'SUPER_ADMIN'));
+router.get('/', dashboardController_1.DashboardController.getDashboards);
+router.post('/', dashboardController_1.DashboardController.createDashboard);
+router.post('/:dashboardId/widgets', dashboardController_1.DashboardController.addWidget);
+exports.default = router;

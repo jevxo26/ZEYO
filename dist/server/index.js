@@ -35,6 +35,16 @@ const assignmentRoutes_1 = __importDefault(require("./routes/vendor/assignmentRo
 const vendorWorkRoutes_1 = __importDefault(require("./routes/vendor/vendorWorkRoutes"));
 const paymentRoutes_1 = __importDefault(require("./routes/payment/paymentRoutes"));
 const reviewRoutes_1 = __importDefault(require("./routes/review/reviewRoutes"));
+// ─── Notification & Communication Routes ────────────────────────────────────
+const notificationRoutes_1 = __importDefault(require("./routes/notification/notificationRoutes"));
+const communicationRoutes_1 = __importDefault(require("./routes/notification/communicationRoutes"));
+const adminNotificationRoutes_1 = __importDefault(require("./routes/notification/adminNotificationRoutes"));
+// ─── Admin CMS & Config Routes (Part 15) ──────────────────────────────────
+const cmsRoutes_1 = __importDefault(require("./routes/admin/cmsRoutes"));
+const configRoutes_1 = __importDefault(require("./routes/admin/configRoutes"));
+const dashboardRoutes_1 = __importDefault(require("./routes/admin/dashboardRoutes"));
+// ─── Analytics & Reporting Routes (Part 16) ───────────────────────────────
+const analyticsRoutes_1 = __importDefault(require("./routes/analytics/analyticsRoutes"));
 // ─── RBAC Routes ────────────────────────────────────────────────────────────
 const roleRoutes_2 = __importDefault(require("./routes/rbac/roleRoutes"));
 const moduleRoutes_1 = __importDefault(require("./routes/rbac/moduleRoutes"));
@@ -119,6 +129,16 @@ app.prepare().then(async () => {
     server.use('/api/vendor/work', vendorWorkRoutes_1.default); // Vendor work operations
     server.use('/api/admin/payments', paymentRoutes_1.default); // Payment & Billing (admin)
     server.use('/api/reviews', reviewRoutes_1.default); // Review, Rating & Feedback
+    // ─── Notification & Communication API ─────────────────────────────────────
+    server.use('/api/notifications', notificationRoutes_1.default);
+    server.use('/api/communications', communicationRoutes_1.default);
+    server.use('/api/admin/notifications', adminNotificationRoutes_1.default);
+    // ─── Admin CMS, Config & Dashboard API ────────────────────────────────────
+    server.use('/api/admin/cms', cmsRoutes_1.default);
+    server.use('/api/admin/config', configRoutes_1.default);
+    server.use('/api/admin/dashboards', dashboardRoutes_1.default);
+    // ─── Analytics & Reporting API ────────────────────────────────────────────
+    server.use('/api/admin/analytics', analyticsRoutes_1.default);
     // ─── RBAC API ─────────────────────────────────────────────────────────────
     server.use('/api/rbac/roles', roleRoutes_2.default);
     server.use('/api/rbac/modules', moduleRoutes_1.default);
