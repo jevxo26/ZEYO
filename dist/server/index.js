@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const prisma_1 = require("./config/prisma");
+const mongoose_1 = require("./config/mongoose");
 const express_1 = __importDefault(require("express"));
 const next_1 = __importDefault(require("next"));
 const cors_1 = __importDefault(require("cors"));
@@ -51,6 +52,8 @@ const moduleRoutes_1 = __importDefault(require("./routes/rbac/moduleRoutes"));
 const permissionRoutes_1 = __importDefault(require("./routes/rbac/permissionRoutes"));
 const rolePermissionRoutes_1 = __importDefault(require("./routes/rbac/rolePermissionRoutes"));
 const userRoleRoutes_1 = __importDefault(require("./routes/rbac/userRoleRoutes"));
+// ─── MongoDB Routes (Part 17) ────────────────────────────────────────────────
+const mongoRoutes_1 = __importDefault(require("./routes/mongo/mongoRoutes"));
 const dev = process.env.NODE_ENV !== 'production';
 const app = (0, next_1.default)({ dev });
 const handle = app.getRequestHandler();
@@ -61,6 +64,8 @@ const getAllowedOrigins = () => {
     return origins.split(',').map((o) => o.trim()).filter(Boolean);
 };
 app.prepare().then(async () => {
+    // Boot MongoDB (non-fatal — app works without it)
+    await (0, mongoose_1.connectMongoDB)();
     const server = (0, express_1.default)();
     // ─── Security Middleware ────────────────────────────────────────────────
     server.use((0, helmet_1.default)({
@@ -145,6 +150,8 @@ app.prepare().then(async () => {
     server.use('/api/rbac/permissions', permissionRoutes_1.default);
     server.use('/api/rbac/role-permissions', rolePermissionRoutes_1.default);
     server.use('/api/rbac/user-roles', userRoleRoutes_1.default);
+    // ─── MongoDB — Logs, Events, Cache, Chat, Queue (Part 17) ──────────────────
+    server.use('/api/mongo', mongoRoutes_1.default);
     // ─── Static Uploads ─────────────────────────────────────────────────────
     server.use('/uploads', express_1.default.static(path_1.default.join(process.cwd(), 'public', 'uploads')));
     // ─── Global Error Handler ────────────────────────────────────────────────
