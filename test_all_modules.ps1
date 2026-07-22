@@ -150,6 +150,18 @@ Test-Endpoint "GET  /api/admin/analytics/reports    (RBAC)" GET "http://localhos
 Test-Endpoint "GET  /api/admin/analytics/kpis       (RBAC)" GET "http://localhost:3000/api/admin/analytics/kpis"        $null $h 403 | Out-Null
 Write-Host ""
 
+# ─── PART 17: MongoDB Collections ────────────────────────────────────────────
+Write-Host "[PART 17] MongoDB - Logs, Events, Cache and Real-time"
+Test-Endpoint "GET  /api/mongo/logs/activity  (RBAC)" GET "http://localhost:3000/api/mongo/logs/activity"       $null $h 403 | Out-Null
+Test-Endpoint "GET  /api/mongo/logs/audit     (RBAC)" GET "http://localhost:3000/api/mongo/logs/audit"          $null $h 403 | Out-Null
+Test-Endpoint "GET  /api/mongo/logs/errors    (RBAC)" GET "http://localhost:3000/api/mongo/logs/errors"         $null $h 403 | Out-Null
+Test-Endpoint "GET  /api/mongo/events         (RBAC)" GET "http://localhost:3000/api/mongo/events"              $null $h 403 | Out-Null
+Test-Endpoint "GET  /api/mongo/dashboard/cache (RBAC)" GET "http://localhost:3000/api/mongo/dashboard/cache"   $null $h 403 | Out-Null
+Test-Endpoint "GET  /api/mongo/queue/pending  (RBAC)" GET "http://localhost:3000/api/mongo/queue/pending"       $null $h 403 | Out-Null
+Test-Endpoint "GET  /api/mongo/chat/1/messages"        GET "http://localhost:3000/api/mongo/chat/1/messages"    $null $h | Out-Null
+Test-Endpoint "GET  /api/mongo/search/history/1"       GET "http://localhost:3000/api/mongo/search/history/1"   $null $h | Out-Null
+Write-Host ""
+
 # ─── SUMMARY ─────────────────────────────────────────────────────────────────
 $total = $pass + $fail
 Write-Host "============================================================"
