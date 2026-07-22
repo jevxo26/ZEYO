@@ -1,4 +1,5 @@
 import { prisma } from './config/prisma';
+import { connectMongoDB } from './config/mongoose';
 import express, { Request, Response, NextFunction } from 'express';
 import next from 'next';
 import cors from 'cors';
@@ -53,6 +54,9 @@ import rbacPermissionRoutes     from './routes/rbac/permissionRoutes';
 import rbacRolePermissionRoutes from './routes/rbac/rolePermissionRoutes';
 import rbacUserRoleRoutes       from './routes/rbac/userRoleRoutes';
 
+// ─── MongoDB Routes (Part 17) ────────────────────────────────────────────────
+import mongoRoutes from './routes/mongo/mongoRoutes';
+
 
 
 const dev = process.env.NODE_ENV !== 'production';
@@ -68,6 +72,9 @@ const getAllowedOrigins = (): string[] => {
 };
 
 app.prepare().then(async () => {
+  // Boot MongoDB (non-fatal — app works without it)
+  await connectMongoDB();
+
   const server = express();
 
   // ─── Security Middleware ────────────────────────────────────────────────
@@ -163,6 +170,10 @@ app.prepare().then(async () => {
   server.use('/api/rbac/permissions',      rbacPermissionRoutes);
   server.use('/api/rbac/role-permissions', rbacRolePermissionRoutes);
   server.use('/api/rbac/user-roles',       rbacUserRoleRoutes);
+
+  // ─── MongoDB — Logs, Events, Cache, Chat, Queue (Part 17) ──────────────────
+  server.use('/api/mongo', mongoRoutes);
+
 
   // ─── Static Uploads ─────────────────────────────────────────────────────
   server.use('/uploads', express.static(path.join(process.cwd(), 'public', 'uploads')));
