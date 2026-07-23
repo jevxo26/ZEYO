@@ -1,8 +1,18 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Search, MessageSquare, Send, Paperclip, Smile, Phone, MoreVertical, CheckCheck } from "lucide-react";
+import {
+  Search,
+  MessageSquare,
+  Send,
+  Paperclip,
+  Smile,
+  Phone,
+  MoreVertical,
+  CheckCheck,
+} from "lucide-react";
 import { toast } from "sonner";
+import apiClient from "@/lib/apiClient";
 
 interface Message {
   id: number;
@@ -38,9 +48,27 @@ const initialContacts: Contact[] = [
     online: true,
     color: "bg-purple-600",
     messages: [
-      { id: 1, sender: "Sarah Jenkins", text: "Hey! Just wanted to check if the floral team is confirmed for the Corporate Gala?", time: "10:24 AM", isMe: false },
-      { id: 2, sender: "You", text: "Hi Sarah! Yes, the premium orchid layout has been locked in and paid.", time: "10:26 AM", isMe: true },
-      { id: 3, sender: "Sarah Jenkins", text: "Perfect! Can you update the timeline on the dashboard?", time: "10:27 AM", isMe: false },
+      {
+        id: 1,
+        sender: "Sarah Jenkins",
+        text: "Hey! Just wanted to check if the floral team is confirmed for the Corporate Gala?",
+        time: "10:24 AM",
+        isMe: false,
+      },
+      {
+        id: 2,
+        sender: "You",
+        text: "Hi Sarah! Yes, the premium orchid layout has been locked in and paid.",
+        time: "10:26 AM",
+        isMe: true,
+      },
+      {
+        id: 3,
+        sender: "Sarah Jenkins",
+        text: "Perfect! Can you update the timeline on the dashboard?",
+        time: "10:27 AM",
+        isMe: false,
+      },
     ],
   },
   {
@@ -54,8 +82,20 @@ const initialContacts: Contact[] = [
     online: false,
     color: "bg-blue-600",
     messages: [
-      { id: 1, sender: "You", text: "Hi Thomas, are the floral centerpieces ready for dispatch?", time: "8:00 AM", isMe: true },
-      { id: 2, sender: "Thomas K.", text: "The orchids are loaded. Ready for transit!", time: "8:15 AM", isMe: false },
+      {
+        id: 1,
+        sender: "You",
+        text: "Hi Thomas, are the floral centerpieces ready for dispatch?",
+        time: "8:00 AM",
+        isMe: true,
+      },
+      {
+        id: 2,
+        sender: "Thomas K.",
+        text: "The orchids are loaded. Ready for transit!",
+        time: "8:15 AM",
+        isMe: false,
+      },
     ],
   },
   {
@@ -69,8 +109,20 @@ const initialContacts: Contact[] = [
     online: false,
     color: "bg-pink-600",
     messages: [
-      { id: 1, sender: "Alex Mercer", text: "Confirming sound system checklist coordinates.", time: "Yesterday 4:30 PM", isMe: false },
-      { id: 2, sender: "You", text: "Received, thanks Alex! Everything is set on venue floor B.", time: "Yesterday 4:35 PM", isMe: true },
+      {
+        id: 1,
+        sender: "Alex Mercer",
+        text: "Confirming sound system checklist coordinates.",
+        time: "Yesterday 4:30 PM",
+        isMe: false,
+      },
+      {
+        id: 2,
+        sender: "You",
+        text: "Received, thanks Alex! Everything is set on venue floor B.",
+        time: "Yesterday 4:35 PM",
+        isMe: true,
+      },
     ],
   },
   {
@@ -84,7 +136,13 @@ const initialContacts: Contact[] = [
     online: true,
     color: "bg-emerald-600",
     messages: [
-      { id: 1, sender: "Rahim", text: "Menu confirmed. Allergen sheet attached.", time: "2d ago", isMe: false },
+      {
+        id: 1,
+        sender: "Rahim",
+        text: "Menu confirmed. Allergen sheet attached.",
+        time: "2d ago",
+        isMe: false,
+      },
     ],
   },
 ];
@@ -125,7 +183,11 @@ export default function MessagesPage() {
     const syncWithAPI = async () => {
       try {
         const response = await apiClient.get("/communications/conversations");
-        if (response.data?.success && Array.isArray(response.data?.data) && response.data.data.length > 0) {
+        if (
+          response.data?.success &&
+          Array.isArray(response.data?.data) &&
+          response.data.data.length > 0
+        ) {
           // If server returns real conversation threads, map them into contacts state
         }
       } catch (err) {
@@ -135,12 +197,13 @@ export default function MessagesPage() {
     syncWithAPI();
   }, []);
 
-  const activeContact = contacts.find((c) => c.id === activeContactId) || contacts[0];
+  const activeContact =
+    contacts.find((c) => c.id === activeContactId) || contacts[0];
 
   const handleSelectContact = (id: string) => {
     setActiveContactId(id);
     setContacts((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, unread: 0 } : c))
+      prev.map((c) => (c.id === id ? { ...c, unread: 0 } : c)),
     );
   };
 
@@ -153,9 +216,12 @@ export default function MessagesPage() {
         const ext = fileName.split(".").pop()?.toLowerCase();
         if (["png", "jpg", "jpeg", "gif", "webp"].includes(ext || "")) {
           // Valid 1x1 transparent PNG Data URL to prevent image viewer corruption errors
-          link.href = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
+          link.href =
+            "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
         } else {
-          const blob = new Blob([`Content of ${fileName}`], { type: "text/plain" });
+          const blob = new Blob([`Content of ${fileName}`], {
+            type: "text/plain",
+          });
           link.href = URL.createObjectURL(blob);
         }
       }
@@ -181,7 +247,10 @@ export default function MessagesPage() {
         id: Date.now(),
         sender: "You",
         text: `📎 Attached file: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`,
-        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
         isMe: true,
         fileUrl: dataUrl,
       };
@@ -197,7 +266,7 @@ export default function MessagesPage() {
             };
           }
           return c;
-        })
+        }),
       );
 
       toast.success(`Attached ${file.name}!`);
@@ -224,7 +293,10 @@ export default function MessagesPage() {
       id: Date.now(),
       sender: "You",
       text: inputMessage.trim(),
-      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
       isMe: true,
     };
 
@@ -242,7 +314,7 @@ export default function MessagesPage() {
           };
         }
         return c;
-      })
+      }),
     );
 
     // Call API endpoint
@@ -270,7 +342,10 @@ export default function MessagesPage() {
         id: Date.now() + 1,
         sender: activeContact.name,
         text: randomReply,
-        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
         isMe: false,
       };
 
@@ -285,16 +360,17 @@ export default function MessagesPage() {
             };
           }
           return c;
-        })
+        }),
       );
 
       toast.info(`New message from ${activeContact.name}`);
     }, 1500);
   };
 
-  const filteredContacts = contacts.filter((c) =>
-    c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    c.role.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredContacts = contacts.filter(
+    (c) =>
+      c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.role.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const totalUnread = contacts.reduce((sum, c) => sum + c.unread, 0);
@@ -304,8 +380,12 @@ export default function MessagesPage() {
       {/* Header Banner */}
       <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Communication Hub</h1>
-          <p className="text-sm text-slate-500 mt-1">Interact with clients, event admins, and vendors in real-time.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+            Communication Hub
+          </h1>
+          <p className="text-sm text-slate-500 mt-1">
+            Interact with clients, event admins, and vendors in real-time.
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <span className="px-3 py-1 bg-slate-100 text-slate-700 font-semibold text-xs rounded-full border border-slate-200">
@@ -350,11 +430,15 @@ export default function MessagesPage() {
                   key={c.id}
                   onClick={() => handleSelectContact(c.id)}
                   className={`p-4 flex items-start gap-3 cursor-pointer transition-all ${
-                    isActive ? "bg-slate-100/80 border-l-4 border-slate-900" : "hover:bg-slate-50 border-l-4 border-transparent"
+                    isActive
+                      ? "bg-slate-100/80 border-l-4 border-slate-900"
+                      : "hover:bg-slate-50 border-l-4 border-transparent"
                   }`}
                 >
                   <div className="relative shrink-0">
-                    <div className={`w-10 h-10 rounded-full ${c.color} text-white font-bold text-sm flex items-center justify-center shadow-sm`}>
+                    <div
+                      className={`w-10 h-10 rounded-full ${c.color} text-white font-bold text-sm flex items-center justify-center shadow-sm`}
+                    >
                       {c.initial}
                     </div>
                     {c.online && (
@@ -364,12 +448,18 @@ export default function MessagesPage() {
 
                   <div className="min-w-0 flex-1">
                     <div className="flex justify-between items-center">
-                      <h3 className={`text-xs font-bold truncate ${isActive ? "text-slate-900" : "text-slate-700"}`}>
+                      <h3
+                        className={`text-xs font-bold truncate ${isActive ? "text-slate-900" : "text-slate-700"}`}
+                      >
                         {c.name}
                       </h3>
-                      <span className="text-[10px] text-slate-400 font-medium shrink-0">{c.time}</span>
+                      <span className="text-[10px] text-slate-400 font-medium shrink-0">
+                        {c.time}
+                      </span>
                     </div>
-                    <p className="text-[11px] text-slate-500 truncate mt-0.5 font-medium">{c.preview}</p>
+                    <p className="text-[11px] text-slate-500 truncate mt-0.5 font-medium">
+                      {c.preview}
+                    </p>
                   </div>
 
                   {c.unread > 0 && (
@@ -388,15 +478,20 @@ export default function MessagesPage() {
           {/* Chat Header */}
           <div className="p-4 border-b border-slate-100 flex justify-between items-center shrink-0 bg-white">
             <div className="flex items-center gap-3">
-              <div className={`w-10 h-10 rounded-full ${activeContact.color} text-white font-bold text-sm flex items-center justify-center shadow-sm`}>
+              <div
+                className={`w-10 h-10 rounded-full ${activeContact.color} text-white font-bold text-sm flex items-center justify-center shadow-sm`}
+              >
                 {activeContact.initial}
               </div>
               <div>
-                <h2 className="text-sm font-bold text-slate-900">{activeContact.name}</h2>
+                <h2 className="text-sm font-bold text-slate-900">
+                  {activeContact.name}
+                </h2>
                 <p className="text-[10px] font-semibold text-slate-500 flex items-center gap-1.5 mt-0.5">
                   {activeContact.online ? (
                     <span className="text-emerald-600 font-bold flex items-center gap-1">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse" /> Online
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse" />{" "}
+                      Online
                     </span>
                   ) : (
                     <span className="text-slate-400">Offline</span>
@@ -426,7 +521,9 @@ export default function MessagesPage() {
               let fileName = "";
               let fileSize = "";
               if (isAttachment) {
-                const match = msg.text.match(/📎 Attached file:\s*(.*?)\s*\((.*?)\)/);
+                const match = msg.text.match(
+                  /📎 Attached file:\s*(.*?)\s*\((.*?)\)/,
+                );
                 if (match) {
                   fileName = match[1];
                   fileSize = match[2];
@@ -450,22 +547,37 @@ export default function MessagesPage() {
                     {isAttachment ? (
                       <div className="space-y-2">
                         {/* Inline Image Preview if available */}
-                        {msg.fileUrl && (fileName.endsWith(".png") || fileName.endsWith(".jpg") || fileName.endsWith(".jpeg") || fileName.endsWith(".webp") || fileName.endsWith(".gif")) && (
-                          <div className="rounded-xl overflow-hidden max-h-48 border border-slate-700/50 bg-black/40">
-                            <img src={msg.fileUrl} alt={fileName} className="w-full h-full object-cover" />
-                          </div>
-                        )}
+                        {msg.fileUrl &&
+                          (fileName.endsWith(".png") ||
+                            fileName.endsWith(".jpg") ||
+                            fileName.endsWith(".jpeg") ||
+                            fileName.endsWith(".webp") ||
+                            fileName.endsWith(".gif")) && (
+                            <div className="rounded-xl overflow-hidden max-h-48 border border-slate-700/50 bg-black/40">
+                              <img
+                                src={msg.fileUrl}
+                                alt={fileName}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          )}
                         <div className="flex items-center gap-3 p-2 bg-slate-800/60 rounded-xl border border-slate-700/50">
                           <div className="p-2.5 bg-slate-700 text-purple-300 rounded-lg shrink-0">
                             <Paperclip className="w-4 h-4" />
                           </div>
                           <div className="min-w-0 flex-1">
-                            <p className="font-bold text-xs truncate text-slate-100">{fileName || "Attachment"}</p>
-                            <p className="text-[10px] text-slate-400 font-medium">{fileSize || "File Attachment"}</p>
+                            <p className="font-bold text-xs truncate text-slate-100">
+                              {fileName || "Attachment"}
+                            </p>
+                            <p className="text-[10px] text-slate-400 font-medium">
+                              {fileSize || "File Attachment"}
+                            </p>
                           </div>
                           <button
                             type="button"
-                            onClick={() => handleDownloadFile(fileName, msg.fileUrl)}
+                            onClick={() =>
+                              handleDownloadFile(fileName, msg.fileUrl)
+                            }
                             className="px-2.5 py-1 bg-purple-600 hover:bg-purple-500 text-white rounded-md text-[10px] font-bold transition-colors shrink-0"
                           >
                             Download
@@ -477,8 +589,12 @@ export default function MessagesPage() {
                     )}
                   </div>
                   <div className="flex items-center gap-1 mt-1 px-1">
-                    <span className="text-[9px] text-slate-400 font-medium">{msg.time}</span>
-                    {msg.isMe && <CheckCheck className="w-3 h-3 text-slate-400" />}
+                    <span className="text-[9px] text-slate-400 font-medium">
+                      {msg.time}
+                    </span>
+                    {msg.isMe && (
+                      <CheckCheck className="w-3 h-3 text-slate-400" />
+                    )}
                   </div>
                 </div>
               );

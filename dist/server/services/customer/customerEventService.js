@@ -1,15 +1,4 @@
 "use strict";
-var __rest = (this && this.__rest) || function (s, e) {
-    var t = {};
-    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
-        t[p] = s[p];
-    if (s != null && typeof Object.getOwnPropertySymbols === "function")
-        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
-            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
-                t[p[i]] = s[p[i]];
-        }
-    return t;
-};
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CustomerEventService = void 0;
@@ -33,23 +22,39 @@ CustomerEventService.getEventById = (0, catchServiceAsync_1.catchServiceAsync)(a
     });
 });
 CustomerEventService.createEvent = (0, catchServiceAsync_1.catchServiceAsync)(async (customerId, data) => {
-    const { guests, eventDate } = data, eventFields = __rest(data, ["guests", "eventDate"]);
+    var _b;
+    const { guests, eventDate, budgetAmount, budget, estimatedBudget: estBud, location, notes: reqNotes } = data;
+    const estimatedBudget = (_b = estBud !== null && estBud !== void 0 ? estBud : budgetAmount) !== null && _b !== void 0 ? _b : budget;
+    const notes = reqNotes !== null && reqNotes !== void 0 ? reqNotes : location;
     return prisma_1.prisma.$transaction(async (tx) => {
         const event = await tx.customerEvent.create({
-            data: Object.assign(Object.assign({}, eventFields), { customerId, eventDate: eventDate ? new Date(eventDate) : null, guests: guests && guests.length > 0 ? {
+            data: {
+                customerId,
+                eventTitle: String(data.eventTitle || 'Untitled Event'),
+                eventDate: eventDate ? new Date(eventDate) : null,
+                estimatedBudget: estimatedBudget != null ? Number(estimatedBudget) : null,
+                status: data.status || 'draft',
+                eventTypeId: data.eventTypeId ? Number(data.eventTypeId) : null,
+                guestCount: data.guestCount ? Number(data.guestCount) : null,
+                zoneId: data.zoneId ? Number(data.zoneId) : null,
+                guests: guests && Array.isArray(guests) && guests.length > 0 ? {
                     create: guests.map((g) => ({
                         guestType: g.guestType,
                         guestCount: g.guestCount,
                         remarks: g.remarks,
                     })),
-                } : undefined }),
+                } : undefined,
+            },
             include: { guests: true },
         });
         return event;
     });
 });
 CustomerEventService.updateEvent = (0, catchServiceAsync_1.catchServiceAsync)(async (id, customerId, data) => {
-    const { guests, eventDate } = data, eventFields = __rest(data, ["guests", "eventDate"]);
+    var _b;
+    const { guests, eventDate, budgetAmount, budget, estimatedBudget: estBud, location, notes: reqNotes } = data;
+    const estimatedBudget = (_b = estBud !== null && estBud !== void 0 ? estBud : budgetAmount) !== null && _b !== void 0 ? _b : budget;
+    const notes = reqNotes !== null && reqNotes !== void 0 ? reqNotes : location;
     return prisma_1.prisma.$transaction(async (tx) => {
         // Confirm ownership
         const existing = await tx.customerEvent.findFirst({
@@ -57,17 +62,17 @@ CustomerEventService.updateEvent = (0, catchServiceAsync_1.catchServiceAsync)(as
         });
         if (!existing)
             throw new Error('Event not found');
-        // Update basic fields
+        // Update basic fields - explicitly map only valid Prisma fields
         await tx.customerEvent.update({
             where: { id },
-            data: Object.assign(Object.assign({}, eventFields), (eventDate ? { eventDate: new Date(eventDate) } : {})),
+            data: Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (data.eventTitle ? { eventTitle: String(data.eventTitle) } : {})), (eventDate ? { eventDate: new Date(eventDate) } : {})), (estimatedBudget != null ? { estimatedBudget: Number(estimatedBudget) } : {})), (data.status ? { status: data.status } : {})), (data.eventTypeId ? { eventTypeId: Number(data.eventTypeId) } : {})), (data.guestCount ? { guestCount: Number(data.guestCount) } : {})), (data.zoneId ? { zoneId: Number(data.zoneId) } : {})),
         });
         // Update guests if supplied (replaces old guests for simplicity)
         if (guests !== undefined) {
             await tx.customerGuest.deleteMany({
                 where: { customerEventId: id },
             });
-            if (guests.length > 0) {
+            if (Array.isArray(guests) && guests.length > 0) {
                 await tx.customerGuest.createMany({
                     data: guests.map((g) => ({
                         customerEventId: id,
