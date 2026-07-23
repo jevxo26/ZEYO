@@ -13,6 +13,7 @@ import SocialLogin from "../SocialLogin";
 import { useAppDispatch } from "@/store/store";
 import { setCredentials } from "@/store/slices/authSlice";
 import { Camera, User } from "lucide-react";
+import apiClient from "@/lib/apiClient";
 
 const schema = yup.object({
   firstName: yup.string().required("First name is required"),
@@ -69,22 +70,18 @@ export function SignUpForm() {
     try {
       const fullName = `${data.firstName} ${data.lastName}`.trim();
 
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: fullName,
-          email: data.email,
-          phone: data.phone,
-          password: data.password,
-          gender: data.gender,
-          dateOfBirth: data.dateOfBirth,
-          profileImage: null,
-        }),
+      const response = await apiClient.post("/auth/register", {
+        name: fullName,
+        email: data.email,
+        phone: data.phone,
+        password: data.password,
+        gender: data.gender,
+        dateOfBirth: data.dateOfBirth,
+        profileImage: null,
       });
 
-      const result = await response.json();
-      if (!response.ok || result.success === false) {
+      const result = response.data;
+      if (!result || result.success === false) {
         toast.error(result.message ?? result.error ?? "Failed to create account");
         return;
       }
@@ -102,17 +99,13 @@ export function SignUpForm() {
       }
 
       // Fallback sign in
-      const loginRes = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: data.email,
-          password: data.password,
-        }),
+      const loginRes = await apiClient.post("/auth/login", {
+        email: data.email,
+        password: data.password,
       });
 
-      const loginResult = await loginRes.json();
-      if (loginRes.ok && loginResult.data?.token) {
+      const loginResult = loginRes.data;
+      if (loginResult && loginResult.data?.token) {
         dispatch(
           setCredentials({
             user: loginResult.data.user,
@@ -125,19 +118,18 @@ export function SignUpForm() {
         toast.success("Account created! Please login.");
         router.push("/login");
       }
-    } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong.");
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "An error occurred during sign up");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 text-left">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 text-left w-full">
       {/* Circle Profile Photo Uploader */}
-      <div className="flex flex-col items-center space-y-2 mb-4">
-        <div className="relative group w-20 h-20 rounded-full overflow-hidden bg-slate-950/40 border border-slate-800 flex items-center justify-center cursor-pointer transition-all hover:border-indigo-500">
+      <div className="flex flex-col items-center space-y-2 mb-6">
+        <div className="relative group w-24 h-24 rounded-full overflow-hidden bg-slate-100 border-2 border-slate-200 flex items-center justify-center cursor-pointer transition-all hover:border-slate-400">
           {imagePreview ? (
             <img
               src={imagePreview}
@@ -145,13 +137,13 @@ export function SignUpForm() {
               className="w-full h-full object-cover"
             />
           ) : (
-            <User className="w-8 h-8 text-slate-500" />
+            <User className="w-10 h-10 text-slate-400" />
           )}
           <label
             htmlFor="profileImage"
-            className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-[10px] text-white transition-opacity cursor-pointer"
+            className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-[10px] text-white font-semibold transition-opacity cursor-pointer"
           >
-            <Camera className="w-4 h-4 mb-0.5" />
+            <Camera className="w-5 h-5 mb-1" />
             Upload
           </label>
         </div>
@@ -167,118 +159,118 @@ export function SignUpForm() {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-1">
-          <Label className="text-slate-300 font-medium text-xs tracking-wide uppercase">First Name</Label>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-1.5">
+          <Label className="text-slate-700 font-semibold text-sm">First Name</Label>
           <Input 
             {...register("firstName")} 
             placeholder="John"
-            className="bg-slate-950/40 border-slate-800 text-white placeholder-slate-600 focus:ring-indigo-500/50 focus:border-indigo-500 rounded-xl h-10 transition-all"
+            className="bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-slate-900 focus:border-slate-900 rounded-lg h-10 transition-all"
           />
           {errors.firstName && (
-            <p className="text-rose-500 text-[10px] font-semibold mt-0.5">{errors.firstName.message}</p>
+            <p className="text-rose-500 text-xs font-semibold mt-0.5">{errors.firstName.message}</p>
           )}
         </div>
 
-        <div className="space-y-1">
-          <Label className="text-slate-300 font-medium text-xs tracking-wide uppercase">Last Name</Label>
+        <div className="space-y-1.5">
+          <Label className="text-slate-700 font-semibold text-sm">Last Name</Label>
           <Input 
             {...register("lastName")} 
             placeholder="Doe"
-            className="bg-slate-950/40 border-slate-800 text-white placeholder-slate-600 focus:ring-indigo-500/50 focus:border-indigo-500 rounded-xl h-10 transition-all"
+            className="bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-slate-900 focus:border-slate-900 rounded-lg h-10 transition-all"
           />
           {errors.lastName && (
-            <p className="text-rose-500 text-[10px] font-semibold mt-0.5">{errors.lastName.message}</p>
+            <p className="text-rose-500 text-xs font-semibold mt-0.5">{errors.lastName.message}</p>
           )}
         </div>
       </div>
 
-      <div className="space-y-1">
-        <Label className="text-slate-300 font-medium text-xs tracking-wide uppercase">Email Address</Label>
+      <div className="space-y-1.5">
+        <Label className="text-slate-700 font-semibold text-sm">Email Address</Label>
         <Input 
           type="email" 
           {...register("email")} 
           placeholder="name@company.com"
-          className="bg-slate-950/40 border-slate-800 text-white placeholder-slate-600 focus:ring-indigo-500/50 focus:border-indigo-500 rounded-xl h-10 transition-all"
+          className="bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-slate-900 focus:border-slate-900 rounded-lg h-10 transition-all"
         />
         {errors.email && (
-          <p className="text-rose-500 text-[10px] font-semibold mt-0.5">{errors.email.message}</p>
+          <p className="text-rose-500 text-xs font-semibold mt-0.5">{errors.email.message}</p>
         )}
       </div>
 
-      <div className="space-y-1">
-        <Label className="text-slate-300 font-medium text-xs tracking-wide uppercase">Phone Number</Label>
+      <div className="space-y-1.5">
+        <Label className="text-slate-700 font-semibold text-sm">Phone Number</Label>
         <Input 
           {...register("phone")} 
           placeholder="+880 1700 000000"
-          className="bg-slate-950/40 border-slate-800 text-white placeholder-slate-600 focus:ring-indigo-500/50 focus:border-indigo-500 rounded-xl h-10 transition-all"
+          className="bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-slate-900 focus:border-slate-900 rounded-lg h-10 transition-all"
         />
         {errors.phone && (
-          <p className="text-rose-500 text-[10px] font-semibold mt-0.5">{errors.phone.message}</p>
+          <p className="text-rose-500 text-xs font-semibold mt-0.5">{errors.phone.message}</p>
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-1">
-          <Label className="text-slate-300 font-medium text-xs tracking-wide uppercase">Date of Birth</Label>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-1.5">
+          <Label className="text-slate-700 font-semibold text-sm">Date of Birth</Label>
           <Input
             type="date"
             {...register("dateOfBirth")}
-            className="bg-slate-950/40 border-slate-800 text-white focus:ring-indigo-500/50 focus:border-indigo-500 rounded-xl h-10 transition-all block w-full [color-scheme:dark]"
+            className="bg-white border-slate-300 text-slate-900 focus:ring-slate-900 focus:border-slate-900 rounded-lg h-10 transition-all block w-full"
           />
           {errors.dateOfBirth && (
-            <p className="text-rose-500 text-[10px] font-semibold mt-0.5">{errors.dateOfBirth.message}</p>
+            <p className="text-rose-500 text-xs font-semibold mt-0.5">{errors.dateOfBirth.message}</p>
           )}
         </div>
 
-        <div className="space-y-1">
-          <Label className="text-slate-300 font-medium text-xs tracking-wide uppercase">Gender</Label>
+        <div className="space-y-1.5">
+          <Label className="text-slate-700 font-semibold text-sm">Gender</Label>
           <select
             {...register("gender")}
-            className="w-full bg-slate-950/40 border border-slate-800 text-white focus:ring-indigo-500/50 focus:border-indigo-500 rounded-xl h-10 px-3 transition-all focus:outline-none"
+            className="w-full bg-white border border-slate-300 text-slate-900 focus:ring-slate-900 focus:border-slate-900 rounded-lg h-10 px-3 transition-all focus:outline-none"
             defaultValue=""
           >
-            <option value="" disabled className="bg-slate-900 text-slate-500">
+            <option value="" disabled className="text-slate-400">
               Select
             </option>
-            <option value="male" className="bg-slate-900 text-white">Male</option>
-            <option value="female" className="bg-slate-900 text-white">Female</option>
-            <option value="other" className="bg-slate-900 text-white">Other</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
           </select>
           {errors.gender && (
-            <p className="text-rose-500 text-[10px] font-semibold mt-0.5">{errors.gender.message}</p>
+            <p className="text-rose-500 text-xs font-semibold mt-0.5">{errors.gender.message}</p>
           )}
         </div>
       </div>
 
-      <div className="space-y-1">
-        <Label className="text-slate-300 font-medium text-xs tracking-wide uppercase">Password</Label>
+      <div className="space-y-1.5">
+        <Label className="text-slate-700 font-semibold text-sm">Password</Label>
         <Input
           type="password"
           {...register("password")}
           placeholder="••••••••"
-          className="bg-slate-950/40 border-slate-800 text-white placeholder-slate-600 focus:ring-indigo-500/50 focus:border-indigo-500 rounded-xl h-10 transition-all"
+          className="bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-slate-900 focus:border-slate-900 rounded-lg h-10 transition-all"
         />
         {errors.password && (
-          <p className="text-rose-500 text-[10px] font-semibold mt-0.5">{errors.password.message}</p>
+          <p className="text-rose-500 text-xs font-semibold mt-0.5">{errors.password.message}</p>
         )}
       </div>
 
-      <div className="space-y-1">
-        <Label className="text-slate-300 font-medium text-xs tracking-wide uppercase">Confirm Password</Label>
+      <div className="space-y-1.5">
+        <Label className="text-slate-700 font-semibold text-sm">Confirm Password</Label>
         <Input
           type="password"
           {...register("confirmPassword")}
           placeholder="••••••••"
-          className="bg-slate-950/40 border-slate-800 text-white placeholder-slate-600 focus:ring-indigo-500/50 focus:border-indigo-500 rounded-xl h-10 transition-all"
+          className="bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-slate-900 focus:border-slate-900 rounded-lg h-10 transition-all"
         />
         {errors.confirmPassword && (
-          <p className="text-rose-500 text-[10px] font-semibold mt-0.5">{errors.confirmPassword.message}</p>
+          <p className="text-rose-500 text-xs font-semibold mt-0.5">{errors.confirmPassword.message}</p>
         )}
       </div>
 
       <Button
-        className="w-full h-11 mt-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/10 active:scale-[0.98]"
+        className="w-full h-11 mt-4 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg transition-all shadow-sm"
         type="submit"
         disabled={isLoading}
       >
@@ -295,12 +287,12 @@ export function SignUpForm() {
         )}
       </Button>
 
-      <div className="relative my-4">
+      <div className="relative my-6">
         <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-slate-800" />
+          <span className="w-full border-t border-slate-200" />
         </div>
-        <div className="relative flex justify-center text-[10px] uppercase tracking-wider">
-          <span className="bg-[#0f172a] px-3 text-slate-500 font-bold rounded-full">
+        <div className="relative flex justify-center text-xs uppercase tracking-wider">
+          <span className="bg-white px-3 text-slate-400 font-semibold">
             Or continue with
           </span>
         </div>
@@ -310,11 +302,11 @@ export function SignUpForm() {
         <SocialLogin />
       </div>
 
-      <div className="text-center text-sm mt-4 text-slate-400 font-medium">
+      <div className="text-center text-sm mt-6 text-slate-500 font-medium">
         Already have an account?{" "}
         <button
           type="button"
-          className="text-indigo-400 hover:text-indigo-300 font-bold hover:underline"
+          className="text-slate-900 font-bold hover:underline"
           onClick={() => router.push("/login")}
         >
           Sign In

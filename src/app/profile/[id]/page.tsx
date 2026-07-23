@@ -10,6 +10,7 @@ import { FaFacebook, FaInstagram, FaLinkedin } from "react-icons/fa";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { EditableField } from "@/components/EditableField";
+import apiClient from "@/lib/apiClient";
 
 type UserProfile = {
   id: number;
@@ -91,13 +92,10 @@ export default function ProfilePage() {
       return;
     }
     try {
-      const res = await fetch("/api/users/profile/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const result = await res.json();
-      if (res.ok) {
+      const response = await apiClient.get("/users/profile/me");
+      if (response.data?.data) {
         // Flatten nested `profile` object into the top-level user object
-        const raw = result.data;
+        const raw = response.data.data;
         const flattened: UserProfile = {
           ...raw,
           company: raw.profile?.companyName ?? null,
@@ -112,11 +110,11 @@ export default function ProfilePage() {
         };
         setUser(flattened);
       } else {
-        setError(result.message || "Failed to load profile.");
+        setError(response.data?.message || "Failed to load profile.");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError("Something went wrong while loading your profile.");
+      setError(err.response?.data?.message || "Something went wrong while loading your profile.");
     } finally {
       setLoading(false);
     }
@@ -153,11 +151,6 @@ export default function ProfilePage() {
   const f = (field: keyof UserProfile) => (formData[field] as string) ?? "";
 
   const handleSave = async () => {
-    const token = localStorage.getItem("accessToken");
-    if (!token) {
-      setSaveError("You're not logged in.");
-      return;
-    }
     setSaving(true);
     setSaveError(null);
 
@@ -169,25 +162,17 @@ export default function ProfilePage() {
     }
 
     try {
-      const res = await fetch("/api/users/profile/me", {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
-      const result = await res.json();
-      if (res.ok) {
+      const response = await apiClient.put("/users/profile/me", payload);
+      if (response.data?.success !== false) {
         setUser((prev) => (prev ? { ...prev, ...formData } : prev));
         setIsEditing(false);
         setFormData({});
       } else {
-        setSaveError(result.message || "Failed to update profile.");
+        setSaveError(response.data?.message || "Failed to update profile.");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setSaveError("Something went wrong while saving.");
+      setSaveError(err.response?.data?.message || "Something went wrong while saving.");
     } finally {
       setSaving(false);
     }

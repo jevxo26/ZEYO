@@ -20,26 +20,24 @@ export class CustomerEventService {
     });
   });
 
-  static createEvent = catchServiceAsync(async (customerId: number, data: {
-    eventTypeId?: number;
-    eventTitle: string;
-    eventDate?: string | Date;
-    guestCount?: number;
-    zoneId?: number;
-    estimatedBudget?: number;
-    status?: string;
-    guests?: Array<{ guestType: string; guestCount: number; remarks?: string }>;
-  }) => {
-    const { guests, eventDate, ...eventFields } = data;
+  static createEvent = catchServiceAsync(async (customerId: number, data: any) => {
+    const { guests, eventDate, budgetAmount, budget, estimatedBudget: estBud, location, notes: reqNotes } = data;
+    const estimatedBudget = estBud ?? budgetAmount ?? budget;
+    const notes = reqNotes ?? location;
 
     return prisma.$transaction(async (tx) => {
       const event = await tx.customerEvent.create({
         data: {
-          ...eventFields,
           customerId,
+          eventTitle: String(data.eventTitle || 'Untitled Event'),
           eventDate: eventDate ? new Date(eventDate) : null,
-          guests: guests && guests.length > 0 ? {
-            create: guests.map((g) => ({
+          estimatedBudget: estimatedBudget != null ? Number(estimatedBudget) : null,
+          status: data.status || 'draft',
+          eventTypeId: data.eventTypeId ? Number(data.eventTypeId) : null,
+          guestCount: data.guestCount ? Number(data.guestCount) : null,
+          zoneId: data.zoneId ? Number(data.zoneId) : null,
+          guests: guests && Array.isArray(guests) && guests.length > 0 ? {
+            create: guests.map((g: { guestType: string; guestCount: number; remarks?: string }) => ({
               guestType: g.guestType,
               guestCount: g.guestCount,
               remarks: g.remarks,
@@ -53,17 +51,10 @@ export class CustomerEventService {
     });
   });
 
-  static updateEvent = catchServiceAsync(async (id: number, customerId: number, data: {
-    eventTypeId?: number;
-    eventTitle?: string;
-    eventDate?: string | Date;
-    guestCount?: number;
-    zoneId?: number;
-    estimatedBudget?: number;
-    status?: string;
-    guests?: Array<{ guestType: string; guestCount: number; remarks?: string }>;
-  }) => {
-    const { guests, eventDate, ...eventFields } = data;
+  static updateEvent = catchServiceAsync(async (id: number, customerId: number, data: any) => {
+    const { guests, eventDate, budgetAmount, budget, estimatedBudget: estBud, location, notes: reqNotes } = data;
+    const estimatedBudget = estBud ?? budgetAmount ?? budget;
+    const notes = reqNotes ?? location;
 
     return prisma.$transaction(async (tx) => {
       // Confirm ownership
@@ -72,12 +63,17 @@ export class CustomerEventService {
       });
       if (!existing) throw new Error('Event not found');
 
-      // Update basic fields
+      // Update basic fields - explicitly map only valid Prisma fields
       await tx.customerEvent.update({
         where: { id },
         data: {
-          ...eventFields,
+          ...(data.eventTitle ? { eventTitle: String(data.eventTitle) } : {}),
           ...(eventDate ? { eventDate: new Date(eventDate) } : {}),
+          ...(estimatedBudget != null ? { estimatedBudget: Number(estimatedBudget) } : {}),
+          ...(data.status ? { status: data.status } : {}),
+          ...(data.eventTypeId ? { eventTypeId: Number(data.eventTypeId) } : {}),
+          ...(data.guestCount ? { guestCount: Number(data.guestCount) } : {}),
+          ...(data.zoneId ? { zoneId: Number(data.zoneId) } : {}),
         },
       });
 
@@ -87,9 +83,9 @@ export class CustomerEventService {
           where: { customerEventId: id },
         });
 
-        if (guests.length > 0) {
+        if (Array.isArray(guests) && guests.length > 0) {
           await tx.customerGuest.createMany({
-            data: guests.map((g) => ({
+            data: guests.map((g: { guestType: string; guestCount: number; remarks?: string }) => ({
               customerEventId: id,
               guestType: g.guestType,
               guestCount: g.guestCount,

@@ -1,91 +1,38 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { SlidersHorizontal, Plus, ShoppingBag, Clock, MapPin, Calendar } from "lucide-react";
-
-interface BookingItemType {
-  id: string;
-  event: string;
-  date: string;
-  client: string;
-  zone: string;
-  budget: string;
-  pending: number;
-  status: string;
-}
-
-const initialDefaultBookings: BookingItemType[] = [
-  {
-    id: "#EVT-8924",
-    event: "Corporate Gala",
-    date: "Oct 15, 2024",
-    client: "Acme Corp Ltd.",
-    zone: "Dhaka - Gulshan (Zone A)",
-    budget: "৳ 1,250,000",
-    pending: 2,
-    status: "Pending",
-  },
-  {
-    id: "#EVT-4912",
-    event: "Anniversary Dinner",
-    date: "Nov 02, 2024",
-    client: "Dr. Fahim Rahman",
-    zone: "Dhaka - Dhanmondi (Zone B)",
-    budget: "৳ 350,000",
-    pending: 1,
-    status: "Confirmed",
-  },
-  {
-    id: "#EVT-3401",
-    event: "Grand Wedding Reception",
-    date: "Dec 20, 2024",
-    client: "Karim Family",
-    zone: "Chittagong Metro (Zone C)",
-    budget: "৳ 2,800,000",
-    pending: 5,
-    status: "Active",
-  },
-  {
-    id: "#EVT-2198",
-    event: "Startup Product Launch",
-    date: "Nov 18, 2024",
-    client: "TechVenture BD",
-    zone: "Dhaka - Banani (Zone A)",
-    budget: "৳ 550,000",
-    pending: 0,
-    status: "Completed",
-  },
-];
-
-const statusStyle = (status: string) => {
-  if (status === "Confirmed") return { bg: "rgba(124,58,237,0.1)", color: "#7c3aed" };
-  if (status === "Pending") return { bg: "rgba(245,158,11,0.1)", color: "#d97706" };
-  if (status === "Active") return { bg: "rgba(37,99,235,0.1)", color: "#2563eb" };
-  return { bg: "rgba(16,185,129,0.1)", color: "#059669" };
-};
+import { SlidersHorizontal, Plus, ShoppingBag, Clock, MapPin, Calendar, Search } from "lucide-react";
+import Link from "next/link";
+import apiClient from "@/lib/apiClient";
+import { NewBookingModal } from "@/components/dashboard/NewBookingModal";
 
 export default function BookingsPage() {
-  const [bookingsList, setBookingsList] = useState<BookingItemType[]>([]);
+  const [bookingsList, setBookingsList] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("All Bookings");
 
-  const loadBookings = () => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("dashboard_bookings");
-      if (stored) {
-        setBookingsList(JSON.parse(stored));
-      } else {
-        localStorage.setItem("dashboard_bookings", JSON.stringify(initialDefaultBookings));
-        setBookingsList(initialDefaultBookings);
+  const fetchBookings = async () => {
+    setIsLoading(true);
+    try {
+      const response = await apiClient.get("/bookings/my");
+      if (response.data && response.data.success !== false) {
+        const rawData = response.data.data;
+        const list = Array.isArray(rawData) ? rawData : (Array.isArray(rawData?.data) ? rawData.data : []);
+        setBookingsList(list);
       }
+    } catch (error) {
+      console.error("Failed to fetch bookings", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    loadBookings();
+    fetchBookings();
 
     const handleUpdate = () => {
-      loadBookings();
+      fetchBookings();
     };
 
     window.addEventListener("dashboard-data-update", handleUpdate);
@@ -95,176 +42,167 @@ export default function BookingsPage() {
   }, []);
 
   const filteredBookings = bookingsList.filter((b) => {
-    if (activeTab === "Pending" && b.status !== "Pending") return false;
-    if (activeTab === "Confirmed" && b.status !== "Confirmed") return false;
-    if (activeTab === "Active" && b.status !== "Active") return false;
-    if (activeTab === "Completed" && b.status !== "Completed") return false;
+    const status = (b.bookingStatus || b.status || "pending").toLowerCase();
+    if (activeTab === "Pending" && status !== "pending") return false;
+    if (activeTab === "Confirmed" && status !== "confirmed") return false;
+    if (activeTab === "Completed" && status !== "completed") return false;
+    if (activeTab === "Cancelled" && status !== "cancelled") return false;
 
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
-      return (
-        b.event.toLowerCase().includes(q) ||
-        b.id.toLowerCase().includes(q) ||
-        b.client.toLowerCase().includes(q) ||
-        b.zone.toLowerCase().includes(q)
-      );
+      const name = (b.eventName || b.notes || "").toLowerCase();
+      const id = String(b.bookingNumber || b.id || "").toLowerCase();
+      const loc = (b.location || b.venue?.address || "").toLowerCase();
+      return name.includes(q) || id.includes(q) || loc.includes(q);
     }
     return true;
   });
 
-  const totalPending = bookingsList.reduce((acc, curr) => acc + (curr.pending || 0), 0);
+  const pendingCount = bookingsList.filter(
+    (b) => (b.bookingStatus || b.status || "pending").toLowerCase() === "pending"
+  ).length;
 
   const handleOpenNewBooking = () => {
-    window.dispatchEvent(new CustomEvent("open-dashboard-modal", { detail: "new-booking" }));
+    window.dispatchEvent(new CustomEvent("open-dashboard-modal", { detail: "new-event" }));
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case "confirmed":
+        return "bg-emerald-100 text-emerald-700";
+      case "pending":
+        return "bg-amber-100 text-amber-700";
+      case "completed":
+        return "bg-purple-100 text-purple-700";
+      case "cancelled":
+        return "bg-rose-100 text-rose-700";
+      default:
+        return "bg-slate-100 text-slate-600";
+    }
   };
 
   return (
-    <div className="space-y-7 max-w-7xl mx-auto">
+    <div className="space-y-6 max-w-7xl mx-auto">
+      <NewBookingModal />
+
       {/* Header Banner */}
-      <div
-        className="relative rounded-3xl p-7 overflow-hidden"
-        style={{
-          background: "linear-gradient(135deg, #7c3aed 0%, #4f46e5 50%, #2563eb 100%)",
-          boxShadow: "0 10px 40px rgba(124,58,237,0.3)",
-        }}
-      >
-        <div className="absolute top-0 right-0 w-64 h-64 rounded-full pointer-events-none" style={{ background: "rgba(255,255,255,0.05)", transform: "translate(40%,-40%)" }} />
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-black tracking-tight text-white">Booking Management</h1>
-            <p className="text-sm text-purple-200 mt-1 font-medium">Review confirmed bookings and assign vendors to pending services.</p>
+      <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Booking Management</h1>
+          <p className="text-sm text-slate-500 mt-1">Review, track, and manage all your event bookings in one place.</p>
+        </div>
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold flex items-center gap-2">
+            <Clock className="w-3.5 h-3.5 text-amber-600" />
+            <span>{pendingCount} Pending</span>
           </div>
-          <div className="flex gap-3 shrink-0">
-            <div
-              className="px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2"
-              style={{ background: "rgba(255,255,255,0.15)", color: "white", border: "1px solid rgba(255,255,255,0.2)" }}
-            >
-              <Clock size={13} />
-              <span>{totalPending} Pending</span>
-            </div>
-            <button
-              onClick={handleOpenNewBooking}
-              className="px-4 py-2.5 rounded-xl text-xs font-bold text-purple-700 flex items-center gap-2 cursor-pointer"
-              style={{ background: "rgba(255,255,255,0.95)", boxShadow: "0 4px 15px rgba(0,0,0,0.15)" }}
-            >
-              <Plus size={13} /> New Booking
-            </button>
-          </div>
+          <button
+            onClick={handleOpenNewBooking}
+            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-sm font-semibold shadow-sm transition-colors flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" /> New Booking
+          </button>
         </div>
       </div>
 
       {/* Filter Bar */}
-      <div
-        className="rounded-2xl p-4 flex flex-wrap gap-3 items-center"
-        style={{
-          background: "rgba(255,255,255,0.9)",
-          border: "1px solid rgba(124,58,237,0.1)",
-          boxShadow: "0 4px 15px rgba(124,58,237,0.05)",
-        }}
-      >
-        {["All Bookings", "Pending", "Confirmed", "Active", "Completed"].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className="px-4 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer"
-            style={
-              activeTab === tab
-                ? { background: "linear-gradient(135deg, #7c3aed, #2563eb)", color: "white", boxShadow: "0 3px 10px rgba(124,58,237,0.25)" }
-                : { background: "rgba(124,58,237,0.06)", color: "#6b7280", border: "1px solid rgba(124,58,237,0.1)" }
-            }
-          >
-            {tab}
-          </button>
-        ))}
-        <div className="ml-auto flex items-center gap-2">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search bookings..."
-            className="px-3 py-1.5 text-xs rounded-lg border border-purple-100 outline-none text-gray-700 bg-white"
-          />
-          <button
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer"
-            style={{ background: "rgba(124,58,237,0.06)", color: "#7c3aed", border: "1px solid rgba(124,58,237,0.12)" }}
-          >
-            <SlidersHorizontal size={13} /> Filter
-          </button>
+      <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-wrap gap-3 items-center justify-between">
+        <div className="flex gap-2 flex-wrap">
+          {["All Bookings", "Pending", "Confirmed", "Completed", "Cancelled"].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                activeTab === tab
+                  ? "bg-slate-900 text-white"
+                  : "bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100"
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+        
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <div className="relative flex-1 sm:flex-initial">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search bookings..."
+              className="w-full sm:w-64 pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-slate-50 outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white text-slate-900 transition-all"
+            />
+          </div>
         </div>
       </div>
 
-      {/* Bookings Grid */}
-      <div className="grid grid-cols-1 gap-4">
-        {filteredBookings.length > 0 ? (
-          filteredBookings.map((b) => {
-            const st = statusStyle(b.status);
-            return (
-              <div
-                key={b.id}
-                className="rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-                style={{
-                  background: "rgba(255,255,255,0.9)",
-                  border: "1px solid rgba(124,58,237,0.1)",
-                  boxShadow: "0 4px 15px rgba(124,58,237,0.04)",
-                  transition: "all 0.2s ease",
-                }}
-              >
-                {/* Left: ID + Event Info */}
-                <div className="flex items-start gap-4 flex-1 min-w-0">
-                  <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ background: "linear-gradient(135deg, rgba(124,58,237,0.15), rgba(37,99,235,0.1))", color: "#7c3aed" }}
-                  >
-                    <ShoppingBag size={16} />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[10px] font-bold" style={{ color: "#7c3aed" }}>{b.id}</span>
-                      {b.pending > 0 && (
-                        <span
-                          className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
-                          style={{ background: "rgba(245,158,11,0.15)", color: "#d97706" }}
-                        >
-                          {b.pending} vendors needed
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm font-bold text-gray-900 mt-0.5">{b.event}</p>
-                    <p className="text-[11px] text-gray-500 mt-1 flex items-center gap-3 flex-wrap">
-                      <span className="flex items-center gap-1"><Calendar size={10} className="text-purple-400" /> {b.date}</span>
-                      <span className="flex items-center gap-1"><MapPin size={10} className="text-blue-400" /> {b.zone}</span>
-                    </p>
-                  </div>
+      {/* Bookings List */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden divide-y divide-slate-100">
+        {isLoading ? (
+          <div className="p-12 text-center text-slate-400 font-medium">Loading bookings...</div>
+        ) : filteredBookings.length > 0 ? (
+          filteredBookings.map((b) => (
+            <div
+              key={b.id}
+              className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-slate-50 transition-colors"
+            >
+              {/* Left: Event Info */}
+              <div className="flex items-start gap-4 flex-1 min-w-0">
+                <div className="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 text-slate-600">
+                  <ShoppingBag className="w-5 h-5" />
                 </div>
-
-                {/* Right: Budget + Status + Actions */}
-                <div className="flex items-center gap-4 shrink-0 flex-wrap sm:flex-nowrap">
-                  <div className="text-right">
-                    <p className="text-[10px] text-gray-400 font-medium">Budget</p>
-                    <p className="text-sm font-black text-gray-900">{b.budget}</p>
-                    <p className="text-[10px] text-gray-400">{b.client}</p>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs font-mono font-bold text-slate-500">
+                      {b.bookingNumber || `#BKG-${b.id}`}
+                    </span>
                   </div>
-
-                  <span
-                    className="text-[9px] font-bold px-3 py-1 rounded-full"
-                    style={{ background: st.bg, color: st.color }}
-                  >
-                    {b.status}
-                  </span>
-
-                  <button
-                    className="px-4 py-2 rounded-xl text-[10px] font-bold text-white transition-all cursor-pointer"
-                    style={{ background: "linear-gradient(135deg, #7c3aed, #2563eb)", boxShadow: "0 3px 10px rgba(124,58,237,0.2)" }}
-                  >
-                    View Details
-                  </button>
+                  <h3 className="text-base font-bold text-slate-900 mt-0.5">
+                    {b.eventName || b.notes || "Untitled Event"}
+                  </h3>
+                  <div className="flex items-center gap-4 mt-1 text-xs text-slate-500 font-medium flex-wrap">
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                      {new Date(b.eventDate || b.createdAt).toLocaleDateString()}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                      {b.location || b.venue?.address || "TBD"}
+                    </span>
+                  </div>
                 </div>
               </div>
-            );
-          })
+
+              {/* Right: Budget + Status + Actions */}
+              <div className="flex items-center gap-4 shrink-0 w-full sm:w-auto justify-between sm:justify-end border-t sm:border-t-0 pt-4 sm:pt-0 border-slate-100">
+                <div className="text-left sm:text-right">
+                  <p className="text-[10px] uppercase tracking-wider font-semibold text-slate-400">Total Budget</p>
+                  <p className="text-base font-bold text-slate-900">
+                    ${Number(b.grandTotal || b.budget || 0).toLocaleString()}
+                  </p>
+                </div>
+
+                <span
+                  className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md ${getStatusColor(
+                    b.bookingStatus || b.status
+                  )}`}
+                >
+                  {b.bookingStatus || b.status || "PENDING"}
+                </span>
+
+                <Link
+                  href={`/dashboard/bookings/${b.id}`}
+                  className="px-4 py-2 rounded-lg text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-white shadow-sm transition-colors"
+                >
+                  View Details
+                </Link>
+              </div>
+            </div>
+          ))
         ) : (
-          <div className="text-center py-12 bg-white/50 backdrop-blur-md rounded-3xl border border-purple-100">
-            <p className="text-sm font-semibold text-gray-500">No bookings found matching filters.</p>
+          <div className="text-center py-12">
+            <p className="text-sm font-semibold text-slate-500">No bookings match your current filter.</p>
           </div>
         )}
       </div>

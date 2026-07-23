@@ -12,9 +12,10 @@ import {
 import { Footer } from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import type { EventPackage } from "@/types/package";
+import apiClient from "@/lib/apiClient";
 
 // TODO: point this at your real endpoint if it differs
-const PACKAGES_ENDPOINT = "/api/packages";
+const PACKAGES_ENDPOINT = "/packages";
 
 function normalizePackageItem(raw: Record<string, unknown>): EventPackage {
   const packageCategory = raw.packageCategory as { name?: unknown } | undefined;
@@ -198,11 +199,8 @@ const Page = () => {
     async function loadPackages() {
       setStatus("loading");
       try {
-        const res = await fetch(PACKAGES_ENDPOINT, {
-          credentials: "include",
-        });
-        if (!res.ok) throw new Error(`Request failed: ${res.status}`);
-        const payload = await res.json();
+        const res = await apiClient.get(PACKAGES_ENDPOINT);
+        const payload = res.data;
         const rawList = Array.isArray(payload) ? payload : (payload.data ?? []);
         const list: EventPackage[] = Array.isArray(rawList)
           ? rawList.map((item) =>

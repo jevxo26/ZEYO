@@ -1,51 +1,72 @@
 "use client";
 
-import { SignUpForm } from "@/components/auth/signup";
 import { motion } from "framer-motion";
+import { SignUpForm } from "@/components/auth/signup";
 import Link from "next/link";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, ArrowLeft } from "lucide-react";
 
 export default function RegisterPage() {
   return (
-    <div className="min-h-screen relative flex items-center justify-center bg-[#070b13] py-12 px-4 overflow-hidden font-sans">
-      {/* Decorative Premium Glow Blobs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] rounded-full bg-gradient-to-tr from-indigo-500/20 to-purple-500/20 blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-gradient-to-tr from-emerald-500/10 to-cyan-500/20 blur-[120px] pointer-events-none" />
-      
-      {/* Dynamic Grid Overlay */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f29370a_1px,transparent_1px),linear-gradient(to_bottom,#1f29370a_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none opacity-20" />
-
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className="w-full max-w-[540px] relative z-10"
-      >
-        {/* Logo and Intro */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-              <ShieldCheck className="w-6 h-6 text-white" />
-            </div>
-            <span className="text-2xl font-black tracking-tight text-white">
-              EVENTO
-            </span>
+    <div className="min-h-screen flex font-sans bg-white">
+      {/* Left Column: Form */}
+      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center py-12 px-8 lg:px-24 relative z-10 overflow-y-auto">
+        <div className="w-full max-w-xl">
+          {/* Header */}
+          <Link href="/" className="inline-flex items-center gap-2 mb-8 text-slate-500 hover:text-slate-900 transition-colors">
+            <ArrowLeft className="w-4 h-4" />
+            <span className="text-sm font-semibold">Back to home</span>
           </Link>
-          <p className="text-slate-400 text-sm font-medium">
-            Create your account to start managing your events and bookings.
-          </p>
-        </div>
+          
+          <div className="mb-8">
+            <div className="inline-flex items-center gap-3 mb-6">
+              <div className="w-12 h-12 rounded-xl bg-slate-900 flex items-center justify-center shadow-md">
+                <ShieldCheck className="w-7 h-7 text-white" />
+              </div>
+              <span className="text-3xl font-black tracking-tight text-slate-900">
+                EVENTO
+              </span>
+            </div>
+            <h1 className="text-4xl font-bold text-slate-900 tracking-tight mb-3">
+              Create your account
+            </h1>
+            <p className="text-slate-500 text-base">
+              Join thousands of professionals managing events effortlessly.
+            </p>
+          </div>
 
-        {/* Glassmorphic Form Card */}
-        <div className="bg-slate-900/60 backdrop-blur-2xl border border-slate-800 rounded-3xl p-8 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+          {/* Form Component */}
           <SignUpForm />
-        </div>
 
-        {/* Footer info */}
-        <div className="text-center mt-6 text-xs text-slate-500">
-          Secure, encrypted connection &bull; © 2026 Evento
+          {/* Footer info */}
+          <div className="mt-12 text-center text-xs font-medium text-slate-400">
+            Secure, encrypted connection &bull; © 2026 Evento
+          </div>
         </div>
-      </motion.div>
+      </div>
+
+      {/* Right Column: Image */}
+      <div className="hidden lg:flex w-1/2 relative bg-slate-50 fixed right-0 top-0 bottom-0 h-screen">
+        <img
+          src="https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&q=80&w=1600"
+          alt="Event Management"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" />
+        <div className="absolute bottom-16 left-16 right-16">
+          <blockquote className="text-3xl font-medium text-white leading-snug">
+            "The best platform for organizing complex corporate events and weddings in one place."
+          </blockquote>
+          <div className="mt-6 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/20 bg-white">
+              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150" alt="Michael T." className="w-full h-full object-cover" />
+            </div>
+            <div>
+              <p className="text-white font-semibold">Michael Torres</p>
+              <p className="text-white/70 text-sm">Lead Coordinator</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

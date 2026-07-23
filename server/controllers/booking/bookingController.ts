@@ -12,24 +12,98 @@ export class BookingController {
 
   // ── Booking ──────────────────────────────────────────────────────────────────
   static create = catchAsync(async (req: Request, res: Response) => {
-    let { customerId, ...rest } = req.body;
+    let customerId = req.body.customerId;
     // Auto-resolve customerId from auth token if not provided
     if (!customerId) {
       const userId = (req as AuthRequest).user?.userId;
       if (userId) {
-        const customer = await prisma.customer.findFirst({ where: { userId } });
-        customerId = customer?.id;
+        let customer = await prisma.customer.findFirst({ where: { userId } });
+        if (!customer) {
+          customer = await prisma.customer.create({
+            data: {
+              userId,
+              customerCode: `CUST-${userId}-${Date.now()}`,
+            },
+          });
+        }
+        customerId = customer.id;
       }
     }
     if (!customerId) {
       return res.status(400).json({ success: false, message: 'customerId is required', data: null });
     }
-    const data = await BookingService.create({ customerId, ...rest });
+    const {
+      eventName,
+      eventDate,
+      eventTime,
+      guestCount,
+      budget,
+      subtotal,
+      discount,
+      tax,
+      grandTotal,
+      bookingStatus,
+      status,
+      remarks,
+      notes,
+      location,
+      eventType,
+      calculatorId,
+      packageId,
+      zoneId,
+      eventId,
+      bookingType,
+      bookingSource,
+    } = req.body;
+
+    const finalEventName = eventName || (typeof notes === 'string' ? notes : 'New Event');
+    const finalGrandTotal = budget !== undefined ? Number(budget) : (grandTotal !== undefined ? Number(grandTotal) : 0);
+    const finalSubtotal = subtotal !== undefined ? Number(subtotal) : finalGrandTotal;
+    const finalStatus = (bookingStatus || status || 'pending').toLowerCase();
+    const finalRemarks = remarks || (typeof notes === 'string' ? notes : undefined);
+
+    const bookingPayload: any = {
+      customerId,
+      eventName: finalEventName,
+      eventDate: eventDate ? new Date(eventDate) : undefined,
+      eventTime: eventTime || undefined,
+      guestCount: guestCount ? Number(guestCount) : 0,
+      subtotal: finalSubtotal,
+      discount: discount ? Number(discount) : 0,
+      tax: tax ? Number(tax) : 0,
+      grandTotal: finalGrandTotal,
+      bookingStatus: finalStatus,
+      remarks: finalRemarks,
+      calculatorId: calculatorId ? Number(calculatorId) : undefined,
+      packageId: packageId ? Number(packageId) : undefined,
+      zoneId: zoneId ? Number(zoneId) : undefined,
+      eventId: eventId ? Number(eventId) : undefined,
+      bookingType: bookingType || 'manual',
+      bookingSource: bookingSource || 'web',
+    };
+
+    if (location) {
+      bookingPayload.venue = {
+        create: {
+          address: location,
+          venueName: location,
+        },
+      };
+    }
+
+    const data = await BookingService.create(bookingPayload);
     sendResponse(res, { statusCode: 201, message: 'Booking created', data });
   });
 
   static getAll = catchAsync(async (req: Request, res: Response) => {
-    const { bookingStatus, paymentStatus, customerId, page, limit } = req.query;
+    let { bookingStatus, paymentStatus, customerId, page, limit } = req.query;
+    if (!customerId) {
+      const userId = (req as AuthRequest).user?.userId;
+      if (userId) {
+        const customer = await prisma.customer.findFirst({ where: { userId } });
+        if (customer) customerId = String(customer.id) as any;
+      }
+    }
     const data = await BookingService.getAll({
       bookingStatus: bookingStatus as string,
       paymentStatus: paymentStatus as string,

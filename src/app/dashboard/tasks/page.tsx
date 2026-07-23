@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -6,209 +9,160 @@ import {
   Clock,
   CalendarDays,
   Send,
+  User,
+  Check,
+  AlertCircle
 } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 
 export default function TaskDetailsPage() {
+  const [notes, setNotes] = useState([
+    {
+      id: 1,
+      author: "Event Admin",
+      initials: "EA",
+      time: "2 hours ago",
+      text: "Please ensure the drone operator coordinates with hotel security for airspace clearance upon arrival.",
+    },
+  ]);
+  const [newNote, setNewNote] = useState("");
+  const [progressStep, setProgressStep] = useState(1); // 0: Accepted, 1: At Venue, 2: Started, 3: Completed
+
+  const handlePostNote = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newNote.trim()) return;
+
+    setNotes([
+      ...notes,
+      {
+        id: Date.now(),
+        author: "You",
+        initials: "ME",
+        time: "Just now",
+        text: newNote.trim(),
+      },
+    ]);
+    setNewNote("");
+    toast.success("Internal note added!");
+  };
+
+  const steps = [
+    { label: "TASK ACCEPTED", note: "Accepted by Sarah Jenkins" },
+    { label: "TEAM AT VENUE", note: "Arrival verified" },
+    { label: "PHOTOGRAPHY STARTED", note: "Main coverage underway" },
+    { label: "WORK COMPLETED", note: "Awaiting final review" },
+  ];
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      {/* Header */}
-      <div
-        className="relative rounded-3xl p-7 overflow-hidden"
-        style={{
-          background:
-            "linear-gradient(135deg, #7c3aed 0%, #4f46e5 50%, #2563eb 100%)",
-          boxShadow: "0 10px 40px rgba(124,58,237,0.3)",
-        }}
-      >
-        <div
-          className="absolute top-0 right-0 w-64 h-64 rounded-full pointer-events-none"
-          style={{
-            background: "rgba(255,255,255,0.05)",
-            transform: "translate(40%,-40%)",
-          }}
-        />
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-          <div>
-            <Link
-              href="/dashboard"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold mb-3 opacity-75 hover:opacity-100 transition-opacity"
-              style={{ color: "#e9d5ff" }}
-            >
-              <ArrowLeft size={13} /> Back to Dashboard
-            </Link>
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl font-black tracking-tight text-white">
-                Wedding Premium Coverage
-              </h1>
-              <span
-                className="text-[10px] font-bold px-3 py-1 rounded-full"
-                style={{
-                  background: "rgba(255,255,255,0.15)",
-                  color: "#e9d5ff",
-                }}
-              >
-                #EVT-4921
-              </span>
-            </div>
-            <div className="flex gap-2 mt-2">
-              <span
-                className="text-[9px] font-bold px-2.5 py-1 rounded-full"
-                style={{
-                  background: "rgba(255,255,255,0.12)",
-                  color: "#ddd6fe",
-                }}
-              >
-                Photography
-              </span>
-              <span
-                className="text-[9px] font-bold px-2.5 py-1 rounded-full"
-                style={{
-                  background: "rgba(245,158,11,0.25)",
-                  color: "#fde68a",
-                }}
-              >
-                In Progress
-              </span>
-            </div>
+      {/* Header Banner */}
+      <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors mb-2"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+              Wedding Premium Coverage
+            </h1>
+            <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
+              #EVT-4921
+            </span>
           </div>
-          <div className="flex gap-2 shrink-0">
-            <button
-              className="text-xs font-bold px-4 py-2.5 rounded-xl cursor-pointer"
-              style={{
-                background: "rgba(255,255,255,0.15)",
-                color: "white",
-                border: "1px solid rgba(255,255,255,0.2)",
-              }}
-            >
-              Contact Client
-            </button>
-            <button
-              className="text-xs font-bold px-4 py-2.5 rounded-xl cursor-pointer text-purple-700"
-              style={{
-                background: "rgba(255,255,255,0.95)",
-                boxShadow: "0 4px 15px rgba(0,0,0,0.15)",
-              }}
-            >
-              Update Status
-            </button>
+          <div className="flex gap-2 mt-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-purple-100 text-purple-700">
+              Photography
+            </span>
+            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-100 text-amber-700">
+              In Progress
+            </span>
           </div>
+        </div>
+
+        <div className="flex gap-3 shrink-0">
+          <button className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-colors shadow-sm">
+            Contact Client
+          </button>
+          <button
+            onClick={() => {
+              if (progressStep < steps.length - 1) {
+                setProgressStep(progressStep + 1);
+                toast.success(`Status updated to: ${steps[progressStep + 1].label}`);
+              }
+            }}
+            className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-semibold hover:bg-slate-800 transition-colors shadow-sm"
+          >
+            Update Status
+          </button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-5">
+        <div className="lg:col-span-2 space-y-6">
           {/* Event Details */}
-          <div
-            className="rounded-2xl p-6 space-y-5"
-            style={{
-              background: "rgba(255,255,255,0.9)",
-              border: "1px solid rgba(124,58,237,0.1)",
-              boxShadow: "0 4px 20px rgba(124,58,237,0.06)",
-            }}
-          >
-            <h3
-              className="text-xs font-bold text-gray-900 uppercase tracking-wider pb-3"
-              style={{ borderBottom: "1px solid rgba(124,58,237,0.08)" }}
-            >
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b border-slate-100 pb-3">
               Event Details
-            </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 text-xs">
-              {[
-                {
-                  icon: CalendarDays,
-                  label: "Date",
-                  val: "Saturday, Oct 24, 2024",
-                },
-                {
-                  icon: Clock,
-                  label: "Duration",
-                  val: "4:00 PM – 11:00 PM (7 Hrs)",
-                },
-              ].map((item, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <div
-                    className="p-2.5 rounded-xl shrink-0"
-                    style={{
-                      background: "rgba(124,58,237,0.08)",
-                      color: "#7c3aed",
-                    }}
-                  >
-                    <item.icon size={16} />
-                  </div>
-                  <div>
-                    <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">
-                      {item.label}
-                    </p>
-                    <p className="font-bold text-gray-800 mt-0.5">{item.val}</p>
-                  </div>
-                </div>
-              ))}
-              <div className="col-span-1 sm:col-span-2 flex items-start gap-3 pt-2">
-                <div
-                  className="p-2.5 rounded-xl shrink-0"
-                  style={{
-                    background: "rgba(37,99,235,0.08)",
-                    color: "#2563eb",
-                  }}
-                >
-                  <MapPin size={16} />
+            </h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-slate-100 text-slate-600 shrink-0">
+                  <CalendarDays className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">
-                    Venue Location
-                  </p>
-                  <p className="font-bold text-gray-800 mt-0.5 leading-relaxed">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Date</p>
+                  <p className="font-semibold text-slate-900 mt-0.5">Saturday, Oct 24, 2024</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-slate-100 text-slate-600 shrink-0">
+                  <Clock className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Duration</p>
+                  <p className="font-semibold text-slate-900 mt-0.5">4:00 PM – 11:00 PM (7 Hrs)</p>
+                </div>
+              </div>
+
+              <div className="sm:col-span-2 flex items-start gap-3 pt-2">
+                <div className="p-2.5 rounded-xl bg-slate-100 text-slate-600 shrink-0">
+                  <MapPin className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Venue Location</p>
+                  <p className="font-semibold text-slate-900 mt-0.5 leading-relaxed">
                     The Grand Hotel Ballroom, 123 Luxury Ave, City Center
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Map */}
-            <div
-              className="w-full h-36 rounded-2xl overflow-hidden relative"
-              style={{ border: "1px solid rgba(124,58,237,0.1)" }}
-            >
-              <div
-                className="absolute inset-0 bg-cover bg-center"
-                style={{
-                  backgroundImage: `url('https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80&w=600')`,
-                }}
-              />
-              <div
-                className="absolute inset-0"
-                style={{
-                  background:
-                    "linear-gradient(to top, rgba(0,0,0,0.4), transparent)",
-                }}
-              />
-              <div
-                className="absolute bottom-3 left-3 text-[9px] font-bold px-3 py-1.5 rounded-lg cursor-pointer"
-                style={{
-                  background: "rgba(255,255,255,0.95)",
-                  color: "#374151",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-                }}
+            {/* GPS Link Button */}
+            <div className="w-full h-32 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center p-4 text-center">
+              <a
+                href="https://maps.google.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2 bg-white border border-slate-200 text-slate-800 text-xs font-bold rounded-lg shadow-sm hover:bg-slate-50 transition-colors flex items-center gap-2"
               >
-                📍 Click to view GPS route
-              </div>
+                📍 Click to view GPS route & directions
+              </a>
             </div>
           </div>
 
-          {/* Requirements */}
-          <div
-            className="rounded-2xl p-6 space-y-4"
-            style={{
-              background: "rgba(255,255,255,0.9)",
-              border: "1px solid rgba(124,58,237,0.1)",
-              boxShadow: "0 4px 20px rgba(124,58,237,0.06)",
-            }}
-          >
-            <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider">
+          {/* Customer Requirements */}
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
               Customer Requirements
-            </h3>
+            </h2>
+
             {[
               {
                 title: "2 Senior Photographers Required",
@@ -223,220 +177,114 @@ export default function TaskDetailsPage() {
                 desc: "A 60-second highlight reel to be played during the reception dinner.",
               },
             ].map((req, i) => (
-              <div
-                key={i}
-                className="flex gap-3 items-start p-3.5 rounded-xl"
-                style={{
-                  background: "rgba(124,58,237,0.04)",
-                  border: "1px solid rgba(124,58,237,0.08)",
-                }}
-              >
-                <div
-                  className="p-1 rounded-full mt-0.5 shrink-0"
-                  style={{
-                    background: "linear-gradient(135deg, #7c3aed, #2563eb)",
-                  }}
-                >
-                  <CheckCircle2 size={13} className="text-white" />
+              <div key={i} className="flex gap-3 items-start p-4 rounded-xl bg-slate-50 border border-slate-100">
+                <div className="p-1 rounded-full bg-emerald-100 text-emerald-700 mt-0.5 shrink-0">
+                  <CheckCircle2 className="w-4 h-4" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-gray-900">
-                    {req.title}
-                  </h4>
-                  <p className="text-[11px] text-gray-500 font-medium mt-1 leading-relaxed">
-                    {req.desc}
-                  </p>
+                  <h3 className="text-sm font-bold text-slate-900">{req.title}</h3>
+                  <p className="text-xs text-slate-600 mt-1 leading-relaxed">{req.desc}</p>
                 </div>
               </div>
             ))}
           </div>
 
-          {/* Notes */}
-          <div
-            className="rounded-2xl p-6 space-y-4"
-            style={{
-              background: "rgba(255,255,255,0.9)",
-              border: "1px solid rgba(124,58,237,0.1)",
-              boxShadow: "0 4px 20px rgba(124,58,237,0.06)",
-            }}
-          >
-            <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider">
+          {/* Internal Notes */}
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
               Internal Notes
-            </h3>
-            <div
-              className="p-4 rounded-xl flex gap-3 items-start"
-              style={{
-                background: "rgba(124,58,237,0.04)",
-                border: "1px solid rgba(124,58,237,0.08)",
-              }}
-            >
-              <div
-                className="w-8 h-8 rounded-full flex items-center justify-center font-black text-[9px] text-white shrink-0"
-                style={{
-                  background: "linear-gradient(135deg, #7c3aed, #2563eb)",
-                }}
-              >
-                EA
-              </div>
-              <div>
-                <div className="flex gap-2 items-center">
-                  <span className="text-xs font-bold text-gray-900">
-                    Event Admin
-                  </span>
-                  <span className="text-[9px] text-gray-400">2 hours ago</span>
+            </h2>
+
+            <div className="space-y-3">
+              {notes.map((n) => (
+                <div key={n.id} className="p-4 rounded-xl bg-slate-50 border border-slate-100 flex gap-3 items-start">
+                  <div className="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center shrink-0">
+                    {n.initials}
+                  </div>
+                  <div>
+                    <div className="flex gap-2 items-center">
+                      <span className="text-xs font-bold text-slate-900">{n.author}</span>
+                      <span className="text-[10px] text-slate-400">{n.time}</span>
+                    </div>
+                    <p className="text-xs text-slate-700 mt-1 leading-relaxed">{n.text}</p>
+                  </div>
                 </div>
-                <p className="text-xs text-gray-600 leading-relaxed mt-1 font-medium">
-                  Please ensure the drone operator coordinates with hotel
-                  security for airspace clearance upon arrival.
-                </p>
-              </div>
+              ))}
             </div>
-            <div className="flex gap-2">
+
+            <form onSubmit={handlePostNote} className="flex gap-2 pt-2">
               <input
                 type="text"
+                value={newNote}
+                onChange={(e) => setNewNote(e.target.value)}
                 placeholder="Add an internal note..."
-                className="flex-1 rounded-xl px-4 py-2.5 text-xs outline-none font-medium text-gray-700"
-                style={{
-                  background: "rgba(124,58,237,0.05)",
-                  border: "1px solid rgba(124,58,237,0.12)",
-                }}
+                className="flex-1 rounded-lg px-4 py-2 text-xs bg-slate-50 border border-slate-200 text-slate-900 outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white transition-all"
               />
               <button
-                className="text-white font-bold text-xs px-5 py-2.5 rounded-xl cursor-pointer flex items-center gap-1.5"
-                style={{
-                  background: "linear-gradient(135deg, #7c3aed, #2563eb)",
-                  boxShadow: "0 3px 10px rgba(124,58,237,0.2)",
-                }}
+                type="submit"
+                className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors flex items-center gap-1.5"
               >
-                Post <Send size={12} />
+                Post <Send className="w-3.5 h-3.5" />
               </button>
-            </div>
+            </form>
           </div>
         </div>
 
         {/* Right Sidebar */}
-        <div className="space-y-5">
+        <div className="space-y-6">
           {/* Progress Timeline */}
-          <div
-            className="rounded-2xl p-6 space-y-5 relative overflow-hidden"
-            style={{
-              background: "linear-gradient(180deg, #1e0a3c 0%, #0f172a 100%)",
-              boxShadow: "0 10px 40px rgba(124,58,237,0.2)",
-            }}
-          >
-            <div
-              className="absolute top-0 right-0 w-32 h-32 rounded-full pointer-events-none"
-              style={{
-                background:
-                  "radial-gradient(circle, rgba(124,58,237,0.2), transparent 70%)",
-                transform: "translate(30%,-30%)",
-              }}
-            />
-            <h3
-              className="text-xs font-bold uppercase tracking-wider relative z-10"
-              style={{ color: "#a78bfa" }}
-            >
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
               Work Progress Status
-            </h3>
+            </h2>
 
-            <div
-              className="space-y-5 pl-5 relative z-10"
-              style={{ borderLeft: "2px solid rgba(124,58,237,0.2)" }}
-            >
-              {[
-                {
-                  label: "TASK ACCEPTED",
-                  note: "Accepted by Sarah Jenkins",
-                  done: true,
-                  color: "#a78bfa",
-                },
-                {
-                  label: "TEAM AT VENUE",
-                  note: null,
-                  active: true,
-                  color: "#7c3aed",
-                },
-                {
-                  label: "PHOTOGRAPHY STARTED",
-                  note: null,
-                  done: false,
-                  color: "#4b5563",
-                },
-              ].map((step, i) => (
-                <div key={i} className="relative space-y-1.5">
-                  <span
-                    className="absolute -left-[26px] top-1 h-3 w-3 rounded-full"
-                    style={{
-                      background:
-                        step.done || step.active
-                          ? step.color
-                          : "rgba(75,85,99,0.3)",
-                      boxShadow: "0 0 0 4px #0f172a",
-                    }}
-                  />
-                  <h4
-                    className="text-[10px] font-black uppercase tracking-wider"
-                    style={{
-                      color: step.done || step.active ? step.color : "#4b5563",
-                    }}
-                  >
-                    {step.label}
-                  </h4>
-                  {step.note && (
-                    <p className="text-[10px] text-gray-500 font-medium">
-                      {step.note}
-                    </p>
-                  )}
-                  {step.active && (
-                    <button
-                      className="w-full text-white font-bold text-[10px] py-2 rounded-xl cursor-pointer mt-1"
-                      style={{
-                        background: "linear-gradient(135deg, #7c3aed, #2563eb)",
-                        boxShadow: "0 3px 10px rgba(124,58,237,0.25)",
-                      }}
-                    >
-                      Mark as Reached
-                    </button>
-                  )}
-                </div>
-              ))}
+            <div className="space-y-6 pl-4 border-l-2 border-slate-200">
+              {steps.map((step, i) => {
+                const isCompleted = i <= progressStep;
+                const isCurrent = i === progressStep;
+
+                return (
+                  <div key={i} className="relative space-y-1">
+                    <div
+                      className={`absolute -left-[23px] top-1 w-3 h-3 rounded-full border-2 border-white ${
+                        isCompleted ? "bg-slate-900" : "bg-slate-300"
+                      }`}
+                    />
+                    <h3 className={`text-xs font-bold ${isCompleted ? "text-slate-900" : "text-slate-400"}`}>
+                      {step.label}
+                    </h3>
+                    <p className="text-xs text-slate-500">{step.note}</p>
+
+                    {isCurrent && i < steps.length - 1 && (
+                      <button
+                        onClick={() => {
+                          setProgressStep(i + 1);
+                          toast.success(`Progress updated to: ${steps[i + 1].label}`);
+                        }}
+                        className="mt-2 w-full py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-md transition-colors"
+                      >
+                        Advance Step
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
 
           {/* Deliverables */}
-          <div
-            className="rounded-2xl p-5 space-y-4"
-            style={{
-              background: "rgba(255,255,255,0.9)",
-              border: "1px solid rgba(124,58,237,0.1)",
-              boxShadow: "0 4px 20px rgba(124,58,237,0.06)",
-            }}
-          >
-            <h3 className="text-xs font-bold text-gray-900 uppercase tracking-wider">
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
               Deliverables
-            </h3>
-            <p className="text-[10px] text-gray-400 font-medium">
-              Upload raw drafts, clips, or final edited files here.
-            </p>
-            <div
-              className="rounded-xl p-6 text-center space-y-2.5 cursor-pointer group transition-all"
-              style={{
-                border: "2px dashed rgba(124,58,237,0.2)",
-                background: "rgba(124,58,237,0.03)",
-              }}
-            >
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center mx-auto"
-                style={{ background: "rgba(124,58,237,0.1)", color: "#7c3aed" }}
-              >
-                <CloudUpload size={18} />
+            </h2>
+            <p className="text-xs text-slate-500">Upload raw drafts, clips, or final edited files here.</p>
+
+            <div className="border-2 border-dashed border-slate-200 bg-slate-50 rounded-xl p-6 text-center space-y-2 cursor-pointer hover:bg-slate-100 transition-colors">
+              <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center mx-auto text-slate-600">
+                <CloudUpload className="w-5 h-5" />
               </div>
-              <p className="text-xs font-bold text-gray-700">
-                Click or drag & drop
-              </p>
-              <p className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">
-                PNG, JPG or ZIP (max 800MB)
-              </p>
+              <p className="text-xs font-bold text-slate-800">Click or drag & drop</p>
+              <p className="text-[10px] text-slate-400 uppercase font-semibold">PNG, JPG or ZIP (max 800MB)</p>
             </div>
           </div>
         </div>
