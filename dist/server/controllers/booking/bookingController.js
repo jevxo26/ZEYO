@@ -1,15 +1,4 @@
 "use strict";
-var __rest = (this && this.__rest) || function (s, e) {
-    var t = {};
-    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
-        t[p] = s[p];
-    if (s != null && typeof Object.getOwnPropertySymbols === "function")
-        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
-            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
-                t[p[i]] = s[p[i]];
-        }
-    return t;
-};
 var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BookingController = void 0;
@@ -24,23 +13,73 @@ _a = BookingController;
 // ── Booking ──────────────────────────────────────────────────────────────────
 BookingController.create = (0, catchAsync_1.catchAsync)(async (req, res) => {
     var _b;
-    let _c = req.body, { customerId } = _c, rest = __rest(_c, ["customerId"]);
+    let customerId = req.body.customerId;
     // Auto-resolve customerId from auth token if not provided
     if (!customerId) {
         const userId = (_b = req.user) === null || _b === void 0 ? void 0 : _b.userId;
         if (userId) {
-            const customer = await prisma_1.prisma.customer.findFirst({ where: { userId } });
-            customerId = customer === null || customer === void 0 ? void 0 : customer.id;
+            let customer = await prisma_1.prisma.customer.findFirst({ where: { userId } });
+            if (!customer) {
+                customer = await prisma_1.prisma.customer.create({
+                    data: {
+                        userId,
+                        customerCode: `CUST-${userId}-${Date.now()}`,
+                    },
+                });
+            }
+            customerId = customer.id;
         }
     }
     if (!customerId) {
         return res.status(400).json({ success: false, message: 'customerId is required', data: null });
     }
-    const data = await bookingService_1.BookingService.create(Object.assign({ customerId }, rest));
+    const { eventName, eventDate, eventTime, guestCount, budget, subtotal, discount, tax, grandTotal, bookingStatus, status, remarks, notes, location, eventType, calculatorId, packageId, zoneId, eventId, bookingType, bookingSource, } = req.body;
+    const finalEventName = eventName || (typeof notes === 'string' ? notes : 'New Event');
+    const finalGrandTotal = budget !== undefined ? Number(budget) : (grandTotal !== undefined ? Number(grandTotal) : 0);
+    const finalSubtotal = subtotal !== undefined ? Number(subtotal) : finalGrandTotal;
+    const finalStatus = (bookingStatus || status || 'pending').toLowerCase();
+    const finalRemarks = remarks || (typeof notes === 'string' ? notes : undefined);
+    const bookingPayload = {
+        customerId,
+        eventName: finalEventName,
+        eventDate: eventDate ? new Date(eventDate) : undefined,
+        eventTime: eventTime || undefined,
+        guestCount: guestCount ? Number(guestCount) : 0,
+        subtotal: finalSubtotal,
+        discount: discount ? Number(discount) : 0,
+        tax: tax ? Number(tax) : 0,
+        grandTotal: finalGrandTotal,
+        bookingStatus: finalStatus,
+        remarks: finalRemarks,
+        calculatorId: calculatorId ? Number(calculatorId) : undefined,
+        packageId: packageId ? Number(packageId) : undefined,
+        zoneId: zoneId ? Number(zoneId) : undefined,
+        eventId: eventId ? Number(eventId) : undefined,
+        bookingType: bookingType || 'manual',
+        bookingSource: bookingSource || 'web',
+    };
+    if (location) {
+        bookingPayload.venue = {
+            create: {
+                address: location,
+                venueName: location,
+            },
+        };
+    }
+    const data = await bookingService_1.BookingService.create(bookingPayload);
     (0, sendResponse_1.sendResponse)(res, { statusCode: 201, message: 'Booking created', data });
 });
 BookingController.getAll = (0, catchAsync_1.catchAsync)(async (req, res) => {
-    const { bookingStatus, paymentStatus, customerId, page, limit } = req.query;
+    var _b;
+    let { bookingStatus, paymentStatus, customerId, page, limit } = req.query;
+    if (!customerId) {
+        const userId = (_b = req.user) === null || _b === void 0 ? void 0 : _b.userId;
+        if (userId) {
+            const customer = await prisma_1.prisma.customer.findFirst({ where: { userId } });
+            if (customer)
+                customerId = String(customer.id);
+        }
+    }
     const data = await bookingService_1.BookingService.getAll({
         bookingStatus: bookingStatus,
         paymentStatus: paymentStatus,

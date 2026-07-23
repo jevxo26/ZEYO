@@ -2,18 +2,39 @@
 
 import Sidebar from "@/components/Sidebar";
 import { Bell, Mail, Search, Sparkles, ChevronDown } from "lucide-react";
-import React from "react";
+import React, { useEffect } from "react";
+import { useAppSelector } from "@/store/store";
+import { useRouter } from "next/navigation";
+
+import Modals from "@/components/dashboard/Modals";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { isAuthenticated, user } = useAppSelector((state) => state.auth);
+  const router = useRouter();
+
+  useEffect(() => {
+    // If we have verified that the user is not authenticated, redirect to login.
+    // Wait for client mount to avoid hydration mismatch, and rely on AuthInitializer to check token.
+    const token = localStorage.getItem("accessToken");
+    if (!token && !isAuthenticated) {
+      router.push("/login");
+    }
+  }, [isAuthenticated, router]);
+
+  if (!isAuthenticated && typeof window !== "undefined" && !localStorage.getItem("accessToken")) {
+    return null; // or a loading spinner
+  }
+
   return (
     <div className="flex min-h-screen bg-slate-50 text-slate-900">
+      <Modals />
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="sticky top-0 z-40 px-6 py-3 flex justify-between items-center gap-4 shrink-0 border-b border-slate-200 bg-white/90 backdrop-blur-sm">
+        <header className="sticky top-0 z-40 px-6 py-3 flex justify-between items-center gap-4 shrink-0 border-b border-slate-200 bg-white">
           <div className="hidden sm:flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-100 px-3.5 py-2 w-72 focus-within:border-slate-400 focus-within:ring-2 focus-within:ring-slate-200">
             <Search size={15} className="text-slate-400 shrink-0" />
             <input
@@ -50,10 +71,10 @@ export default function DashboardLayout({
               </div>
               <div className="hidden lg:block">
                 <p className="text-xs font-semibold text-slate-900 leading-tight">
-                  Sarah Jenkins
+                  {user?.name || "Loading..."}
                 </p>
                 <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-slate-500">
-                  Vendor Admin
+                  {user?.role || "User"}
                 </p>
               </div>
               <ChevronDown

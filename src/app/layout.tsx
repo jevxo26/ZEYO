@@ -4,6 +4,7 @@ import "./globals.css";
 
 import { ReduxProvider } from "@/components/ReduxProvider";
 import { AuthInitializer } from "@/components/auth/AuthInitializer";
+import { Toaster } from "sonner";
 import FacebookSdkLoader from "@/components/FacebookSdkLoader";
 
 const baiJamjuree = Bai_Jamjuree({
@@ -33,7 +34,7 @@ export default function RootLayout({
         <ReduxProvider>
           <AuthInitializer>{children}</AuthInitializer>
         </ReduxProvider>
-
+        <Toaster richColors position="top-right" />
         <FacebookSdkLoader />
       </body>
     </html>

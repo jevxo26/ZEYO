@@ -17,12 +17,7 @@ async function generateBookingNumber(): Promise<string> {
 export const BookingService = {
 
   // ── Booking CRUD ─────────────────────────────────────────────────────────────
-  create: catchServiceAsync(async (data: {
-    customerId: number; calculatorId?: number; packageId?: number;
-    zoneId?: number; eventId?: number; bookingType?: string; bookingSource?: string;
-    eventName: string; eventDate?: Date; eventTime?: string; guestCount?: number;
-    subtotal?: number; discount?: number; tax?: number; grandTotal?: number; remarks?: string;
-  }) => {
+  create: catchServiceAsync(async (data: any) => {
     const bookingNumber = await generateBookingNumber();
     return prisma.booking.create({ data: { bookingNumber, ...data } });
   }),

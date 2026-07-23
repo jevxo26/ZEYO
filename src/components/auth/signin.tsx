@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 import SocialLogin from "../SocialLogin";
 import { setCredentials } from "@/store/slices/authSlice";
 import { useAppDispatch } from "@/store/store";
+import apiClient from "@/lib/apiClient";
 
 const schema = yup.object().shape({
   email: yup.string().email("Invalid email format").required("Email is required"),
@@ -36,22 +37,17 @@ export function SignInForm() {
   const onSubmit = async (data: FormData) => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      const result = await response.json();
-      if (!response.ok || result.success === false) {
-        toast.error(result.message || result.error || "Failed to sign in");
+      const response = await apiClient.post("/auth/login", data);
+      const result = response.data;
+      if (!result || result.success === false) {
+        toast.error(result?.message || result?.error || "Failed to sign in");
         return;
       }
       dispatch(setCredentials({ user: result.data.user, token: result.data.token }));
       toast.success("Signed in successfully!");
       router.push("/dashboard");
-    } catch (error) {
-      toast.error("An error occurred during sign in");
-      console.error(error);
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || "An error occurred during sign in");
     } finally {
       setIsLoading(false);
     }
@@ -59,8 +55,8 @@ export function SignInForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 w-full">
-      <div className="space-y-1.5 text-left">
-        <Label htmlFor="email" className="text-slate-300 font-medium text-xs tracking-wide uppercase">
+      <div className="space-y-2 text-left">
+        <Label htmlFor="email" className="text-slate-700 font-semibold text-sm">
           Email Address
         </Label>
         <Input
@@ -69,19 +65,19 @@ export function SignInForm() {
           placeholder="name@company.com"
           {...register("email")}
           aria-invalid={!!errors.email}
-          className="w-full bg-slate-950/40 border-slate-800 text-white placeholder-slate-500 focus:ring-indigo-500/50 focus:border-indigo-500 rounded-xl h-11 transition-all"
+          className="w-full bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-slate-900 focus:border-slate-900 rounded-lg h-11 transition-all"
         />
         {errors.email && (
           <p className="text-xs text-rose-500 font-semibold mt-1">{errors.email.message}</p>
         )}
       </div>
 
-      <div className="space-y-1.5 text-left">
+      <div className="space-y-2 text-left">
         <div className="flex justify-between items-center">
-          <Label htmlFor="password" className="text-slate-300 font-medium text-xs tracking-wide uppercase">
+          <Label htmlFor="password" className="text-slate-700 font-semibold text-sm">
             Password
           </Label>
-          <a href="#" className="text-xs text-indigo-400 hover:text-indigo-300 hover:underline">
+          <a href="#" className="text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors">
             Forgot password?
           </a>
         </div>
@@ -91,7 +87,7 @@ export function SignInForm() {
           placeholder="••••••••"
           {...register("password")}
           aria-invalid={!!errors.password}
-          className="w-full bg-slate-950/40 border-slate-800 text-white placeholder-slate-500 focus:ring-indigo-500/50 focus:border-indigo-500 rounded-xl h-11 transition-all"
+          className="w-full bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-slate-900 focus:border-slate-900 rounded-lg h-11 transition-all"
         />
         {errors.password && (
           <p className="text-xs text-rose-500 font-semibold mt-1">{errors.password.message}</p>
@@ -100,7 +96,7 @@ export function SignInForm() {
 
       <Button 
         type="submit" 
-        className="w-full h-11 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-bold rounded-xl transition-all shadow-lg shadow-indigo-500/10 active:scale-[0.98]"
+        className="w-full h-11 mt-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg transition-all shadow-sm"
         disabled={isLoading}
       >
         {isLoading ? (
@@ -116,12 +112,12 @@ export function SignInForm() {
         )}
       </Button>
 
-      <div className="relative my-5">
+      <div className="relative my-6">
         <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-slate-800" />
+          <span className="w-full border-t border-slate-200" />
         </div>
-        <div className="relative flex justify-center text-[10px] uppercase tracking-wider">
-          <span className="bg-[#0f172a] px-3 text-slate-500 font-bold rounded-full">
+        <div className="relative flex justify-center text-xs uppercase tracking-wider">
+          <span className="bg-white px-3 text-slate-400 font-semibold">
             Or continue with
           </span>
         </div>
@@ -131,12 +127,12 @@ export function SignInForm() {
         <SocialLogin />
       </div>
 
-      <div className="text-center text-sm text-slate-400 mt-4 font-medium">
+      <div className="text-center text-sm text-slate-500 mt-6 font-medium">
         Don't have an account?{" "}
         <button 
           type="button" 
           onClick={() => router.push('/register')} 
-          className="text-indigo-400 hover:text-indigo-300 font-bold hover:underline"
+          className="text-slate-900 font-bold hover:underline"
         >
           Sign up
         </button>
