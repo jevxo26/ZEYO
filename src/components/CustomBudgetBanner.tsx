@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -32,13 +33,15 @@ export default function CustomBudgetBanner({
         </div>
 
         <CardAction>
-          <Button
-            size="lg"
-            onClick={onOpenCalculator}
-            className="bg-white text-[#3A3FB0] hover:bg-indigo-50 focus-visible:ring-white/50"
-          >
-            Open Calculator
-          </Button>
+          <Link href="/calculator">
+            <Button
+              size="lg"
+              onClick={onOpenCalculator}
+              className="bg-white text-[#3A3FB0] hover:bg-indigo-50 font-bold focus-visible:ring-white/50 shadow-md"
+            >
+              Open Smart Calculator
+            </Button>
+          </Link>
         </CardAction>
       </CardContent>
     </Card>
