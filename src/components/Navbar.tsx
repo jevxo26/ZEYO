@@ -1,60 +1,156 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Menu, X } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import {
+  Menu,
+  X,
+  ChevronDown,
+  LayoutDashboard,
+  Calculator,
+  Package,
+  Settings,
+  LogOut,
+  User as UserIcon,
+  ShieldCheck,
+  Briefcase,
+} from "lucide-react";
+import { useAppSelector, useAppDispatch } from "@/store/store";
+import { logout } from "@/store/slices/authSlice";
+import { toast } from "sonner";
 
 const NAV_LINKS = [
   { label: "Home", href: "/" },
   { label: "Packages", href: "/packages" },
+  { label: "Smart Calculator", href: "/calculator" },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
 ];
 
 export default function Navbar() {
   const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
+  const dispatch = useAppDispatch();
+  const { user } = useAppSelector((state) => state.auth);
 
+  const [clientUser, setClientUser] = useState<any>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Sync clientUser with Redux or localStorage on mount/path change
+  useEffect(() => {
+    if (user) {
+      setClientUser(user);
+    } else if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("user");
+      if (stored) {
+        try {
+          setClientUser(JSON.parse(stored));
+        } catch {
+          setClientUser(null);
+        }
+      } else {
+        setClientUser(null);
+      }
+    }
+  }, [user, pathname]);
+
+  const activeUser = user || clientUser;
+
+  // Close menus on route change
   useEffect(() => {
     setIsOpen(false);
+    setDropdownOpen(false);
   }, [pathname]);
 
+  // Handle click outside for dropdown
   useEffect(() => {
-    document.body.style.overflow = isOpen ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setDropdownOpen(false);
+      }
     };
-  }, [isOpen]);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    setClientUser(null);
+    setDropdownOpen(false);
+    setIsOpen(false);
+    toast.success("✓ Signed out successfully!");
+    router.push("/");
+  };
+
+  const getDashboardHref = () => {
+    if (!activeUser) return "/dashboard/bookings";
+    const r = (activeUser.role || "").toLowerCase();
+    if (r === "admin") return "/dashboard/vendors";
+    if (r === "vendor" || r === "partner") return "/dashboard/tasks";
+    return "/dashboard/bookings";
+  };
+
+  const getRoleBadge = () => {
+    if (!activeUser) return null;
+    const r = (activeUser.role || "").toLowerCase();
+    if (r === "admin") {
+      return (
+        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-100 text-indigo-700 uppercase tracking-wider">
+          <ShieldCheck className="w-2.5 h-2.5" /> Admin Hub
+        </span>
+      );
+    }
+    if (r === "vendor" || r === "partner") {
+      return (
+        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-700 uppercase tracking-wider">
+          <Briefcase className="w-2.5 h-2.5" /> Vendor Partner
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-purple-100 text-purple-700 uppercase tracking-wider">
+        <UserIcon className="w-2.5 h-2.5" /> Customer
+      </span>
+    );
+  };
 
   return (
-    <header className="relative z-50 bg-white border-b border-slate-100">
-      <div className="h-16 flex items-center justify-between px-6 md:px-10">
+    <header className="relative z-50 bg-white border-b border-slate-100 shadow-sm">
+      <div className="h-16 flex items-center justify-between px-6 md:px-10 max-w-7xl mx-auto">
+        {/* Brand */}
         <Link href="/" className="flex items-baseline gap-2">
-          <span className="text-[15px] font-bold tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-500">
+          <span className="text-[16px] font-extrabold tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-500">
             EVENTO
           </span>
-          <span className="hidden lg:inline text-[11px] font-medium text-slate-400 tracking-wide">
-            — Every moment, perfectly planned
+          <span className="hidden lg:inline text-[11px] font-semibold text-slate-400 tracking-wide">
+            — Managed Event OS
           </span>
         </Link>
 
-        {/* Desktop / Tablet nav */}
-        <nav className="hidden md:flex items-center gap-8">
+        {/* Desktop Nav Links */}
+        <nav className="hidden md:flex items-center gap-7">
           {NAV_LINKS.map((link) => {
             const active = pathname === link.href;
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`relative text-[14px] font-medium py-2 transition-colors duration-200 group ${
-                  active ? "text-slate-900" : "text-slate-500 hover:text-slate-900"
+                className={`relative text-[13px] font-bold py-2 transition-colors duration-200 group ${
+                  active
+                    ? "text-purple-700"
+                    : "text-slate-600 hover:text-slate-900"
                 }`}
               >
                 {link.label}
                 <span
                   className={`absolute left-1/2 -bottom-0.5 h-[2px] bg-gradient-to-r from-purple-600 to-blue-500 rounded-full transition-all duration-300 ease-out -translate-x-1/2 ${
-                    active ? "w-6" : "w-0 group-hover:w-6"
+                    active ? "w-5" : "w-0 group-hover:w-5"
                   }`}
                 />
               </Link>
@@ -62,96 +158,185 @@ export default function Navbar() {
           })}
         </nav>
 
-        {/* Desktop / Tablet actions */}
+        {/* Desktop User / Auth Actions */}
         <div className="hidden md:flex items-center gap-3">
-          <Link
-            href="/login"
-            className="text-[14px] font-medium text-slate-600 hover:text-slate-900 transition-colors duration-200"
-          >
-            Login
-          </Link>
-          <Link
-            href="/register"
-            className="text-[14px] font-semibold text-white bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 px-5 py-2 rounded-full transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-0.5"
-          >
-            Sign Up
-          </Link>
+          {activeUser ? (
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setDropdownOpen((prev) => !prev)}
+                className="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-full border border-slate-200 bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
+                  {(activeUser.name || "U")[0].toUpperCase()}
+                </div>
+                <div className="text-left max-w-[130px] truncate">
+                  <p className="text-xs font-bold text-slate-900 truncate">
+                    {activeUser.name}
+                  </p>
+                  {getRoleBadge()}
+                </div>
+                <ChevronDown
+                  className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${
+                    dropdownOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {/* Dropdown Menu */}
+              {dropdownOpen && (
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 z-50">
+                  <div className="px-4 py-3 border-b border-slate-100">
+                    <p className="text-xs font-bold text-slate-900 truncate">
+                      {activeUser.name}
+                    </p>
+                    <p className="text-[11px] text-slate-400 truncate">
+                      {activeUser.email}
+                    </p>
+                  </div>
+
+                  <div className="py-1">
+                    <Link
+                      href={getDashboardHref()}
+                      className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
+                    >
+                      <LayoutDashboard className="w-4 h-4 text-purple-600" />
+                      Go to Dashboard
+                    </Link>
+
+                    <Link
+                      href="/calculator"
+                      className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
+                    >
+                      <Calculator className="w-4 h-4 text-purple-600" />
+                      Smart Calculator
+                    </Link>
+
+                    <Link
+                      href="/packages"
+                      className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
+                    >
+                      <Package className="w-4 h-4 text-purple-600" />
+                      Browse Packages
+                    </Link>
+
+                    <Link
+                      href="/dashboard/settings"
+                      className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
+                    >
+                      <Settings className="w-4 h-4 text-purple-600" />
+                      System Settings
+                    </Link>
+                  </div>
+
+                  <div className="pt-1 mt-1 border-t border-slate-100">
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors text-left"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="text-xs font-bold text-slate-600 hover:text-slate-900 transition-colors duration-200 px-3 py-2"
+              >
+                Login
+              </Link>
+              <Link
+                href="/register"
+                className="text-xs font-bold text-white bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 px-5 py-2 rounded-full transition-all duration-200 shadow-sm hover:shadow-md"
+              >
+                Sign Up
+              </Link>
+            </>
+          )}
         </div>
 
-        {/* Mobile hamburger */}
+        {/* Mobile Hamburger */}
         <button
           onClick={() => setIsOpen((prev) => !prev)}
           aria-label={isOpen ? "Close menu" : "Open menu"}
-          aria-expanded={isOpen}
-          className="md:hidden relative w-9 h-9 flex items-center justify-center rounded-full text-slate-700 hover:bg-slate-50 transition-colors duration-200"
+          className="md:hidden relative w-9 h-9 flex items-center justify-center rounded-full text-slate-700 hover:bg-slate-50 transition-colors"
         >
-          <span className="relative w-5 h-5">
-            <Menu
-              className={`absolute inset-0 w-5 h-5 transition-all duration-300 ${
-                isOpen ? "opacity-0 rotate-90 scale-50" : "opacity-100 rotate-0 scale-100"
-              }`}
-            />
-            <X
-              className={`absolute inset-0 w-5 h-5 transition-all duration-300 ${
-                isOpen ? "opacity-100 rotate-0 scale-100" : "opacity-0 -rotate-90 scale-50"
-              }`}
-            />
-          </span>
+          {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
       </div>
 
-      {/* Mobile menu overlay */}
-      <div
-        className={`md:hidden fixed inset-x-0 top-16 bottom-0 bg-black/20 backdrop-blur-[2px] transition-opacity duration-300 ${
-          isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        }`}
-        onClick={() => setIsOpen(false)}
-      />
-
-      {/* Mobile menu panel */}
-      <div
-        className={`md:hidden absolute top-16 inset-x-0 bg-white border-b border-slate-100 shadow-lg overflow-hidden transition-all duration-300 ease-out ${
-          isOpen ? "max-h-[420px] opacity-100" : "max-h-0 opacity-0"
-        }`}
-      >
-        <nav className="flex flex-col px-6 py-4">
-          {NAV_LINKS.map((link, i) => {
-            const active = pathname === link.href;
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                style={{ transitionDelay: isOpen ? `${i * 50}ms` : "0ms" }}
-                className={`relative flex items-center gap-3 py-3 text-[15px] font-medium border-b border-slate-50 last:border-0 transition-all duration-300 ${
-                  isOpen ? "translate-x-0 opacity-100" : "translate-x-4 opacity-0"
-                } ${active ? "text-slate-900" : "text-slate-500"}`}
-              >
-                <span
-                  className={`w-1.5 h-1.5 rounded-full bg-gradient-to-r from-purple-600 to-blue-500 transition-transform duration-200 ${
-                    active ? "scale-100" : "scale-0"
+      {/* Mobile Menu Panel */}
+      {isOpen && (
+        <div className="md:hidden bg-white border-b border-slate-200 shadow-lg px-6 py-4 space-y-4">
+          <nav className="flex flex-col space-y-3">
+            {NAV_LINKS.map((link) => {
+              const active = pathname === link.href;
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`text-sm font-bold py-1 ${
+                    active ? "text-purple-700" : "text-slate-600"
                   }`}
-                />
-                {link.label}
-              </Link>
-            );
-          })}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </nav>
 
-          <div className="flex flex-col gap-3 mt-4 pt-4 border-t border-slate-100">
-            <Link
-              href="/login"
-              className="text-center text-[14px] font-medium text-slate-600 py-2 hover:text-slate-900 transition-colors duration-200"
-            >
-              Login
-            </Link>
-            <Link
-              href="/register"
-              className="text-center text-[14px] font-semibold text-white bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 px-5 py-2.5 rounded-full transition-all duration-200 shadow-sm"
-            >
-              Sign Up
-            </Link>
+          <div className="pt-3 border-t border-slate-100">
+            {activeUser ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 p-2 bg-slate-50 rounded-xl">
+                  <div className="w-9 h-9 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-sm">
+                    {(activeUser.name || "U")[0].toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-900">
+                      {activeUser.name}
+                    </p>
+                    <p className="text-xs text-slate-500">{activeUser.email}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <Link
+                    href={getDashboardHref()}
+                    className="px-3 py-2 bg-purple-50 text-purple-700 text-xs font-bold rounded-xl text-center"
+                  >
+                    Go to Dashboard
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="px-3 py-2 bg-rose-50 text-rose-600 text-xs font-bold rounded-xl text-center"
+                  >
+                    Logout
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <Link
+                  href="/login"
+                  className="w-full text-center py-2.5 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-50"
+                >
+                  Login
+                </Link>
+                <Link
+                  href="/register"
+                  className="w-full text-center py-2.5 bg-gradient-to-r from-purple-600 to-blue-500 text-white text-xs font-bold rounded-xl shadow-sm"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
           </div>
-        </nav>
-      </div>
+        </div>
+      )}
     </header>
   );
 }

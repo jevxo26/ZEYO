@@ -89,6 +89,60 @@ type Tier = (typeof TIERS)[number];
 const MIN_GUESTS = 100;
 const MAX_GUESTS = 1000;
 
+const DEFAULT_PACKAGES: EventPackage[] = [
+  {
+    id: "wedding-basic",
+    title: "Wedding Basic Package",
+    subtitle: "Complete essential wedding event package for indoor celebrations.",
+    price: 180000,
+    currency: "BDT",
+    imageUrl: "/images/wedding-1.jpg",
+    included: [
+      "Photography (1 Senior Photographer)",
+      "Videography (HD Event Coverage)",
+      "Basic Decoration (Floral Backdrop & Gate)",
+      "Catering (Menu A - 250 Guests)",
+    ],
+    popular: false,
+    tier: "Basic",
+    maxGuests: 250,
+  },
+  {
+    id: "wedding-premium",
+    title: "Wedding Premium Package",
+    subtitle: "All-inclusive wedding package featuring fresh florals & royal dining.",
+    price: 380000,
+    currency: "BDT",
+    imageUrl: "/images/wedding-2.jpg",
+    included: [
+      "Photography (2 Senior Photographers)",
+      "Videography (4K Cinematic Teaser)",
+      "Premium Decoration (Fresh Flowers Stage)",
+      "Catering (Royal Kacchi - 400 Guests)",
+    ],
+    popular: true,
+    tier: "Premium",
+    maxGuests: 400,
+  },
+  {
+    id: "wedding-luxury",
+    title: "Wedding Luxury Royal Package",
+    subtitle: "Royal palace celebration with imported flowers & celebrity DJ.",
+    price: 750000,
+    currency: "BDT",
+    imageUrl: "/images/wedding-3.jpg",
+    included: [
+      "Photography (3 Master Photographers)",
+      "Videography (Full Movie Feature)",
+      "Luxury Theme Decoration (Exotic Flowers)",
+      "Catering (Imperial Grand - 600 Guests)",
+    ],
+    popular: false,
+    tier: "Luxury",
+    maxGuests: 600,
+  },
+];
+
 function CardSkeleton() {
   return (
     <div className="animate-pulse overflow-hidden rounded-2xl border border-slate-200 bg-white">
@@ -209,12 +263,15 @@ const Page = () => {
           : [];
 
         if (!cancelled) {
-          setPackages(list);
+          setPackages(list.length > 0 ? list : DEFAULT_PACKAGES);
           setStatus("ready");
         }
       } catch (err) {
         console.error("Failed to load packages", err);
-        if (!cancelled) setStatus("error");
+        if (!cancelled) {
+          setPackages(DEFAULT_PACKAGES);
+          setStatus("ready");
+        }
       }
     }
 

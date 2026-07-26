@@ -1,11 +1,11 @@
 "use client";
 
 import Sidebar from "@/components/Sidebar";
-import { Bell, Mail, Search, Sparkles, ChevronDown } from "lucide-react";
+import Navbar from "@/components/Navbar";
+import { Bell, Mail, Search, Sparkles, ShieldCheck, Briefcase, User as UserIcon } from "lucide-react";
 import React, { useEffect } from "react";
 import { useAppSelector } from "@/store/store";
 import { useRouter } from "next/navigation";
-
 import Modals from "@/components/dashboard/Modals";
 
 export default function DashboardLayout({
@@ -17,77 +17,76 @@ export default function DashboardLayout({
   const router = useRouter();
 
   useEffect(() => {
-    // If we have verified that the user is not authenticated, redirect to login.
-    // Wait for client mount to avoid hydration mismatch, and rely on AuthInitializer to check token.
     const token = localStorage.getItem("accessToken");
-    if (!token && !isAuthenticated) {
+    if (!token && !isAuthenticated && !user) {
       router.push("/login");
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, user, router]);
 
-  if (!isAuthenticated && typeof window !== "undefined" && !localStorage.getItem("accessToken")) {
-    return null; // or a loading spinner
-  }
+  const getRoleHeaderBadge = () => {
+    if (!user) return null;
+    const r = (user.role || "").toLowerCase();
+    if (r === "admin") {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+          <ShieldCheck className="w-3.5 h-3.5" /> Admin Operations Center
+        </span>
+      );
+    }
+    if (r === "vendor" || r === "partner") {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+          <Briefcase className="w-3.5 h-3.5" /> Background Vendor Partner
+        </span>
+      );
+    }
+    return (
+      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200">
+        <UserIcon className="w-3.5 h-3.5" /> Customer Portal
+      </span>
+    );
+  };
 
   return (
-    <div className="flex min-h-screen bg-slate-50 text-slate-900">
-      <Modals />
-      <Sidebar />
-      <div className="flex-1 flex flex-col min-w-0">
-        <header className="sticky top-0 z-40 px-6 py-3 flex justify-between items-center gap-4 shrink-0 border-b border-slate-200 bg-white">
-          <div className="hidden sm:flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-100 px-3.5 py-2 w-72 focus-within:border-slate-400 focus-within:ring-2 focus-within:ring-slate-200">
-            <Search size={15} className="text-slate-400 shrink-0" />
-            <input
-              type="text"
-              placeholder="Search bookings, events, tasks..."
-              className="bg-transparent text-xs text-slate-700 placeholder-slate-400 outline-none w-full font-medium"
-            />
-          </div>
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
+      {/* Global Top Navbar */}
+      <Navbar />
 
-          <div className="flex items-center gap-3 ml-auto">
-            <button className="hidden md:flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-1.5 text-[10px] font-bold text-white shadow-sm">
-              <Sparkles size={11} />
-              Upgrade
-            </button>
+      {/* Dashboard Body */}
+      <div className="flex flex-1 min-h-0">
+        <Modals />
+        <Sidebar />
 
-            <button className="relative rounded-xl bg-slate-100 p-2 text-slate-600 transition hover:bg-slate-200">
-              <Bell size={17} />
-              <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-rose-500" />
-            </button>
-
-            <button className="rounded-xl bg-slate-100 p-2 text-slate-600 transition hover:bg-slate-200">
-              <Mail size={17} />
-            </button>
-
-            <div className="mx-1 h-5 w-px bg-slate-200" />
-
-            <div className="flex items-center gap-2.5">
-              <div className="h-9 w-9 overflow-hidden rounded-full border border-slate-200 bg-slate-100">
-                <img
-                  src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=120"
-                  alt="Profile"
-                  className="h-full w-full object-cover"
-                />
-              </div>
-              <div className="hidden lg:block">
-                <p className="text-xs font-semibold text-slate-900 leading-tight">
-                  {user?.name || "Loading..."}
-                </p>
-                <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-slate-500">
-                  {user?.role || "User"}
-                </p>
-              </div>
-              <ChevronDown
-                size={13}
-                className="hidden text-slate-400 lg:block"
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Sub-header bar for quick search & active role status */}
+          <header className="sticky top-0 z-30 px-6 py-3 flex justify-between items-center gap-4 shrink-0 border-b border-slate-200 bg-white/90 backdrop-blur-md">
+            <div className="hidden sm:flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 w-80 focus-within:border-purple-500 focus-within:ring-2 focus-within:ring-purple-100 focus-within:bg-white transition-all">
+              <Search size={15} className="text-slate-400 shrink-0" />
+              <input
+                type="text"
+                placeholder="Search bookings, events, tasks, or partners..."
+                className="bg-transparent text-xs text-slate-800 placeholder-slate-400 outline-none w-full font-semibold"
               />
             </div>
-          </div>
-        </header>
 
-        <main className="flex-1 overflow-y-auto bg-slate-50 p-6 lg:p-8">
-          {children}
-        </main>
+            <div className="flex items-center gap-3 ml-auto">
+              {getRoleHeaderBadge()}
+
+              <button className="relative rounded-xl bg-slate-100 p-2 text-slate-600 transition hover:bg-slate-200" title="Notifications">
+                <Bell size={17} />
+                <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-purple-600" />
+              </button>
+
+              <button className="rounded-xl bg-slate-100 p-2 text-slate-600 transition hover:bg-slate-200" title="Messages">
+                <Mail size={17} />
+              </button>
+            </div>
+          </header>
+
+          <main className="flex-1 overflow-y-auto bg-slate-50 p-6 lg:p-8">
+            {children}
+          </main>
+        </div>
       </div>
     </div>
   );
