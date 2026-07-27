@@ -13,6 +13,10 @@ import {
   FileText,
   ShieldCheck,
   Briefcase,
+  X,
+  CreditCard,
+  Building,
+  Check,
 } from "lucide-react";
 import apiClient from "@/lib/apiClient";
 import Link from "next/link";
@@ -55,8 +59,35 @@ export default function EarningsPage() {
   const [payoutsList, setPayoutsList] = useState<any[]>(DEFAULT_VENDOR_PAYOUTS);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Payout withdrawal modal state
+  const [showPayoutModal, setShowPayoutModal] = useState(false);
+  const [payoutMethod, setPayoutMethod] = useState("bKash");
+  const [accountNumber, setAccountNumber] = useState("01712345678");
+  const [bankName, setBankName] = useState("BRAC Bank");
+  const [isSubmittingPayout, setIsSubmittingPayout] = useState(false);
+
   useEffect(() => {
     const fetchFinancials = async () => {
+      let localCustom: any[] = [];
+      if (typeof window !== "undefined") {
+        try {
+          const stored = localStorage.getItem("customBookings");
+          if (stored) {
+            const list = JSON.parse(stored);
+            localCustom = list.map((b: any, idx: number) => ({
+              id: b.id || `PAY-CUSTOM-${idx}`,
+              bookingNumber: b.bookingNumber || `#${b.id}`,
+              eventName: `${b.eventName || b.notes || "Custom Event"} (${b.eventType || "Service"})`,
+              serviceCategory: b.eventType || "Event Fulfillment",
+              eventDate: b.eventDate ? new Date(b.eventDate).toISOString().split("T")[0] : "2026-11-15",
+              payoutAmount: Number(b.grandTotal || b.budget || 35000),
+              status: "escrow_pending",
+              clearedAt: "Pending QA",
+            }));
+          }
+        } catch (e) {}
+      }
+
       try {
         const response = await apiClient.get("/vendors/earnings");
         if (response.data && response.data.success !== false) {
@@ -66,13 +97,16 @@ export default function EarningsPage() {
             : Array.isArray(rawData?.data)
             ? rawData.data
             : [];
-          setPayoutsList(list.length > 0 ? list : DEFAULT_VENDOR_PAYOUTS);
+          const combined = [...localCustom, ...list];
+          setPayoutsList(combined.length > 0 ? combined : DEFAULT_VENDOR_PAYOUTS);
         } else {
-          setPayoutsList(DEFAULT_VENDOR_PAYOUTS);
+          const combined = [...localCustom, ...DEFAULT_VENDOR_PAYOUTS];
+          setPayoutsList(combined);
         }
       } catch (error) {
         console.error("Failed to fetch financial data", error);
-        setPayoutsList(DEFAULT_VENDOR_PAYOUTS);
+        const combined = [...localCustom, ...DEFAULT_VENDOR_PAYOUTS];
+        setPayoutsList(combined);
       } finally {
         setIsLoading(false);
       }
@@ -95,38 +129,50 @@ export default function EarningsPage() {
     )
     .reduce((acc, b) => acc + Number(b.payoutAmount || b.grandTotal || 0), 0);
 
-  const handleWithdraw = () => {
-    toast.success(
-      `✓ Escrow payout withdrawal request of ৳${totalEarnings.toLocaleString()} submitted to EVENTO Finance Desk!`,
-      { duration: 4000 }
-    );
+  const handleConfirmWithdrawal = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingPayout(true);
+
+    setTimeout(() => {
+      setIsSubmittingPayout(false);
+      setShowPayoutModal(false);
+
+      // Update pending items to paid out for demo confirmation
+      const updatedList = payoutsList.map((p) => ({
+        ...p,
+        status: "paid_out",
+      }));
+      setPayoutsList(updatedList);
+
+      toast.success(
+        `✓ Payout request of ৳${totalEarnings.toLocaleString()} sent to ${payoutMethod} (${accountNumber})! EVENTO Finance Desk processing within 2 hours.`
+      );
+    }, 1200);
   };
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Vendor Notice Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-purple-950 to-indigo-950 rounded-2xl p-6 text-white shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="bg-slate-900 rounded-2xl p-6 text-white shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-slate-800">
         <div className="flex items-start gap-3.5">
-          <div className="p-2.5 rounded-xl bg-white/10 backdrop-blur-sm shrink-0 border border-white/20">
+          <div className="p-2.5 rounded-xl bg-white/10 shrink-0 border border-white/10">
             <ShieldCheck className="w-6 h-6 text-purple-300" />
           </div>
           <div>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-purple-500/20 text-purple-200 border border-purple-400/30">
-              Managed Event OS — Vendor Partner Payout Ledger
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-purple-500/20 text-purple-200 border border-purple-400/20">
+              Vendor Escrow Ledger
             </span>
-            <h1 className="text-xl sm:text-2xl font-extrabold mt-1">
+            <h1 className="text-xl sm:text-2xl font-bold mt-1">
               Partner Earnings &amp; Protected Escrow
             </h1>
-            <p className="text-xs sm:text-sm text-indigo-100/80 mt-1 max-w-2xl leading-relaxed">
-              All payouts are disbursed directly by EVENTO Operations via secure
-              escrow after quality assurance clearance. Customer transaction
-              details remain confidential.
+            <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
+              Disbursed directly by EVENTO Operations via secure escrow after QA clearance. Customer transaction details remain protected.
             </p>
           </div>
         </div>
         <button
-          onClick={handleWithdraw}
-          className="px-5 py-2.5 bg-white text-slate-900 hover:bg-indigo-50 text-xs font-bold rounded-xl shadow-md transition-colors flex items-center gap-2 shrink-0"
+          onClick={() => setShowPayoutModal(true)}
+          className="px-4 py-2.5 bg-white text-slate-900 hover:bg-slate-100 text-xs font-bold rounded-xl shadow-sm transition-colors flex items-center gap-2 shrink-0"
         >
           <Download className="w-4 h-4 text-purple-700" /> Request Escrow Payout
         </button>
@@ -162,7 +208,7 @@ export default function EarningsPage() {
             ৳{clearedPayouts.toLocaleString()}
           </p>
           <p className="text-xs text-slate-500 mt-1">
-            Transferred to partner bank account
+            Transferred to partner bank / mobile wallet
           </p>
         </div>
 
@@ -221,7 +267,7 @@ export default function EarningsPage() {
                 </tr>
               ) : payoutsList.length > 0 ? (
                 payoutsList.map((b, idx) => (
-                  <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                  <tr key={b.id ? `${b.id}-${idx}` : idx} className="hover:bg-slate-50 transition-colors">
                     <td className="p-4 pl-6 font-mono font-bold text-slate-900">
                       {b.bookingNumber || `#BKG-${b.id}`}
                     </td>
@@ -271,6 +317,123 @@ export default function EarningsPage() {
           </table>
         </div>
       </div>
+
+      {/* Escrow Payout Request Modal */}
+      {showPayoutModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden border border-slate-200">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">
+                  Request Escrow Payout
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  EVENTO Partner Disbursements
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowPayoutModal(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Form */}
+            <form onSubmit={handleConfirmWithdrawal} className="p-6 space-y-4">
+              <div className="p-4 bg-slate-900 rounded-xl border border-slate-800 space-y-1 text-white">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-300">
+                  Available Payout Balance
+                </span>
+                <p className="text-2xl font-black text-white">
+                  ৳{totalEarnings.toLocaleString()}
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-700">
+                  Disbursement Method
+                </label>
+                <select
+                  value={payoutMethod}
+                  onChange={(e) => setPayoutMethod(e.target.value)}
+                  className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900"
+                >
+                  <option value="bKash">bKash Merchant / Personal</option>
+                  <option value="Nagad">Nagad Wallet</option>
+                  <option value="Rocket">Rocket Wallet</option>
+                  <option value="Bank Wire">Bank Wire Transfer (BRAC / City / DBBL)</option>
+                </select>
+              </div>
+
+              {payoutMethod === "Bank Wire" ? (
+                <div className="space-y-3">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-slate-700">
+                      Bank Name
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={bankName}
+                      onChange={(e) => setBankName(e.target.value)}
+                      placeholder="e.g. BRAC Bank Limited"
+                      className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-slate-700">
+                      Account Number / IBAN
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={accountNumber}
+                      onChange={(e) => setAccountNumber(e.target.value)}
+                      placeholder="150120xxxxxxxxx"
+                      className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-lg text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-700">
+                    Mobile Number ({payoutMethod})
+                  </label>
+                  <input
+                    type="tel"
+                    required
+                    value={accountNumber}
+                    onChange={(e) => setAccountNumber(e.target.value)}
+                    placeholder="01712345678"
+                    className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-lg text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900"
+                  />
+                </div>
+              )}
+
+              {/* Actions */}
+              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowPayoutModal(false)}
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingPayout}
+                  className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors flex items-center gap-1.5"
+                >
+                  {isSubmittingPayout ? "Processing..." : "Confirm Withdrawal"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

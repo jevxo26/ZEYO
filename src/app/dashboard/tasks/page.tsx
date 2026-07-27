@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -16,9 +16,12 @@ import {
   DollarSign,
   PhoneCall,
   MessageSquare,
+  ListFilter,
+  Check,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import apiClient from "@/lib/apiClient";
 
 interface AssignedTaskType {
   id: string;
@@ -115,11 +118,9 @@ const DEFAULT_VENDOR_TASKS: AssignedTaskType[] = [
 ];
 
 export default function TaskDetailsPage() {
-  const [tasksList] = useState<AssignedTaskType[]>(DEFAULT_VENDOR_TASKS);
-  const [selectedTaskId, setSelectedTaskId] = useState("TSK-001");
-
-  const currentTask =
-    tasksList.find((t) => t.id === selectedTaskId) || tasksList[0];
+  const [tasksList, setTasksList] = useState<AssignedTaskType[]>(DEFAULT_VENDOR_TASKS);
+  const [selectedTaskId, setSelectedTaskId] = useState<string>("TSK-001");
+  const [filterStatus, setFilterStatus] = useState<string>("All");
 
   const [notes, setNotes] = useState([
     {
@@ -127,11 +128,79 @@ export default function TaskDetailsPage() {
       author: "EVENTO Coordinator (Arif)",
       initials: "EA",
       time: "2 hours ago",
-      text: "Please ensure the drone operator coordinates with hotel security for airspace clearance upon arrival.",
+      text: "Please ensure the team coordinates with venue security for equipment clearance upon arrival.",
     },
   ]);
   const [newNote, setNewNote] = useState("");
   const [progressStep, setProgressStep] = useState(1); // 0: Accepted, 1: At Venue, 2: Started, 3: Completed
+  const [isUploading, setIsUploading] = useState(false);
+
+  const fetchVendorTasks = async () => {
+    let customMapped: AssignedTaskType[] = [];
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("customBookings");
+        if (stored) {
+          const list = JSON.parse(stored);
+          customMapped = list.map((b: any, i: number) => ({
+            id: String(b.id || `CUSTOM-${i}`),
+            bookingRef: b.bookingNumber || `#${b.id || `BKG-${i + 1}`}`,
+            title: b.eventName || b.notes || "Custom Celebration",
+            category: b.eventType || "Event Execution",
+            zone: "Dhaka Zone",
+            venue: b.location || "Location TBD",
+            date: b.eventDate ? new Date(b.eventDate).toLocaleDateString() : "Upcoming",
+            duration: "Full Event Duration",
+            payout: `৳${Number(b.grandTotal || b.budget || 45000).toLocaleString()} (Protected Escrow)`,
+            status: b.bookingStatus || b.status || "Confirmed",
+            requirements: [
+              {
+                title: `${b.eventType || "Event"} Setup & Delivery`,
+                desc: b.notes || "Full service execution according to customer specs.",
+              },
+              {
+                title: "Quality Assurance Check",
+                desc: "Ensure all line items pass EVENTO QA criteria before event commencement.",
+              },
+            ],
+            coordinatorNotes: "Coordinate with EVENTO Dispatch officer upon arrival.",
+          }));
+        }
+      } catch (e) {}
+    }
+
+    try {
+      const res = await apiClient.get("/vendors/tasks");
+      if (res.data?.success !== false && Array.isArray(res.data?.data) && res.data.data.length > 0) {
+        const apiTasks = res.data.data;
+        const merged = [...customMapped, ...apiTasks];
+        setTasksList(merged);
+        if (merged.length > 0 && !selectedTaskId) {
+          setSelectedTaskId(merged[0].id);
+        }
+        return;
+      }
+    } catch (e) {
+      console.warn("Using local vendor task data");
+    }
+
+    const merged = [...customMapped, ...DEFAULT_VENDOR_TASKS];
+    setTasksList(merged);
+    if (merged.length > 0 && (!selectedTaskId || !merged.find((t) => t.id === selectedTaskId))) {
+      setSelectedTaskId(merged[0].id);
+    }
+  };
+
+  useEffect(() => {
+    fetchVendorTasks();
+
+    const handleUpdate = () => fetchVendorTasks();
+    window.addEventListener("dashboard-data-update", handleUpdate);
+    return () => window.removeEventListener("dashboard-data-update", handleUpdate);
+  }, []);
+
+  const currentTask =
+    tasksList.find((t) => String(t.id) === String(selectedTaskId)) || tasksList[0] || DEFAULT_VENDOR_TASKS[0];
 
   const handlePostNote = (e: React.FormEvent) => {
     e.preventDefault();
@@ -148,14 +217,25 @@ export default function TaskDetailsPage() {
       },
     ]);
     setNewNote("");
-    toast.success("✓ Note posted to EVENTO internal dispatch channel!");
+    toast.success("Note posted to EVENTO dispatch channel!");
   };
 
   const handleMessageCoordinator = () => {
     toast.success(
-      "✓ Message alert sent to EVENTO Operations Desk! Your coordinator will reply via the internal dispatch channel.",
+      "Message alert sent to EVENTO Operations Desk! Your coordinator will reply in the dispatch channel.",
       { duration: 4000 }
     );
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    setTimeout(() => {
+      setIsUploading(false);
+      toast.success(`✓ Deliverable "${file.name}" uploaded successfully for QA review!`);
+    }, 1500);
   };
 
   const steps = [
@@ -165,65 +245,76 @@ export default function TaskDetailsPage() {
     { label: "WORK COMPLETED", note: "Awaiting final clearance & payout" },
   ];
 
+  const handleStatusChange = (newStatus: string) => {
+    const updated = tasksList.map((t) =>
+      t.id === currentTask.id ? { ...t, status: newStatus } : t
+    );
+    setTasksList(updated);
+    toast.success(`Task status updated to: ${newStatus}`);
+  };
+
+  const filteredTasks = tasksList.filter((t) => {
+    if (filterStatus === "All") return true;
+    return t.status.toLowerCase().includes(filterStatus.toLowerCase());
+  });
+
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Vendor Notice Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-purple-950 rounded-2xl p-6 text-white shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="bg-slate-900 rounded-2xl p-6 text-white shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-slate-800">
         <div className="flex items-start gap-3.5">
-          <div className="p-2.5 rounded-xl bg-white/10 backdrop-blur-sm shrink-0 border border-white/20">
-            <ShieldCheck className="w-6 h-6 text-indigo-300" />
+          <div className="p-2.5 rounded-xl bg-white/10 shrink-0 border border-white/10">
+            <ShieldCheck className="w-6 h-6 text-purple-300" />
           </div>
           <div>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-indigo-500/20 text-indigo-200 border border-indigo-400/30">
-              Managed Event OS — Background Vendor Workspace
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-purple-500/20 text-purple-200 border border-purple-400/20">
+              Vendor Task Board
             </span>
-            <h1 className="text-xl sm:text-2xl font-extrabold mt-1">
-              Vendor Task Execution Board
+            <h1 className="text-xl sm:text-2xl font-bold mt-1">
+              Task Execution Workspace
             </h1>
-            <p className="text-xs sm:text-sm text-indigo-100/80 mt-1 max-w-2xl leading-relaxed">
-              Zero Customer Leakage Guarantee: You are viewing technical event
-              specifications, venue locations, and schedule instructions from
-              EVENTO Operations. Direct customer contact info is protected.
+            <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
+              Technical event specifications, venue locations, and schedule instructions dispatched by EVENTO Operations.
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="text-xs font-bold text-indigo-200">
-            Select Assigned Task:
-          </span>
+
+        {/* Task Selector Dropdown */}
+        <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+          <span className="text-xs font-semibold text-slate-300">Select Task:</span>
           <select
             value={selectedTaskId}
             onChange={(e) => setSelectedTaskId(e.target.value)}
-            className="px-3.5 py-2 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-purple-400"
+            className="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-slate-600"
           >
             {tasksList.map((t) => (
-              <option key={t.id} value={t.id} className="text-slate-900">
-                {t.bookingRef} - {t.category} ({t.zone})
+              <option key={t.id} value={t.id}>
+                {t.bookingRef} - {t.title} ({t.category})
               </option>
             ))}
           </select>
         </div>
       </div>
 
-      {/* Header Banner */}
+      {/* Task Header & Quick Status Switch */}
       <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
               {currentTask.title}
             </h1>
-            <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
+            <span className="text-xs font-mono font-semibold px-2.5 py-0.5 rounded bg-slate-100 text-slate-600 border border-slate-200">
               {currentTask.bookingRef}
             </span>
           </div>
           <div className="flex gap-2 mt-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded bg-purple-100 text-purple-700">
+            <span className="text-[10px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded bg-purple-100 text-purple-700">
               {currentTask.category}
             </span>
-            <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded bg-indigo-100 text-indigo-700">
+            <span className="text-[10px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded bg-indigo-100 text-indigo-700">
               {currentTask.zone}
             </span>
-            <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded bg-amber-100 text-amber-800">
+            <span className="text-[10px] font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded bg-amber-100 text-amber-800">
               {currentTask.status}
             </span>
           </div>
@@ -231,32 +322,36 @@ export default function TaskDetailsPage() {
 
         <div className="flex flex-wrap items-center gap-3 shrink-0">
           <div className="px-3.5 py-2 bg-emerald-50 border border-emerald-200 rounded-xl text-right">
-            <span className="text-[10px] uppercase font-bold text-emerald-700 block">
+            <span className="text-[10px] uppercase font-semibold text-emerald-700 block">
               Assigned Payout
             </span>
-            <span className="text-sm font-extrabold text-emerald-950">
+            <span className="text-sm font-bold text-emerald-950">
               {currentTask.payout}
             </span>
           </div>
 
           <button
             onClick={handleMessageCoordinator}
-            className="px-4 py-2.5 bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-700 rounded-xl text-xs font-bold transition-colors shadow-sm flex items-center gap-1.5"
+            className="px-3.5 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-semibold transition-colors shadow-sm flex items-center gap-1.5"
           >
-            <MessageSquare className="w-4 h-4" /> Message EVENTO Coordinator
+            <MessageSquare className="w-3.5 h-3.5 text-slate-500" /> Dispatch Desk
           </button>
+
           <button
             onClick={() => {
               if (progressStep < steps.length - 1) {
-                setProgressStep(progressStep + 1);
-                toast.success(
-                  `✓ Execution stage updated to: ${steps[progressStep + 1].label}`
-                );
+                const nextStep = progressStep + 1;
+                setProgressStep(nextStep);
+                if (nextStep === steps.length - 1) {
+                  handleStatusChange("Completed");
+                } else {
+                  handleStatusChange("In Progress");
+                }
               }
             }}
-            className="px-4 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition-colors shadow-sm"
+            className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-semibold hover:bg-slate-800 transition-colors shadow-sm"
           >
-            Advance Execution Step
+            Advance Progress
           </button>
         </div>
       </div>
@@ -264,25 +359,25 @@ export default function TaskDetailsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Main Content */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Event Details */}
+          {/* Dispatch Specifications */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider border-b border-slate-100 pb-3 flex items-center justify-between">
+            <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-100 pb-3 flex items-center justify-between">
               <span>Technical Dispatch Sheet</span>
               <span className="text-xs font-normal text-slate-400">
                 Managed Event OS
               </span>
             </h2>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs">
               <div className="flex items-center gap-3">
                 <div className="p-2.5 rounded-xl bg-slate-100 text-slate-600 shrink-0">
-                  <CalendarDays className="w-5 h-5 text-purple-600" />
+                  <CalendarDays className="w-4 h-4 text-slate-500" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
                     Execution Date
                   </p>
-                  <p className="font-semibold text-slate-900 mt-0.5">
+                  <p className="font-bold text-slate-900 mt-0.5">
                     {currentTask.date}
                   </p>
                 </div>
@@ -290,13 +385,13 @@ export default function TaskDetailsPage() {
 
               <div className="flex items-center gap-3">
                 <div className="p-2.5 rounded-xl bg-slate-100 text-slate-600 shrink-0">
-                  <Clock className="w-5 h-5 text-purple-600" />
+                  <Clock className="w-4 h-4 text-slate-500" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    Coverage Duration
+                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                    Duration
                   </p>
-                  <p className="font-semibold text-slate-900 mt-0.5">
+                  <p className="font-bold text-slate-900 mt-0.5">
                     {currentTask.duration}
                   </p>
                 </div>
@@ -304,13 +399,13 @@ export default function TaskDetailsPage() {
 
               <div className="sm:col-span-2 flex items-start gap-3 pt-2">
                 <div className="p-2.5 rounded-xl bg-slate-100 text-slate-600 shrink-0">
-                  <MapPin className="w-5 h-5 text-purple-600" />
+                  <MapPin className="w-4 h-4 text-slate-500" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
                     Venue Location
                   </p>
-                  <p className="font-semibold text-slate-900 mt-0.5 leading-relaxed">
+                  <p className="font-bold text-slate-900 mt-0.5 leading-relaxed">
                     {currentTask.venue} ({currentTask.zone})
                   </p>
                 </div>
@@ -318,30 +413,30 @@ export default function TaskDetailsPage() {
             </div>
 
             {/* Coordinator Instructions */}
-            <div className="p-4 rounded-xl bg-purple-50/70 border border-purple-200 text-purple-950 text-xs">
-              <span className="font-bold uppercase tracking-wider block text-[10px] text-purple-600 mb-1">
-                EVENTO Coordinator Dispatch Note
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 text-xs">
+              <span className="font-semibold uppercase tracking-wider block text-[10px] text-slate-500 mb-1">
+                Coordinator Dispatch Note
               </span>
-              {currentTask.coordinatorNotes}
+              <p className="leading-relaxed font-normal">{currentTask.coordinatorNotes}</p>
             </div>
 
-            {/* GPS Link Button */}
-            <div className="w-full h-24 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center p-4 text-center">
+            {/* GPS Route Button */}
+            <div className="w-full rounded-xl bg-slate-50 border border-slate-200 p-4 text-center">
               <a
-                href="https://maps.google.com"
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(currentTask.venue)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="px-4 py-2 bg-white border border-slate-200 text-slate-800 text-xs font-bold rounded-lg shadow-sm hover:bg-slate-50 transition-colors flex items-center gap-2"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-800 text-xs font-semibold rounded-lg shadow-sm hover:bg-slate-100 transition-colors"
               >
-                📍 Click to view GPS route &amp; directions to {currentTask.venue}
+                📍 Open GPS Directions to {currentTask.venue}
               </a>
             </div>
           </div>
 
-          {/* Customer Requirements */}
+          {/* Service Requirements */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-              Technical Service Specifications
+            <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              Technical Requirements
             </h2>
 
             {currentTask.requirements.map((req, i) => (
@@ -353,7 +448,7 @@ export default function TaskDetailsPage() {
                   <CheckCircle2 className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">
+                  <h3 className="text-xs font-bold text-slate-900">
                     {req.title}
                   </h3>
                   <p className="text-xs text-slate-600 mt-1 leading-relaxed">
@@ -364,10 +459,10 @@ export default function TaskDetailsPage() {
             ))}
           </div>
 
-          {/* Internal Notes */}
+          {/* Internal Dispatch Communication */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-              Coordinator Dispatch Channel
+            <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              Dispatch Communication Log
             </h2>
 
             <div className="space-y-3">
@@ -401,14 +496,14 @@ export default function TaskDetailsPage() {
                 type="text"
                 value={newNote}
                 onChange={(e) => setNewNote(e.target.value)}
-                placeholder="Add an internal note for EVENTO Operations Desk..."
-                className="flex-1 rounded-lg px-4 py-2 text-xs bg-slate-50 border border-slate-200 text-slate-900 outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white transition-all"
+                placeholder="Post a message to EVENTO Operations Desk..."
+                className="flex-1 rounded-lg px-3.5 py-2 text-xs bg-slate-50 border border-slate-200 text-slate-900 outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white transition-all"
               />
               <button
                 type="submit"
                 className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors flex items-center gap-1.5"
               >
-                Post <Send className="w-3.5 h-3.5" />
+                Send <Send className="w-3.5 h-3.5" />
               </button>
             </form>
           </div>
@@ -416,28 +511,13 @@ export default function TaskDetailsPage() {
 
         {/* Right Sidebar */}
         <div className="space-y-6">
-          {/* Zero Customer Leakage Assurance Card */}
-          <div className="bg-indigo-50/70 border border-indigo-200 rounded-2xl p-5 space-y-2">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-indigo-600" />
-              <h3 className="text-xs font-bold text-indigo-950 uppercase tracking-wider">
-                Zero Customer Leakage
-              </h3>
-            </div>
-            <p className="text-xs text-indigo-900/80 leading-relaxed">
-              In accordance with EVENTO Managed OS standards, customer contact
-              information and total event budgets are protected. All on-site
-              coordination is managed by your assigned EVENTO Operations Officer.
-            </p>
-          </div>
-
-          {/* Progress Timeline */}
+          {/* Work Progress Timeline */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
-            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-              Work Progress Status
+            <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              Execution Progress
             </h2>
 
-            <div className="space-y-6 pl-4 border-l-2 border-slate-200">
+            <div className="space-y-5 pl-4 border-l-2 border-slate-200">
               {steps.map((step, i) => {
                 const isCompleted = i <= progressStep;
                 const isCurrent = i === progressStep;
@@ -461,10 +541,13 @@ export default function TaskDetailsPage() {
                     {isCurrent && i < steps.length - 1 && (
                       <button
                         onClick={() => {
-                          setProgressStep(i + 1);
-                          toast.success(
-                            `✓ Progress updated to: ${steps[i + 1].label}`
-                          );
+                          const nextStep = i + 1;
+                          setProgressStep(nextStep);
+                          if (nextStep === steps.length - 1) {
+                            handleStatusChange("Completed");
+                          } else {
+                            handleStatusChange("In Progress");
+                          }
                         }}
                         className="mt-2 w-full py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-md transition-colors"
                       >
@@ -477,27 +560,32 @@ export default function TaskDetailsPage() {
             </div>
           </div>
 
-          {/* Deliverables */}
+          {/* Deliverable File Upload */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-            <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-              Deliverables
+            <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+              Deliverables Upload
             </h2>
-            <p className="text-xs text-slate-500">
-              Upload raw drafts, clips, or final edited files for EVENTO QA
-              review.
+            <p className="text-xs text-slate-500 leading-relaxed">
+              Upload raw drafts, media clips, or final edited files for EVENTO QA inspection.
             </p>
 
-            <div className="border-2 border-dashed border-slate-200 bg-slate-50 rounded-xl p-6 text-center space-y-2 cursor-pointer hover:bg-slate-100 transition-colors">
+            <label className="border-2 border-dashed border-slate-200 bg-slate-50 rounded-xl p-6 text-center space-y-2 cursor-pointer hover:bg-slate-100 transition-colors block">
+              <input
+                type="file"
+                className="hidden"
+                onChange={handleFileUpload}
+                disabled={isUploading}
+              />
               <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center mx-auto text-slate-600">
-                <CloudUpload className="w-5 h-5" />
+                <CloudUpload className="w-5 h-5 text-slate-500" />
               </div>
               <p className="text-xs font-bold text-slate-800">
-                Click or drag &amp; drop
+                {isUploading ? "Uploading file..." : "Click or drag & drop file"}
               </p>
-              <p className="text-[10px] text-slate-400 uppercase font-semibold">
-                PNG, JPG or ZIP (max 800MB)
+              <p className="text-[10px] text-slate-400 font-semibold uppercase">
+                ZIP, JPG, PNG or MP4 (Max 800MB)
               </p>
-            </div>
+            </label>
           </div>
         </div>
       </div>

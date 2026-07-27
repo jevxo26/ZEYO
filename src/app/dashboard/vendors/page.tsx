@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   UserCheck,
   Search,
@@ -13,6 +13,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { toast } from "sonner";
+import apiClient from "@/lib/apiClient";
 
 interface VendorItemType {
   id: string;
@@ -25,7 +26,7 @@ interface VendorItemType {
   payoutRate: string;
 }
 
-const defaultVendors: VendorItemType[] = [
+const DEFAULT_VENDORS: VendorItemType[] = [
   {
     name: "Dhaka Royal Photography Studio",
     id: "V-4029",
@@ -88,7 +89,7 @@ const defaultVendors: VendorItemType[] = [
   },
 ];
 
-const ACTIVE_CUSTOMER_BOOKINGS = [
+const DEFAULT_CUSTOMER_BOOKINGS = [
   {
     id: "BKG-2026-001",
     label: "#BKG-2026-001 - Royal Wedding Ceremony (Gulshan Club, Dhaka Zone)",
@@ -107,18 +108,70 @@ const ACTIVE_CUSTOMER_BOOKINGS = [
 ];
 
 export default function VendorsPage() {
-  const [vendorsList] = useState<VendorItemType[]>(defaultVendors);
+  const [vendorsList, setVendorsList] = useState<VendorItemType[]>(DEFAULT_VENDORS);
+  const [activeBookings, setActiveBookings] = useState<any[]>(DEFAULT_CUSTOMER_BOOKINGS);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
   const [selectedZone, setSelectedZone] = useState("All Zones");
-  const [selectedVendor, setSelectedVendor] = useState<VendorItemType | null>(
-    null
-  );
+  const [selectedVendor, setSelectedVendor] = useState<VendorItemType | null>(null);
 
   // Dispatch Form State inside Modal
   const [targetBookingId, setTargetBookingId] = useState("BKG-2026-001");
   const [targetService, setTargetService] = useState("Photography");
   const [dispatchNotes, setDispatchNotes] = useState("");
+
+  const fetchVendorsAndBookings = async () => {
+    let customBookingsMapped: any[] = [];
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("customBookings");
+        if (stored) {
+          const list = JSON.parse(stored);
+          customBookingsMapped = list.map((b: any, i: number) => ({
+            id: b.id || `CUSTOM-${i}`,
+            label: `${b.bookingNumber || `#${b.id}`} - ${b.eventName || b.notes || "Celebration"} (${b.location || "Location TBD"})`,
+            date: b.eventDate ? new Date(b.eventDate).toISOString().split("T")[0] : "Upcoming",
+          }));
+        }
+      } catch (e) {}
+    }
+
+    const mergedBookings = [...customBookingsMapped, ...DEFAULT_CUSTOMER_BOOKINGS];
+    setActiveBookings(mergedBookings);
+    if (mergedBookings.length > 0) {
+      setTargetBookingId(mergedBookings[0].id);
+    }
+
+    let localCustomVendors: any[] = [];
+    if (typeof window !== "undefined") {
+      try {
+        const storedVendors = localStorage.getItem("customVendors");
+        if (storedVendors) {
+          localCustomVendors = JSON.parse(storedVendors);
+        }
+      } catch (e) {}
+    }
+
+    try {
+      const res = await apiClient.get("/vendors");
+      if (res.data && res.data.success !== false && Array.isArray(res.data.data) && res.data.data.length > 0) {
+        const combined = [...localCustomVendors, ...res.data.data];
+        setVendorsList(combined);
+        return;
+      }
+    } catch (e) {}
+
+    const combined = [...localCustomVendors, ...DEFAULT_VENDORS];
+    setVendorsList(combined);
+  };
+
+  useEffect(() => {
+    fetchVendorsAndBookings();
+    const handleUpdate = () => fetchVendorsAndBookings();
+    window.addEventListener("dashboard-data-update", handleUpdate);
+    return () => window.removeEventListener("dashboard-data-update", handleUpdate);
+  }, []);
 
   const handleOnboardVendor = () => {
     window.dispatchEvent(
@@ -135,9 +188,52 @@ export default function VendorsPage() {
     e.preventDefault();
     if (!selectedVendor) return;
 
+    const updatedVendorId = selectedVendor.id;
+
+    // 1. Update vendor active jobs count
+    setVendorsList((prev) => {
+      const updated = prev.map((v) =>
+        v.id === updatedVendorId ? { ...v, jobs: (v.jobs || 0) + 1 } : v
+      );
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem("customVendors", JSON.stringify(updated));
+        } catch (err) {}
+      }
+      return updated;
+    });
+
+    // 2. Update customer booking status to CONFIRMED / Operational Dispatch
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("customBookings");
+        if (stored) {
+          let list = JSON.parse(stored);
+          list = list.map((b: any) => {
+            if (
+              String(b.id) === String(targetBookingId) ||
+              String(b.bookingNumber) === String(targetBookingId) ||
+              String(b.bookingNumber).endsWith(String(targetBookingId))
+            ) {
+              return {
+                ...b,
+                bookingStatus: "confirmed",
+                status: "CONFIRMED",
+                assignedVendor: selectedVendor.name,
+                assignedService: targetService,
+              };
+            }
+            return b;
+          });
+          localStorage.setItem("customBookings", JSON.stringify(list));
+        }
+        window.dispatchEvent(new CustomEvent("dashboard-data-update"));
+      } catch (err) {}
+    }
+
     toast.success(
-      `✓ Dispatched ${selectedVendor.name} to #${targetBookingId} for ${targetService}. Customer booking updated to Operational Dispatch!`,
-      { duration: 4000 }
+      `✓ Dispatched ${selectedVendor.name} to booking #${targetBookingId} for ${targetService}!`,
+      { duration: 5000 }
     );
     setSelectedVendor(null);
     setDispatchNotes("");
@@ -166,29 +262,26 @@ export default function VendorsPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Admin Notice Banner */}
-      <div className="bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 rounded-2xl p-6 text-white shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="bg-slate-900 rounded-2xl p-6 text-white shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-slate-800">
         <div className="flex items-start gap-3.5">
-          <div className="p-2.5 rounded-xl bg-white/10 backdrop-blur-sm shrink-0 border border-white/20">
-            <ShieldAlert className="w-6 h-6 text-fuchsia-300" />
+          <div className="p-2.5 rounded-xl bg-white/10 shrink-0 border border-white/10">
+            <ShieldAlert className="w-6 h-6 text-purple-300" />
           </div>
           <div>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-fuchsia-500/20 text-fuchsia-200 border border-fuchsia-400/30">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-purple-500/20 text-purple-200 border border-purple-400/20">
               Admin Operations Center — Managed Event OS
             </span>
-            <h1 className="text-xl sm:text-2xl font-extrabold mt-1">
+            <h1 className="text-xl sm:text-2xl font-bold mt-1">
               Managed Vendor Pool &amp; Dispatch Hub
             </h1>
-            <p className="text-xs sm:text-sm text-indigo-100/80 mt-1 max-w-2xl leading-relaxed">
-              Customers never see individual vendor names, ratings, or payout
-              rates. As an EVENTO Admin Coordinator, use this panel to assign
-              vetted background vendor teams to customer bookings and oversee
-              service quality.
+            <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
+              Customers never see individual vendor names or payout rates. As an EVENTO Admin Coordinator, use this panel to assign vetted background vendor teams to customer bookings and oversee service quality.
             </p>
           </div>
         </div>
         <button
           onClick={handleOnboardVendor}
-          className="px-4 py-2.5 bg-white text-slate-900 hover:bg-indigo-50 rounded-xl text-xs font-bold shadow-md transition-colors flex items-center gap-2 shrink-0"
+          className="px-4 py-2.5 bg-white text-slate-900 hover:bg-slate-100 rounded-xl text-xs font-bold shadow-sm transition-colors flex items-center gap-2 shrink-0"
         >
           <UserCheck className="w-4 h-4 text-purple-700" /> Onboard Vendor Team
         </button>
@@ -203,7 +296,7 @@ export default function VendorsPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search vendors by name, category or ID..."
-            className="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-slate-200 bg-slate-50 outline-none focus:ring-2 focus:ring-purple-600 focus:bg-white text-slate-900 transition-all"
+            className="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-slate-200 bg-slate-50 outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white text-slate-900 transition-all"
           />
         </div>
 
@@ -254,7 +347,7 @@ export default function VendorsPage() {
             <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
               {filteredVendors.length > 0 ? (
                 filteredVendors.map((v, idx) => (
-                  <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                  <tr key={v.id ? `${v.id}-${idx}` : idx} className="hover:bg-slate-50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 border border-purple-200 flex items-center justify-center font-bold text-sm shrink-0">
@@ -337,43 +430,42 @@ export default function VendorsPage() {
 
       {/* Admin Vendor Dispatch Modal */}
       {selectedVendor && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-lg shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-hidden border border-slate-200">
             {/* Modal Header */}
-            <div className="bg-gradient-to-r from-purple-900 to-indigo-900 px-6 py-5 text-white flex items-center justify-between">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
               <div>
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-purple-200 bg-white/10 px-2.5 py-0.5 rounded-full">
-                  Managed Event OS Dispatch
-                </span>
-                <h2 className="text-lg font-extrabold mt-1">
+                <h3 className="text-base font-bold text-slate-900">
                   Assign Vendor to Customer Booking
-                </h2>
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  EVENTO Operational Dispatch
+                </p>
               </div>
               <button
                 onClick={() => setSelectedVendor(null)}
-                className="text-white/80 hover:text-white p-1 rounded-full hover:bg-white/10"
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100"
               >
                 ✕
               </button>
             </div>
 
-            <form onSubmit={handleAssignVendor} className="p-6 space-y-5">
+            <form onSubmit={handleAssignVendor} className="p-6 space-y-4">
               {/* Selected Vendor Summary Card */}
-              <div className="p-3.5 rounded-2xl bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/80 flex items-center justify-between">
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-wider text-purple-600 dark:text-purple-300">
-                    Selected Vendor Team
-                  </p>
-                  <p className="font-extrabold text-slate-900 dark:text-white text-base mt-0.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                    Selected Partner
+                  </span>
+                  <p className="font-bold text-slate-900 text-sm mt-0.5">
                     {selectedVendor.name}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    {selectedVendor.category} • {selectedVendor.zone} • ID:{" "}
-                    {selectedVendor.id}
+                  <p className="text-xs text-slate-500">
+                    {selectedVendor.category} • {selectedVendor.zone} • ID: {selectedVendor.id}
                   </p>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs font-bold text-purple-900 dark:text-purple-200 block">
+                  <span className="text-xs font-bold text-slate-900 block">
                     {selectedVendor.payoutRate}
                   </span>
                   <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-600">
@@ -383,17 +475,17 @@ export default function VendorsPage() {
               </div>
 
               {/* Select Customer Booking */}
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5 flex items-center gap-1">
-                  <Calendar className="w-3.5 h-3.5 text-purple-500" />
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
+                  <Calendar className="w-3.5 h-3.5 text-slate-400" />
                   Target Customer Booking
                 </label>
                 <select
                   value={targetBookingId}
                   onChange={(e) => setTargetBookingId(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-600"
+                  className="w-full px-3.5 py-2 rounded-lg border border-slate-300 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900"
                 >
-                  {ACTIVE_CUSTOMER_BOOKINGS.map((b) => (
+                  {activeBookings.map((b) => (
                     <option key={b.id} value={b.id}>
                       {b.label}
                     </option>
@@ -402,53 +494,46 @@ export default function VendorsPage() {
               </div>
 
               {/* Service Assignment Category */}
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-700">
                   Service Line Item to Assign
                 </label>
                 <input
                   type="text"
                   value={targetService}
                   onChange={(e) => setTargetService(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-semibold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-600"
+                  className="w-full px-3.5 py-2 rounded-lg border border-slate-300 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900"
                 />
               </div>
 
               {/* Special Dispatch Instructions */}
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 mb-1.5">
-                  Coordinator Instructions for Vendor Team
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-700">
+                  Instructions for Vendor Team
                 </label>
                 <textarea
                   rows={3}
                   value={dispatchNotes}
                   onChange={(e) => setDispatchNotes(e.target.value)}
-                  placeholder="e.g. Ensure 2 Senior Photographers arrive at Gulshan Club by 5:30 PM. Reference customer theme colours (Royal Purple & Gold)."
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-purple-600"
+                  placeholder="e.g. Ensure senior photographers arrive at venue by 4:00 PM for equipment check."
+                  className="w-full px-3.5 py-2 rounded-lg border border-slate-300 bg-white text-xs font-normal text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 leading-relaxed"
                 />
               </div>
 
-              {/* Assurance note */}
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/60 p-3 rounded-xl">
-                🔒 <strong>Zero Customer Exposure:</strong> The customer will be
-                notified that their event service is <em>Operational Dispatched</em>{" "}
-                without revealing vendor contact information or payout rates.
-              </p>
-
               {/* Modal Actions */}
-              <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-3">
+              <div className="pt-3 border-t border-slate-100 flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setSelectedVendor(null)}
-                  className="px-4 py-2.5 text-sm font-semibold text-slate-600 hover:text-slate-900 dark:text-slate-400"
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-sm font-bold rounded-xl shadow-md hover:opacity-95 transition-opacity inline-flex items-center gap-1.5"
+                  className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors inline-flex items-center gap-1.5"
                 >
-                  <CheckCircle2 className="w-4 h-4" />
+                  <CheckCircle2 className="w-3.5 h-3.5" />
                   Confirm Vendor Assignment
                 </button>
               </div>

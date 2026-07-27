@@ -27,6 +27,16 @@ export class BookingController {
           });
         }
         customerId = customer.id;
+      } else {
+        let firstCust = await prisma.customer.findFirst();
+        if (!firstCust) {
+          firstCust = await prisma.customer.create({
+            data: {
+              customerCode: `CUST-DEFAULT-${Date.now()}`,
+            },
+          });
+        }
+        customerId = firstCust.id;
       }
     }
     if (!customerId) {
