@@ -258,7 +258,7 @@ export default function DashboardOverviewPage() {
                 >
                   <div className="flex items-start gap-4">
                     <div className="w-12 h-12 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center shrink-0 font-bold text-purple-700 text-xs">
-                      {booking.id ? booking.id.slice(-3) : "BKG"}
+                      {booking.id ? String(booking.id).slice(-3) : "BKG"}
                     </div>
                     <div>
                       <h3 className="font-bold text-slate-900 text-sm">
