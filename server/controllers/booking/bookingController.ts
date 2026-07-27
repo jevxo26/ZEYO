@@ -30,8 +30,16 @@ export class BookingController {
       } else {
         let firstCust = await prisma.customer.findFirst();
         if (!firstCust) {
+          const fallbackUser = await prisma.user.findFirst() ?? await prisma.user.create({
+            data: {
+              name: 'Default Customer',
+              email: `default-customer-${Date.now()}-${Math.round(Math.random() * 1000)}@zeiyo.local`,
+            },
+          });
+
           firstCust = await prisma.customer.create({
             data: {
+              userId: fallbackUser.id,
               customerCode: `CUST-DEFAULT-${Date.now()}`,
             },
           });

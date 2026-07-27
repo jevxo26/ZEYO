@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  ConfiguredServiceState,
-} from "@/types/calculator";
+import apiClient from "@/lib/apiClient";
+import { ConfiguredServiceState } from "@/types/calculator";
 import {
   CheckCircle2,
   ShieldCheck,
@@ -57,7 +56,7 @@ export default function BookingSummaryModal({
   const configList = Object.values(configurations);
   const totalEstimatedCost = configList.reduce(
     (sum, c) => sum + (c.calculatedPrice || 0),
-    0
+    0,
   );
 
   const handleSubmitBooking = async (e: React.FormEvent) => {
@@ -69,7 +68,8 @@ export default function BookingSummaryModal({
       // Build payload for backend API
       const payload = {
         title: `${eventTypeName} - ${zoneName} (${eventDate || "TBD"})`,
-        eventDate: eventDate || new Date(Date.now() + 86400000 * 14).toISOString(),
+        eventDate:
+          eventDate || new Date(Date.now() + 86400000 * 14).toISOString(),
         guestCount: globalGuestCount,
         zoneName,
         eventTypeName,
@@ -96,14 +96,18 @@ export default function BookingSummaryModal({
         bookingNumber: generatedId,
         eventName: `${eventTypeName} Celebration (${zoneName})`,
         eventType: eventTypeName,
-        eventDate: eventDate ? new Date(eventDate).toISOString() : new Date(Date.now() + 86400000 * 14).toISOString(),
+        eventDate: eventDate
+          ? new Date(eventDate).toISOString()
+          : new Date(Date.now() + 86400000 * 14).toISOString(),
         location: zoneName + " Metro",
         budget: totalEstimatedCost,
         grandTotal: totalEstimatedCost,
         subtotal: totalEstimatedCost,
         tax: 0,
         discount: 0,
-        notes: customerNote || `${eventTypeName} - ${zoneName} (${globalGuestCount} Guests)`,
+        notes:
+          customerNote ||
+          `${eventTypeName} - ${zoneName} (${globalGuestCount} Guests)`,
         bookingStatus: "pending",
         status: "PENDING",
         createdAt: new Date().toISOString(),
@@ -338,7 +342,9 @@ export default function BookingSummaryModal({
                 <strong className="block font-bold mb-0.5">
                   Managed Multi-Vendor Event Operating System
                 </strong>
-                You only interact with EVENTO. Our platform coordinates and supervises all specialized background vendors to guarantee standardized, top-tier quality for your celebration.
+                You only interact with EVENTO. Our platform coordinates and
+                supervises all specialized background vendors to guarantee
+                standardized, top-tier quality for your celebration.
               </div>
             </div>
 
