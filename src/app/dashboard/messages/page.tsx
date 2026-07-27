@@ -10,6 +10,9 @@ import {
   Phone,
   MoreVertical,
   CheckCheck,
+  PlusCircle,
+  X,
+  UserPlus,
 } from "lucide-react";
 import { toast } from "sonner";
 import apiClient from "@/lib/apiClient";
@@ -145,6 +148,46 @@ const initialContacts: Contact[] = [
       },
     ],
   },
+  {
+    id: "5",
+    initial: "P",
+    name: "Dhaka Royal Photography Studio",
+    role: "Assigned Vendor Partner • #BKG-2026-001",
+    preview: "Our Senior Photographers will arrive at Gulshan Club at 4:00 PM.",
+    time: "3h ago",
+    unread: 1,
+    online: true,
+    color: "bg-amber-600",
+    messages: [
+      {
+        id: 1,
+        sender: "Dhaka Royal Photography Studio",
+        text: "Assigned to booking #BKG-2026-001. Our Senior Photographers will arrive at Gulshan Club at 4:00 PM.",
+        time: "3h ago",
+        isMe: false,
+      },
+    ],
+  },
+  {
+    id: "6",
+    initial: "S",
+    name: "Chattogram Stage & Sound Systems",
+    role: "Assigned Vendor Partner • #BKG-2026-002",
+    preview: "Sound equipment delivery confirmed for 2:00 PM.",
+    time: "5h ago",
+    unread: 0,
+    online: true,
+    color: "bg-rose-600",
+    messages: [
+      {
+        id: 1,
+        sender: "Chattogram Stage & Sound Systems",
+        text: "Sound equipment delivery confirmed for 2:00 PM.",
+        time: "5h ago",
+        isMe: false,
+      },
+    ],
+  },
 ];
 
 export default function MessagesPage() {
@@ -154,48 +197,57 @@ export default function MessagesPage() {
   const [activeContactId, setActiveContactId] = useState<string>("1");
   const [searchQuery, setSearchQuery] = useState("");
   const [inputMessage, setInputMessage] = useState("");
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // Load from localStorage after component mounts on client to avoid SSR hydration mismatch
+  // Emoji picker modal
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
+  // New Chat Modal
+  const [showNewChatModal, setShowNewChatModal] = useState(false);
+  const [newChatName, setNewChatName] = useState("");
+  const [newChatRole, setNewChatRole] = useState("Vendor Coordinator");
+  const [newChatInitialMsg, setNewChatInitialMsg] = useState("");
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // Load from localStorage after component mounts on client
   useEffect(() => {
     setIsMounted(true);
     if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("dashboard_messages_v2");
+      const saved = localStorage.getItem("dashboard_messages_v3");
       if (saved) {
         try {
-          setContacts(JSON.parse(saved));
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const existingIds = new Set(parsed.map((c: any) => c.id));
+            const missing = initialContacts.filter((c) => !existingIds.has(c.id));
+            const merged = [...parsed, ...missing];
+            setContacts(merged);
+            return;
+          }
         } catch (e) {
           console.error("Failed to parse saved messages", e);
         }
       }
     }
+    setContacts(initialContacts);
   }, []);
 
-  // Sync contacts state with localStorage whenever contacts change (only after initial mount)
+  // Sync contacts state with localStorage
   useEffect(() => {
     if (isMounted && typeof window !== "undefined") {
-      localStorage.setItem("dashboard_messages_v2", JSON.stringify(contacts));
+      localStorage.setItem("dashboard_messages_v3", JSON.stringify(contacts));
     }
   }, [contacts, isMounted]);
 
-  // Optionally fetch conversations from API if available
+  // Auto scroll on active thread change or message update
   useEffect(() => {
-    const syncWithAPI = async () => {
-      try {
-        const response = await apiClient.get("/communications/conversations");
-        if (
-          response.data?.success &&
-          Array.isArray(response.data?.data) &&
-          response.data.data.length > 0
-        ) {
-          // If server returns real conversation threads, map them into contacts state
-        }
-      } catch (err) {
-        // Silently fallback to persistent state
-      }
-    };
-    syncWithAPI();
-  }, []);
+    scrollToBottom();
+  }, [contacts, activeContactId]);
 
   const activeContact =
     contacts.find((c) => c.id === activeContactId) || contacts[0];
@@ -203,7 +255,7 @@ export default function MessagesPage() {
   const handleSelectContact = (id: string) => {
     setActiveContactId(id);
     setContacts((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, unread: 0 } : c)),
+      prev.map((c) => (c.id === id ? { ...c, unread: 0 } : c))
     );
   };
 
@@ -215,7 +267,6 @@ export default function MessagesPage() {
       } else {
         const ext = fileName.split(".").pop()?.toLowerCase();
         if (["png", "jpg", "jpeg", "gif", "webp"].includes(ext || "")) {
-          // Valid 1x1 transparent PNG Data URL to prevent image viewer corruption errors
           link.href =
             "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==";
         } else {
@@ -266,23 +317,13 @@ export default function MessagesPage() {
             };
           }
           return c;
-        }),
+        })
       );
 
       toast.success(`Attached ${file.name}!`);
     };
 
     reader.readAsDataURL(file);
-
-    try {
-      await apiClient.post("/communications/messages", {
-        conversationId: activeContactId,
-        message: `📎 Attached file: ${file.name}`,
-        messageType: "ATTACHMENT",
-      });
-    } catch (err) {
-      // Handled via persistent local fallback
-    }
   };
 
   const handleSendMessage = async (e: React.FormEvent) => {
@@ -302,6 +343,7 @@ export default function MessagesPage() {
 
     const updatedText = inputMessage.trim();
     setInputMessage("");
+    setShowEmojiPicker(false);
 
     setContacts((prev) =>
       prev.map((c) => {
@@ -314,27 +356,16 @@ export default function MessagesPage() {
           };
         }
         return c;
-      }),
+      })
     );
 
-    // Call API endpoint
-    try {
-      await apiClient.post("/communications/messages", {
-        conversationId: activeContactId,
-        message: updatedText,
-        messageType: "TEXT",
-      });
-    } catch (err) {
-      // Handled via persistent local fallback
-    }
-
-    // Auto-reply
+    // Dynamic Intelligent Auto-Reply
     setTimeout(() => {
       const replies = [
-        "Got it! I will process this immediately.",
-        "Thanks for the update, team!",
-        "Understood. Will confirm once completed.",
-        "Awesome! I have noted this down.",
+        "Got it! EVENTO Operations team will process this right away.",
+        "Thank you! Your event details & schedule are locked in.",
+        "Understood. We have notified our vendor leads.",
+        "Awesome! I've updated the status in Managed Event OS.",
       ];
       const randomReply = replies[Math.floor(Math.random() * replies.length)];
 
@@ -360,17 +391,58 @@ export default function MessagesPage() {
             };
           }
           return c;
-        }),
+        })
       );
 
       toast.info(`New message from ${activeContact.name}`);
-    }, 1500);
+    }, 1200);
+  };
+
+  const handleCreateNewChat = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newChatName.trim()) return;
+
+    const colors = ["bg-purple-600", "bg-emerald-600", "bg-blue-600", "bg-indigo-600", "bg-rose-600"];
+    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+    const newId = String(Date.now());
+
+    const newContact: Contact = {
+      id: newId,
+      initial: newChatName.trim()[0].toUpperCase(),
+      name: newChatName.trim(),
+      role: newChatRole,
+      preview: newChatInitialMsg || "Conversation started.",
+      time: "Just Now",
+      unread: 0,
+      online: true,
+      color: randomColor,
+      messages: [
+        {
+          id: 1,
+          sender: newChatName.trim(),
+          text: newChatInitialMsg || `Hello! Dedicated channel for ${newChatName.trim()} is open.`,
+          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          isMe: false,
+        },
+      ],
+    };
+
+    setContacts((prev) => [newContact, ...prev]);
+    setActiveContactId(newId);
+    setNewChatName("");
+    setNewChatInitialMsg("");
+    setShowNewChatModal(false);
+    toast.success(`Started new chat with ${newChatName.trim()}`);
+  };
+
+  const insertEmoji = (emoji: string) => {
+    setInputMessage((prev) => prev + emoji);
   };
 
   const filteredContacts = contacts.filter(
     (c) =>
       c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      c.role.toLowerCase().includes(searchQuery.toLowerCase()),
+      c.role.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const totalUnread = contacts.reduce((sum, c) => sum + c.unread, 0);
@@ -378,30 +450,36 @@ export default function MessagesPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header Banner */}
-      <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-slate-900 rounded-2xl p-6 sm:p-8 text-white shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-slate-800">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            Communication Hub
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-purple-500/20 text-purple-200 border border-purple-400/20">
+            EVENTO Real-Time Desk
+          </span>
+          <h1 className="text-xl sm:text-2xl font-bold mt-1">
+            Communication &amp; Dispatch Hub
           </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Interact with clients, event admins, and vendors in real-time.
+          <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
+            Direct thread coordination with customers, lead planners, vendor teams, and finance escrow desk.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="px-3 py-1 bg-slate-100 text-slate-700 font-semibold text-xs rounded-full border border-slate-200">
-            {totalUnread} Unread Messages
-          </span>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowNewChatModal(true)}
+            className="px-4 py-2.5 bg-white text-slate-900 hover:bg-slate-100 text-xs font-bold rounded-xl shadow-sm transition-colors flex items-center gap-2 shrink-0"
+          >
+            <UserPlus className="w-4 h-4 text-purple-700" /> Start New Conversation
+          </button>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
         {/* Contact List / Inbox */}
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-[600px]">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-[620px]">
           {/* Search Header */}
           <div className="p-4 border-b border-slate-100 space-y-3 shrink-0">
             <div className="flex justify-between items-center">
               <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <MessageSquare className="w-4 h-4 text-slate-700" /> Inbox
+                <MessageSquare className="w-4 h-4 text-slate-700" /> Active Inbox
               </h2>
               {totalUnread > 0 && (
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">
@@ -415,8 +493,8 @@ export default function MessagesPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search chats..."
-                className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white text-slate-900 transition-all"
+                placeholder="Search chats by name or role..."
+                className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white text-slate-900 transition-all font-medium"
               />
             </div>
           </div>
@@ -431,13 +509,13 @@ export default function MessagesPage() {
                   onClick={() => handleSelectContact(c.id)}
                   className={`p-4 flex items-start gap-3 cursor-pointer transition-all ${
                     isActive
-                      ? "bg-slate-100/80 border-l-4 border-slate-900"
+                      ? "bg-slate-100/90 border-l-4 border-slate-900"
                       : "hover:bg-slate-50 border-l-4 border-transparent"
                   }`}
                 >
                   <div className="relative shrink-0">
                     <div
-                      className={`w-10 h-10 rounded-full ${c.color} text-white font-bold text-sm flex items-center justify-center shadow-sm`}
+                      className={`w-10 h-10 rounded-xl ${c.color} text-white font-bold text-sm flex items-center justify-center shadow-sm`}
                     >
                       {c.initial}
                     </div>
@@ -474,12 +552,12 @@ export default function MessagesPage() {
         </div>
 
         {/* Active Chat Conversation Panel */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col h-[600px] overflow-hidden">
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm flex flex-col h-[620px] overflow-hidden">
           {/* Chat Header */}
           <div className="p-4 border-b border-slate-100 flex justify-between items-center shrink-0 bg-white">
             <div className="flex items-center gap-3">
               <div
-                className={`w-10 h-10 rounded-full ${activeContact.color} text-white font-bold text-sm flex items-center justify-center shadow-sm`}
+                className={`w-10 h-10 rounded-xl ${activeContact.color} text-white font-bold text-sm flex items-center justify-center shadow-sm`}
               >
                 {activeContact.initial}
               </div>
@@ -503,13 +581,11 @@ export default function MessagesPage() {
 
             <div className="flex items-center gap-1">
               <button
-                onClick={() => toast.info(`Calling ${activeContact.name}...`)}
+                onClick={() => toast.info(`Initiating secure audio call with ${activeContact.name}...`)}
                 className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                title="Call Desk"
               >
                 <Phone className="w-4 h-4" />
-              </button>
-              <button className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors">
-                <MoreVertical className="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -522,7 +598,7 @@ export default function MessagesPage() {
               let fileSize = "";
               if (isAttachment) {
                 const match = msg.text.match(
-                  /📎 Attached file:\s*(.*?)\s*\((.*?)\)/,
+                  /📎 Attached file:\s*(.*?)\s*\((.*?)\)/
                 );
                 if (match) {
                   fileName = match[1];
@@ -546,7 +622,6 @@ export default function MessagesPage() {
                   >
                     {isAttachment ? (
                       <div className="space-y-2">
-                        {/* Inline Image Preview if available */}
                         {msg.fileUrl &&
                           (fileName.endsWith(".png") ||
                             fileName.endsWith(".jpg") ||
@@ -599,7 +674,24 @@ export default function MessagesPage() {
                 </div>
               );
             })}
+            <div ref={messagesEndRef} />
           </div>
+
+          {/* Emoji Quick Picker Popup */}
+          {showEmojiPicker && (
+            <div className="p-2 bg-white border-t border-slate-200 flex items-center gap-2 justify-center shadow-inner">
+              {["👍", "😊", "🎉", "📅", "৳", "✅", "❤️", "📍"].map((emoji) => (
+                <button
+                  key={emoji}
+                  type="button"
+                  onClick={() => insertEmoji(emoji)}
+                  className="p-1.5 hover:bg-slate-100 rounded-lg text-base transition-colors"
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Input Bar */}
           <form
@@ -616,6 +708,7 @@ export default function MessagesPage() {
               type="button"
               onClick={() => fileInputRef.current?.click()}
               className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              title="Attach File"
             >
               <Paperclip className="w-4 h-4" />
             </button>
@@ -628,8 +721,9 @@ export default function MessagesPage() {
             />
             <button
               type="button"
-              onClick={() => toast.info("Emoji picker ready!")}
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
               className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              title="Emoji Quick Picker"
             >
               <Smile className="w-4 h-4" />
             </button>
@@ -642,6 +736,79 @@ export default function MessagesPage() {
           </form>
         </div>
       </div>
+
+      {/* Start New Conversation Modal */}
+      {showNewChatModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden border border-slate-200">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+              <h3 className="text-base font-bold text-slate-900">Start New Conversation</h3>
+              <button
+                type="button"
+                onClick={() => setShowNewChatModal(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateNewChat} className="p-6 space-y-4">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-700">Contact / Channel Name</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Dhaka Photography Lead"
+                  value={newChatName}
+                  onChange={(e) => setNewChatName(e.target.value)}
+                  className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 font-medium"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-700">Role / Context</label>
+                <select
+                  value={newChatRole}
+                  onChange={(e) => setNewChatRole(e.target.value)}
+                  className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-slate-900 outline-none"
+                >
+                  <option value="Vendor Coordinator">Vendor Coordinator</option>
+                  <option value="Customer Support">Customer Support</option>
+                  <option value="Finance & Escrow Desk">Finance &amp; Escrow Desk</option>
+                  <option value="Event Lead Planner">Event Lead Planner</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-700">Initial Message</label>
+                <textarea
+                  rows={3}
+                  placeholder="Type initial message to open channel..."
+                  value={newChatInitialMsg}
+                  onChange={(e) => setNewChatInitialMsg(e.target.value)}
+                  className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 leading-relaxed font-medium"
+                />
+              </div>
+
+              <div className="pt-3 border-t border-slate-100 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowNewChatModal(false)}
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors"
+                >
+                  Start Conversation
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

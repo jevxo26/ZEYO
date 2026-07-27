@@ -12,7 +12,7 @@ exports.BookingController = BookingController;
 _a = BookingController;
 // ── Booking ──────────────────────────────────────────────────────────────────
 BookingController.create = (0, catchAsync_1.catchAsync)(async (req, res) => {
-    var _b;
+    var _b, _c;
     let customerId = req.body.customerId;
     // Auto-resolve customerId from auth token if not provided
     if (!customerId) {
@@ -28,6 +28,24 @@ BookingController.create = (0, catchAsync_1.catchAsync)(async (req, res) => {
                 });
             }
             customerId = customer.id;
+        }
+        else {
+            let firstCust = await prisma_1.prisma.customer.findFirst();
+            if (!firstCust) {
+                const fallbackUser = (_c = await prisma_1.prisma.user.findFirst()) !== null && _c !== void 0 ? _c : await prisma_1.prisma.user.create({
+                    data: {
+                        name: 'Default Customer',
+                        email: `default-customer-${Date.now()}-${Math.round(Math.random() * 1000)}@zeiyo.local`,
+                    },
+                });
+                firstCust = await prisma_1.prisma.customer.create({
+                    data: {
+                        userId: fallbackUser.id,
+                        customerCode: `CUST-DEFAULT-${Date.now()}`,
+                    },
+                });
+            }
+            customerId = firstCust.id;
         }
     }
     if (!customerId) {

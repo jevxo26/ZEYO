@@ -53,21 +53,30 @@ export default function DashboardOverviewPage() {
 
   const fetchBookings = async () => {
     setIsLoading(true);
+    let localCustom: any[] = [];
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("customBookings");
+        if (stored) localCustom = JSON.parse(stored);
+      } catch (e) {}
+    }
+
     try {
       const response = await apiClient.get("/bookings/my");
+      let apiList: any[] = [];
       if (response.data && response.data.success !== false) {
         const rawData = response.data.data;
-        const list = Array.isArray(rawData)
+        apiList = Array.isArray(rawData)
           ? rawData
           : Array.isArray(rawData?.data)
           ? rawData.data
           : [];
-        setBookings(list.length > 0 ? list : DEFAULT_OVERVIEW_BOOKINGS);
-      } else {
-        setBookings(DEFAULT_OVERVIEW_BOOKINGS);
       }
+      const combined = [...localCustom, ...apiList];
+      setBookings(combined.length > 0 ? combined : DEFAULT_OVERVIEW_BOOKINGS);
     } catch (error) {
-      setBookings(DEFAULT_OVERVIEW_BOOKINGS);
+      const combined = [...localCustom, ...DEFAULT_OVERVIEW_BOOKINGS];
+      setBookings(combined);
     } finally {
       setIsLoading(false);
     }

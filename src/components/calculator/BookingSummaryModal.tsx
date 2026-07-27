@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  ConfiguredServiceState,
-} from "@/types/calculator";
+import apiClient from "@/lib/apiClient";
+import { ConfiguredServiceState } from "@/types/calculator";
 import {
   CheckCircle2,
   ShieldCheck,
@@ -57,7 +56,7 @@ export default function BookingSummaryModal({
   const configList = Object.values(configurations);
   const totalEstimatedCost = configList.reduce(
     (sum, c) => sum + (c.calculatedPrice || 0),
-    0
+    0,
   );
 
   const handleSubmitBooking = async (e: React.FormEvent) => {
@@ -69,7 +68,8 @@ export default function BookingSummaryModal({
       // Build payload for backend API
       const payload = {
         title: `${eventTypeName} - ${zoneName} (${eventDate || "TBD"})`,
-        eventDate: eventDate || new Date(Date.now() + 86400000 * 14).toISOString(),
+        eventDate:
+          eventDate || new Date(Date.now() + 86400000 * 14).toISOString(),
         guestCount: globalGuestCount,
         zoneName,
         eventTypeName,
@@ -90,33 +90,55 @@ export default function BookingSummaryModal({
         })),
       };
 
-      const response = await fetch("/api/calculator/save", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      const generatedId = "BKG-2026-" + Math.floor(100 + Math.random() * 900);
+      const newBookingObj = {
+        id: generatedId,
+        bookingNumber: generatedId,
+        eventName: `${eventTypeName} Celebration (${zoneName})`,
+        eventType: eventTypeName,
+        eventDate: eventDate
+          ? new Date(eventDate).toISOString()
+          : new Date(Date.now() + 86400000 * 14).toISOString(),
+        location: zoneName + " Metro",
+        budget: totalEstimatedCost,
+        grandTotal: totalEstimatedCost,
+        subtotal: totalEstimatedCost,
+        tax: 0,
+        discount: 0,
+        notes:
+          customerNote ||
+          `${eventTypeName} - ${zoneName} (${globalGuestCount} Guests)`,
+        bookingStatus: "pending",
+        status: "PENDING",
+        createdAt: new Date().toISOString(),
+      };
 
-      if (!response.ok) {
-        // If 401 unauthenticated, redirect to login with callback
-        if (response.status === 401) {
-          const redirectUrl = encodeURIComponent(window.location.pathname + window.location.search);
-          router.push(`/login?redirect=${redirectUrl}`);
-          return;
-        }
-        const data = await response.json().catch(() => ({}));
-        throw new Error(
-          data.message || "Failed to submit booking. Please try again."
-        );
+      try {
+        await apiClient.post("/bookings", {
+          eventName: newBookingObj.eventName,
+          eventType: eventTypeName,
+          eventDate: newBookingObj.eventDate,
+          location: zoneName,
+          budget: totalEstimatedCost,
+          notes: customerNote,
+          status: "PENDING",
+        });
+      } catch (e) {
+        console.warn("Calculator backend booking fallback:", e);
       }
 
-      const result = await response.json();
-      onSuccess(result?.data?.id || "EVENTO-" + Math.floor(100000 + Math.random() * 900000));
+      if (typeof window !== "undefined") {
+        const stored = localStorage.getItem("customBookings");
+        const list = stored ? JSON.parse(stored) : [];
+        list.unshift(newBookingObj);
+        localStorage.setItem("customBookings", JSON.stringify(list));
+        window.dispatchEvent(new CustomEvent("dashboard-data-update"));
+      }
+
+      onSuccess(generatedId);
     } catch (err: any) {
-      // Even if offline or mock demo mode, allow fallback success
       console.warn("Backend submit fallback:", err);
-      onSuccess("EVENTO-" + Math.floor(100000 + Math.random() * 900000));
+      onSuccess("BKG-2026-" + Math.floor(100 + Math.random() * 900));
     } finally {
       setIsSubmitting(false);
     }
@@ -320,7 +342,9 @@ export default function BookingSummaryModal({
                 <strong className="block font-bold mb-0.5">
                   Managed Multi-Vendor Event Operating System
                 </strong>
-                You only interact with EVENTO. Our platform coordinates and supervises all specialized background vendors to guarantee standardized, top-tier quality for your celebration.
+                You only interact with EVENTO. Our platform coordinates and
+                supervises all specialized background vendors to guarantee
+                standardized, top-tier quality for your celebration.
               </div>
             </div>
 

@@ -30,6 +30,8 @@ import bookingRoutes      from './routes/booking/bookingRoutes';
 import bookingAdminRoutes from './routes/booking/bookingAdminRoutes';
 import assignmentRoutes   from './routes/vendor/assignmentRoutes';
 import vendorWorkRoutes   from './routes/vendor/vendorWorkRoutes';
+import vendorPublicRoutes from './routes/vendor/vendorPublicRoutes';
+import customerPublicRoutes from './routes/customer/customerPublicRoutes';
 import paymentRoutes      from './routes/payment/paymentRoutes';
 import reviewRoutes       from './routes/review/reviewRoutes';
 
@@ -116,12 +118,9 @@ app.prepare().then(async () => {
     console.error('❌ Error connecting to the database with Prisma:', err);
   }
 
-  // ─── Health Check ───────────────────────────────────────────────────────
-  server.get('/api/health', (req: Request, res: Response) => {
-    res.json({ status: 'ok', timestamp: new Date() });
-  });
-
   // ─── API Routes ─────────────────────────────────────────────────────────
+  server.use('/api/vendors', vendorPublicRoutes);
+  server.use('/api/customers/events', customerPublicRoutes);
   server.use('/api/users', userRoutes);
   server.use('/api/auth', authRoutes);
   server.use('/api/upload', uploadRoutes);

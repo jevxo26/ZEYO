@@ -59,18 +59,27 @@ export default function BookingsPage() {
 
   const fetchBookings = async () => {
     setIsLoading(true);
+    let localCustom: any[] = [];
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("customBookings");
+        if (stored) localCustom = JSON.parse(stored);
+      } catch (e) {}
+    }
+
     try {
       const response = await apiClient.get("/bookings/my");
+      let apiList: any[] = [];
       if (response.data && response.data.success !== false) {
         const rawData = response.data.data;
-        const list = Array.isArray(rawData) ? rawData : (Array.isArray(rawData?.data) ? rawData.data : []);
-        setBookingsList(list.length > 0 ? list : DEFAULT_CUSTOMER_BOOKINGS);
-      } else {
-        setBookingsList(DEFAULT_CUSTOMER_BOOKINGS);
+        apiList = Array.isArray(rawData) ? rawData : (Array.isArray(rawData?.data) ? rawData.data : []);
       }
+      const combined = [...localCustom, ...apiList];
+      setBookingsList(combined.length > 0 ? combined : DEFAULT_CUSTOMER_BOOKINGS);
     } catch (error) {
       console.error("Failed to fetch bookings", error);
-      setBookingsList(DEFAULT_CUSTOMER_BOOKINGS);
+      const combined = [...localCustom, ...DEFAULT_CUSTOMER_BOOKINGS];
+      setBookingsList(combined);
     } finally {
       setIsLoading(false);
     }
@@ -202,9 +211,9 @@ export default function BookingsPage() {
         {isLoading ? (
           <div className="p-12 text-center text-slate-400 font-medium">Loading bookings...</div>
         ) : filteredBookings.length > 0 ? (
-          filteredBookings.map((b) => (
+          filteredBookings.map((b, idx) => (
             <div
-              key={b.id}
+              key={b.id ? `${b.id}-${idx}` : idx}
               className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-slate-50 transition-colors"
             >
               {/* Left: Event Info */}
@@ -252,7 +261,7 @@ export default function BookingsPage() {
                 </span>
 
                 <Link
-                  href={`/dashboard/bookings/${b.id}`}
+                  href={`/dashboard/bookings/${b.bookingNumber ? b.bookingNumber.replace("#", "") : b.id}`}
                   className="px-4 py-2 rounded-lg text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-white shadow-sm transition-colors"
                 >
                   View Details

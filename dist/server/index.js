@@ -34,6 +34,8 @@ const bookingRoutes_1 = __importDefault(require("./routes/booking/bookingRoutes"
 const bookingAdminRoutes_1 = __importDefault(require("./routes/booking/bookingAdminRoutes"));
 const assignmentRoutes_1 = __importDefault(require("./routes/vendor/assignmentRoutes"));
 const vendorWorkRoutes_1 = __importDefault(require("./routes/vendor/vendorWorkRoutes"));
+const vendorPublicRoutes_1 = __importDefault(require("./routes/vendor/vendorPublicRoutes"));
+const customerPublicRoutes_1 = __importDefault(require("./routes/customer/customerPublicRoutes"));
 const paymentRoutes_1 = __importDefault(require("./routes/payment/paymentRoutes"));
 const reviewRoutes_1 = __importDefault(require("./routes/review/reviewRoutes"));
 // ─── Notification & Communication Routes ────────────────────────────────────
@@ -103,11 +105,9 @@ app.prepare().then(async () => {
     catch (err) {
         console.error('❌ Error connecting to the database with Prisma:', err);
     }
-    // ─── Health Check ───────────────────────────────────────────────────────
-    server.get('/api/health', (req, res) => {
-        res.json({ status: 'ok', timestamp: new Date() });
-    });
     // ─── API Routes ─────────────────────────────────────────────────────────
+    server.use('/api/vendors', vendorPublicRoutes_1.default);
+    server.use('/api/customers/events', customerPublicRoutes_1.default);
     server.use('/api/users', userRoutes_1.default);
     server.use('/api/auth', authRoutes_1.default);
     server.use('/api/upload', uploadRoutes_1.default);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Search, CalendarDays, MapPin, Plus, CheckCircle2, Circle, Star, ShieldCheck } from "lucide-react";
+import { Search, CalendarDays, MapPin, Plus, CheckCircle2, Circle, Star } from "lucide-react";
 import Link from "next/link";
 import apiClient from "@/lib/apiClient";
 import PlatformReviewModal from "@/components/reviews/PlatformReviewModal";
@@ -41,18 +41,39 @@ export default function MyEventsPage() {
 
   const fetchEvents = async () => {
     setIsLoading(true);
+    let localCustom: any[] = [];
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("customBookings");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          localCustom = parsed.map((b: any, idx: number) => ({
+            id: b.id || `CUSTOM-${idx}`,
+            bookingNumber: b.bookingNumber || `#${b.id}`,
+            eventName: b.eventName || b.notes || `${b.eventType || "Event"} Celebration`,
+            eventType: b.eventType || "Custom Event",
+            eventDate: b.eventDate ? new Date(b.eventDate).toISOString().split("T")[0] : "2026-11-15",
+            location: b.location || b.address || "Dhaka Zone Venue",
+            bookingStatus: (b.bookingStatus || b.status || "PENDING REVIEW").toLowerCase(),
+            grandTotal: Number(b.grandTotal || b.budget || 143000),
+            createdAt: b.createdAt || new Date().toISOString(),
+          }));
+        }
+      } catch (e) {}
+    }
+
     try {
-      const response = await apiClient.get("/customers/events");
-      if (response.data && response.data.success !== false) {
+      const response = await apiClient.get("/bookings/my").catch(() => apiClient.get("/customers/events"));
+      if (response && response.data && response.data.success !== false) {
         const rawData = response.data.data;
         const list = Array.isArray(rawData) ? rawData : (Array.isArray(rawData?.data) ? rawData.data : []);
-        setEventsList(list.length > 0 ? list : DEFAULT_MY_EVENTS);
+        const combined = [...localCustom, ...list];
+        setEventsList(combined.length > 0 ? combined : [...localCustom, ...DEFAULT_MY_EVENTS]);
       } else {
-        setEventsList(DEFAULT_MY_EVENTS);
+        setEventsList([...localCustom, ...DEFAULT_MY_EVENTS]);
       }
     } catch (error) {
-      console.error("Failed to fetch events", error);
-      setEventsList(DEFAULT_MY_EVENTS);
+      setEventsList([...localCustom, ...DEFAULT_MY_EVENTS]);
     } finally {
       setIsLoading(false);
     }
@@ -75,7 +96,7 @@ export default function MyEventsPage() {
     const status = (evt.bookingStatus || evt.status || "pending").toLowerCase();
     if (activeTab === "Active" && status !== "confirmed" && status !== "in_progress") return false;
     if (activeTab === "Completed" && status !== "completed") return false;
-    if (activeTab === "Pending" && status !== "pending") return false;
+    if (activeTab === "Pending" && status !== "pending" && status !== "pending review" && status !== "pending_review") return false;
 
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -94,13 +115,17 @@ export default function MyEventsPage() {
     switch (status?.toLowerCase()) {
       case "confirmed":
       case "in_progress":
-        return "bg-emerald-100 text-emerald-700";
+        return "bg-emerald-100 text-emerald-800 border border-emerald-200";
       case "completed":
-        return "bg-purple-100 text-purple-700";
+        return "bg-purple-100 text-purple-800 border border-purple-200";
       case "pending":
-        return "bg-amber-100 text-amber-700";
+      case "pending review":
+      case "pending_review":
+        return "bg-amber-100 text-amber-800 border border-amber-200";
+      case "cancelled":
+        return "bg-rose-100 text-rose-800 border border-rose-200";
       default:
-        return "bg-slate-100 text-slate-600";
+        return "bg-slate-100 text-slate-700 border border-slate-200";
     }
   };
 
@@ -164,17 +189,17 @@ export default function MyEventsPage() {
         {isLoading ? (
           <div className="col-span-2 text-center py-12 text-slate-400 font-medium">Loading events...</div>
         ) : filteredEvents.length > 0 ? (
-          filteredEvents.map((evt) => {
+          filteredEvents.map((evt, idx) => {
             const status = evt.bookingStatus || evt.status || "pending";
-            const steps = defaultSteps.map((step, idx) => {
+            const steps = defaultSteps.map((step, stepIdx) => {
               if (status === "completed") return { ...step, done: true };
-              if (status === "confirmed" && idx <= 2) return { ...step, done: true };
+              if (status === "confirmed" && stepIdx <= 2) return { ...step, done: true };
               return step;
             });
 
             return (
               <div
-                key={evt.id}
+                key={evt.id ? `${evt.id}-${idx}` : idx}
                 className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-6 flex flex-col justify-between"
               >
                 <div className="space-y-4">
@@ -203,7 +228,7 @@ export default function MyEventsPage() {
                         </span>
                         <span className="flex items-center gap-1">
                           <MapPin className="w-3.5 h-3.5 text-slate-400" />
-                          {evt.location || evt.notes || evt.venue?.address || "TBD"}
+                          {evt.location || evt.notes || evt.venue?.address || "Dhaka Zone Venue"}
                         </span>
                       </div>
                     </div>
@@ -244,9 +269,9 @@ export default function MyEventsPage() {
                         setReviewEventName(evt.eventTitle || evt.eventName || "Your Celebrated Event");
                         setReviewModalOpen(true);
                       }}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-bold shadow-sm hover:opacity-95 transition-opacity"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-bold shadow-sm hover:bg-slate-800 transition-colors"
                     >
-                      <Star className="w-3.5 h-3.5 fill-amber-300 text-amber-300" />
+                      <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                       Rate EVENTO Platform
                     </button>
                   ) : (
@@ -254,7 +279,7 @@ export default function MyEventsPage() {
                   )}
 
                   <Link
-                    href={`/dashboard/bookings/${evt.id}`}
+                    href={`/dashboard/bookings/${evt.bookingNumber ? evt.bookingNumber.replace("#", "") : evt.id}`}
                     className="px-4 py-2 rounded-lg text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-white shadow-sm transition-colors"
                   >
                     View Event Details
