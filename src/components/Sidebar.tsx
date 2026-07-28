@@ -1,7 +1,8 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAppSelector } from "@/store/store";
 import {
   LayoutDashboard,
   ClipboardList,
@@ -21,7 +22,16 @@ import {
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const [context, setContext] = useState<"vendor" | "planner">("vendor");
+  const { user } = useAppSelector((state) => state.auth);
+  const [context, setContext] = useState<"vendor" | "planner">(
+    user?.role === "vendor" ? "vendor" : "planner"
+  );
+
+  useEffect(() => {
+    if (user?.role) {
+      setContext(user.role === "vendor" ? "vendor" : "planner");
+    }
+  }, [user?.role]);
 
   const vendorRoutes = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -44,6 +54,13 @@ export default function Sidebar() {
 
   const activeRoutes = context === "vendor" ? vendorRoutes : plannerRoutes;
 
+  const getPortalTitle = () => {
+    if (context === "vendor") return "Vendor Portal";
+    if (user?.role === "admin") return "Admin Hub";
+    if (user?.role === "customer") return "Customer Portal";
+    return "Planner Mode";
+  };
+
   return (
     <aside className="w-[230px] flex min-h-screen shrink-0 flex-col justify-between border-r border-slate-200 bg-white p-4">
       <div className="space-y-5">
@@ -58,7 +75,7 @@ export default function Sidebar() {
               </h2>
             </div>
             <p className="mt-1 pl-9 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-500">
-              {context === "vendor" ? "Vendor Portal" : "Planner Mode"}
+              {getPortalTitle()}
             </p>
           </div>
           <button
