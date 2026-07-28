@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useAppSelector } from "@/store/store";
 import {
   LayoutDashboard,
   ClipboardList,
@@ -15,34 +15,51 @@ import {
   Calendar,
   ShoppingBag,
   Users,
-  RefreshCw,
   Zap,
 } from "lucide-react";
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const [context, setContext] = useState<"vendor" | "planner">("vendor");
+  const { user } = useAppSelector((state) => state.auth);
+  const role = user?.role || "customer";
+
+  const customerRoutes = [
+    { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
+    { name: "My Bookings", href: "/dashboard/bookings", icon: ShoppingBag },
+    { name: "My Events", href: "/dashboard/my-events", icon: Calendar },
+    { name: "Messages", href: "/dashboard/messages", icon: MessageSquare },
+    { name: "Settings", href: "/dashboard/settings", icon: Settings },
+  ];
 
   const vendorRoutes = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
-    { name: "Tasks", href: "/dashboard/tasks", icon: ClipboardList },
+    { name: "My Tasks", href: "/dashboard/tasks", icon: ClipboardList },
     { name: "Earnings", href: "/dashboard/earnings", icon: Wallet },
-    { name: "Bookings", href: "/dashboard/bookings", icon: ShoppingBag },
-    { name: "Vendors", href: "/dashboard/vendors", icon: Users },
-    { name: "Reviews", href: "#", icon: Star },
     { name: "Settings", href: "/dashboard/settings", icon: Settings },
   ];
 
-  const plannerRoutes = [
+  const adminRoutes = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
-    { name: "My Events", href: "/dashboard/my-events", icon: Calendar },
+    { name: "All Bookings", href: "/dashboard/bookings", icon: ShoppingBag },
+    { name: "All Events", href: "/dashboard/my-events", icon: Calendar },
+    { name: "Vendor Partners", href: "/dashboard/vendors", icon: Users },
+    { name: "Task Dispatch", href: "/dashboard/tasks", icon: ClipboardList },
     { name: "Messages", href: "/dashboard/messages", icon: MessageSquare },
-    { name: "Bookings", href: "/dashboard/bookings", icon: ShoppingBag },
-    { name: "Vendors", href: "/dashboard/vendors", icon: Users },
     { name: "Settings", href: "/dashboard/settings", icon: Settings },
   ];
 
-  const activeRoutes = context === "vendor" ? vendorRoutes : plannerRoutes;
+  const activeRoutes =
+    role === "vendor"
+      ? vendorRoutes
+      : role === "admin"
+      ? adminRoutes
+      : customerRoutes;
+
+  const getPortalTitle = () => {
+    if (role === "vendor") return "Vendor Portal";
+    if (role === "admin") return "Admin Operations";
+    return "Customer Portal";
+  };
 
   return (
     <aside className="w-[230px] flex min-h-screen shrink-0 flex-col justify-between border-r border-slate-200 bg-white p-4">
@@ -58,32 +75,25 @@ export default function Sidebar() {
               </h2>
             </div>
             <p className="mt-1 pl-9 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-500">
-              {context === "vendor" ? "Vendor Portal" : "Planner Mode"}
+              {getPortalTitle()}
             </p>
           </div>
-          <button
-            onClick={() =>
-              setContext(context === "vendor" ? "planner" : "vendor")
-            }
-            title="Switch Mode"
-            className="cursor-pointer rounded-lg bg-slate-100 p-1.5 text-slate-600 transition hover:bg-slate-200"
-          >
-            <RefreshCw size={11} />
-          </button>
         </div>
 
-        <button
-          onClick={() =>
-            window.dispatchEvent(
-              new CustomEvent("open-dashboard-modal", { detail: "new-event" }),
-            )
-          }
-          className="w-full cursor-pointer rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-slate-800"
-        >
-          <span className="flex items-center justify-center gap-2">
-            <Plus size={13} /> New Event
-          </span>
-        </button>
+        {role !== "vendor" && (
+          <button
+            onClick={() =>
+              window.dispatchEvent(
+                new CustomEvent("open-dashboard-modal", { detail: "new-event" })
+              )
+            }
+            className="w-full cursor-pointer rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-slate-800"
+          >
+            <span className="flex items-center justify-center gap-2">
+              <Plus size={13} /> New Event
+            </span>
+          </button>
+        )}
 
         <nav className="space-y-0.5">
           {activeRoutes.map((route) => {
