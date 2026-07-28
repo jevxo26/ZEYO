@@ -6,11 +6,17 @@ import { verifyToken } from '../../middlewares/authMiddleware';
 const router = Router();
 router.use(verifyToken);
 
+// Vendor fetches their assignments
+router.get('/tasks',          AssignmentController.getMyTasks);
+
 // Vendor accepts/rejects assignments
 router.post('/acceptance',    AssignmentController.recordAcceptance);
 
 // Vendor reports work progress
 router.post('/progress',      AssignmentController.addProgress);
+
+// Vendor notes / dispatch communication
+router.post('/notes',         AssignmentController.addNote);
 
 // Checklist management
 router.post('/checklist',                                AssignmentController.addChecklist);

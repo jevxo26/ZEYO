@@ -10,14 +10,57 @@ const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const handlebars_1 = __importDefault(require("handlebars"));
 dotenv_1.default.config();
-const transporter = nodemailer_1.default.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT || '587', 10),
-    secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
-    auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-    },
+const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com';
+const smtpPort = parseInt(process.env.SMTP_PORT || '587', 10);
+const smtpSecure = String(process.env.SMTP_SECURE).toLowerCase() === 'true';
+const smtpUser = process.env.SMTP_USER;
+const smtpPass = process.env.SMTP_PASS;
+const smtpService = process.env.SMTP_SERVICE || undefined;
+const smtpAuthType = process.env.SMTP_AUTH_TYPE ? process.env.SMTP_AUTH_TYPE.toLowerCase() : undefined;
+const auth = {};
+if (smtpAuthType === 'oauth2') {
+    auth.type = 'OAuth2';
+    auth.user = smtpUser;
+    auth.clientId = process.env.SMTP_OAUTH_CLIENT_ID;
+    auth.clientSecret = process.env.SMTP_OAUTH_CLIENT_SECRET;
+    auth.refreshToken = process.env.SMTP_OAUTH_REFRESH_TOKEN;
+    if (process.env.SMTP_OAUTH_ACCESS_TOKEN) {
+        auth.accessToken = process.env.SMTP_OAUTH_ACCESS_TOKEN;
+    }
+}
+else if (smtpUser && smtpPass) {
+    auth.user = smtpUser;
+    auth.pass = smtpPass;
+}
+const transporterOptions = {
+    host: smtpHost,
+    port: smtpPort,
+    secure: smtpSecure,
+    auth: Object.keys(auth).length ? auth : undefined,
+};
+if (smtpService) {
+    transporterOptions.service = smtpService;
+}
+else if (smtpHost.includes('gmail.com')) {
+    transporterOptions.service = 'gmail';
+}
+const transporter = nodemailer_1.default.createTransport(transporterOptions);
+const logMissingConfig = () => {
+    if (!smtpUser || !smtpPass) {
+        console.warn('⚠️ SMTP_USER or SMTP_PASS is missing. Email delivery will fail unless OAuth2 is configured.');
+    }
+    if (smtpAuthType === 'oauth2' && (!process.env.SMTP_OAUTH_CLIENT_ID || !process.env.SMTP_OAUTH_CLIENT_SECRET || !process.env.SMTP_OAUTH_REFRESH_TOKEN)) {
+        console.warn('⚠️ SMTP OAuth2 configuration is incomplete. Please set SMTP_OAUTH_CLIENT_ID, SMTP_OAUTH_CLIENT_SECRET, and SMTP_OAUTH_REFRESH_TOKEN.');
+    }
+};
+logMissingConfig();
+transporter.verify().then(() => {
+    console.log('✅ SMTP transporter verified successfully');
+}).catch((error) => {
+    console.warn('⚠️ SMTP transporter verification failed. Check SMTP config if you expect email delivery.', error);
+    if (smtpHost.includes('gmail.com')) {
+        console.warn('Tip: Gmail usually requires an App Password when 2FA is enabled, or OAuth2 credentials. See https://support.google.com/mail/?p=BadCredentials');
+    }
 });
 const sendEmail = async (to, subject, text, html) => {
     try {
@@ -43,8 +86,7 @@ const sendTemplateEmail = async (to, subject, templateName, context) => {
         const templateSource = fs_1.default.readFileSync(templatePath, 'utf8');
         const compiledTemplate = handlebars_1.default.compile(templateSource);
         const htmlContent = compiledTemplate(context);
-        // Provide a basic text fallback
-        const textFallback = `Please open this email in a client that supports HTML.`;
+        const textFallback = context.message || 'Please open this email in a client that supports HTML.';
         return await (0, exports.sendEmail)(to, subject, textFallback, htmlContent);
     }
     catch (error) {

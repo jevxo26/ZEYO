@@ -41,6 +41,14 @@ export class AssignmentController {
     sendResponse(res, { statusCode: 200, message: `Status → ${currentStatus}`, data });
   });
 
+  static getMyTasks = catchAsync(async (req: Request, res: Response) => {
+    const userId = (req as AuthRequest).user?.userId;
+    if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+    const data = await AssignmentService.getVendorTasks(userId);
+    sendResponse(res, { statusCode: 200, data });
+  });
+
+
   // ── Items ──────────────────────────────────────────────────────────────────
   static addItem = catchAsync(async (req: Request, res: Response) => {
     const data = await AssignmentService.addItem({ assignmentId: Number(req.params.id), ...req.body });

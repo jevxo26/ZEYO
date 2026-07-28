@@ -58,6 +58,7 @@ const DEFAULT_VENDOR_PAYOUTS = [
 export default function EarningsPage() {
   const [payoutsList, setPayoutsList] = useState<any[]>(DEFAULT_VENDOR_PAYOUTS);
   const [isLoading, setIsLoading] = useState(true);
+  const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
 
   // Payout withdrawal modal state
   const [showPayoutModal, setShowPayoutModal] = useState(false);
@@ -66,52 +67,60 @@ export default function EarningsPage() {
   const [bankName, setBankName] = useState("BRAC Bank");
   const [isSubmittingPayout, setIsSubmittingPayout] = useState(false);
 
-  useEffect(() => {
-    const fetchFinancials = async () => {
-      let localCustom: any[] = [];
-      if (typeof window !== "undefined") {
-        try {
-          const stored = localStorage.getItem("customBookings");
-          if (stored) {
-            const list = JSON.parse(stored);
-            localCustom = list.map((b: any, idx: number) => ({
-              id: b.id || `PAY-CUSTOM-${idx}`,
-              bookingNumber: b.bookingNumber || `#${b.id}`,
-              eventName: `${b.eventName || b.notes || "Custom Event"} (${b.eventType || "Service"})`,
-              serviceCategory: b.eventType || "Event Fulfillment",
-              eventDate: b.eventDate ? new Date(b.eventDate).toISOString().split("T")[0] : "2026-11-15",
-              payoutAmount: Number(b.grandTotal || b.budget || 35000),
-              status: "escrow_pending",
-              clearedAt: "Pending QA",
-            }));
-          }
-        } catch (e) {}
-      }
-
+  const fetchFinancials = async () => {
+    let localCustom: any[] = [];
+    if (typeof window !== "undefined") {
       try {
-        const response = await apiClient.get("/vendors/earnings");
-        if (response.data && response.data.success !== false) {
-          const rawData = response.data.data;
-          const list = Array.isArray(rawData)
-            ? rawData
-            : Array.isArray(rawData?.data)
-            ? rawData.data
-            : [];
-          const combined = [...localCustom, ...list];
-          setPayoutsList(combined.length > 0 ? combined : DEFAULT_VENDOR_PAYOUTS);
-        } else {
-          const combined = [...localCustom, ...DEFAULT_VENDOR_PAYOUTS];
-          setPayoutsList(combined);
+        const stored = localStorage.getItem("customBookings");
+        if (stored) {
+          const list = JSON.parse(stored);
+          localCustom = list.map((b: any, idx: number) => ({
+            id: b.id || `PAY-CUSTOM-${idx}`,
+            bookingNumber: b.bookingNumber || `#${b.id}`,
+            eventName: `${b.eventName || b.notes || "Custom Event"} (${b.eventType || "Service"})`,
+            serviceCategory: b.eventType || "Event Fulfillment",
+            eventDate: b.eventDate ? new Date(b.eventDate).toISOString().split("T")[0] : "2026-11-15",
+            payoutAmount: Number(b.grandTotal || b.budget || 35000),
+            status: "escrow_pending",
+            clearedAt: "Pending QA",
+          }));
         }
-      } catch (error) {
-        console.error("Failed to fetch financial data", error);
+      } catch (e) {}
+    }
+
+    try {
+      const response = await apiClient.get("/vendors/earnings");
+      if (response.data && response.data.success !== false) {
+        const rawData = response.data.data;
+        const list = Array.isArray(rawData)
+          ? rawData
+          : Array.isArray(rawData?.data)
+          ? rawData.data
+          : [];
+        const combined = [...localCustom, ...list];
+        setPayoutsList(combined.length > 0 ? combined : DEFAULT_VENDOR_PAYOUTS);
+      } else {
         const combined = [...localCustom, ...DEFAULT_VENDOR_PAYOUTS];
         setPayoutsList(combined);
-      } finally {
-        setIsLoading(false);
       }
-    };
+    } catch (error) {
+      console.error("Failed to fetch financial data", error);
+      const combined = [...localCustom, ...DEFAULT_VENDOR_PAYOUTS];
+      setPayoutsList(combined);
+    } finally {
+      setIsLoading(false);
+      setLastRefreshed(new Date());
+    }
+  };
+
+  useEffect(() => {
     fetchFinancials();
+
+    const interval = setInterval(() => {
+      fetchFinancials();
+    }, 30000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const totalEarnings = payoutsList.reduce(
@@ -165,6 +174,18 @@ export default function EarningsPage() {
             <h1 className="text-xl sm:text-2xl font-bold mt-1">
               Partner Earnings &amp; Protected Escrow
             </h1>
+            <div className="flex items-center gap-2 mt-1.5">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              </span>
+              <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Live</span>
+              {lastRefreshed && (
+                <span className="text-[10px] text-slate-400 font-medium">
+                  Updated {lastRefreshed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              )}
+            </div>
             <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
               Disbursed directly by EVENTO Operations via secure escrow after QA clearance. Customer transaction details remain protected.
             </p>

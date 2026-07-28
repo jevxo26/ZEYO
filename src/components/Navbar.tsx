@@ -38,6 +38,11 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Sync clientUser with Redux or localStorage on mount/path change
   useEffect(() => {
@@ -160,7 +165,9 @@ export default function Navbar() {
 
         {/* Desktop User / Auth Actions */}
         <div className="hidden md:flex items-center gap-3">
-          {activeUser ? (
+          {!isMounted ? (
+            <div className="w-32 h-9"></div> // Placeholder during hydration
+          ) : activeUser ? (
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOpen((prev) => !prev)}
@@ -289,7 +296,7 @@ export default function Navbar() {
           </nav>
 
           <div className="pt-3 border-t border-slate-100">
-            {activeUser ? (
+            {!isMounted ? null : activeUser ? (
               <div className="space-y-3">
                 <div className="flex items-center gap-3 p-2 bg-slate-50 rounded-xl">
                   <div className="w-9 h-9 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-sm">

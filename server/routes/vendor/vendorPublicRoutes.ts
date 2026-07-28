@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { prisma } from '../../config/prisma';
+import { verifyToken } from '../../middlewares/authMiddleware';
 
 const router = Router();
 
@@ -170,6 +171,76 @@ router.get('/tasks', (req: Request, res: Response) => {
 // GET /api/vendors/earnings
 router.get('/earnings', (req: Request, res: Response) => {
   return res.json({ success: true, data: DEFAULT_VENDOR_PAYOUTS });
+});
+
+let mockVendorProfile = {
+  businessName: 'My Vendor Business',
+  contactName: 'John Doe',
+  email: 'vendor@evento.com',
+  phone: '+8801700000000',
+  address: '123 Vendor Street, Dhaka',
+  serviceZones: ['Dhaka Metro (Core Zone)'],
+  notifications: {
+    email: true,
+    sms: false,
+    push: true
+  }
+};
+
+// GET /api/vendors/me
+router.get('/me', verifyToken, (req: Request, res: Response) => {
+  return res.json({ success: true, data: mockVendorProfile });
+});
+
+// PUT /api/vendors/me
+router.put('/me', verifyToken, (req: Request, res: Response) => {
+  mockVendorProfile = { ...mockVendorProfile, ...req.body };
+  return res.json({ success: true, message: 'Vendor settings updated successfully', data: mockVendorProfile });
+});
+
+let mockDispatchNotes: Record<string, any[]> = {};
+
+// GET /api/vendors/dispatch/:taskId
+router.get('/dispatch/:taskId', (req: Request, res: Response) => {
+  const taskId = req.params.taskId as string;
+  const notes = mockDispatchNotes[taskId] || [
+    {
+      id: 1,
+      author: "EVENTO Coordinator (Arif)",
+      initials: "EA",
+      time: "2 hours ago",
+      text: "Please ensure the team coordinates with venue security for equipment clearance upon arrival.",
+    }
+  ];
+  return res.json({ success: true, data: notes });
+});
+
+// POST /api/vendors/dispatch/:taskId
+router.post('/dispatch/:taskId', (req: Request, res: Response) => {
+  const taskId = req.params.taskId as string;
+  const { text } = req.body;
+  if (!mockDispatchNotes[taskId]) {
+    mockDispatchNotes[taskId] = [
+      {
+        id: 1,
+        author: "EVENTO Coordinator (Arif)",
+        initials: "EA",
+        time: "2 hours ago",
+        text: "Please ensure the team coordinates with venue security for equipment clearance upon arrival.",
+      }
+    ];
+  }
+  
+  const newNote = {
+    id: Date.now(),
+    author: "You (Vendor Partner)",
+    initials: "VP",
+    time: "Just now",
+    text,
+  };
+  
+  mockDispatchNotes[taskId].push(newNote);
+  return res.json({ success: true, data: newNote });
 });
 
 export default router;

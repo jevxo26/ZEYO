@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X, Calendar as CalendarIcon, MapPin, DollarSign, Tag, Users } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -18,8 +19,12 @@ const schema = yup.object({
 
 type FormData = yup.InferType<typeof schema>;
 
-export function NewBookingModal() {
-  const [isOpen, setIsOpen] = useState(false);
+interface NewBookingModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function NewBookingModal({ isOpen, onClose }: NewBookingModalProps) {
   const [isLoading, setIsLoading] = useState(false);
 
   const {
@@ -31,20 +36,13 @@ export function NewBookingModal() {
     resolver: yupResolver(schema),
   });
 
-  useEffect(() => {
-    const handleOpen = (e: any) => {
-      if (e.detail === "new-event") {
-        setIsOpen(true);
-      }
-    };
-    window.addEventListener("open-dashboard-modal", handleOpen);
-    return () => window.removeEventListener("open-dashboard-modal", handleOpen);
-  }, []);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
   const close = () => {
-    setIsOpen(false);
+    onClose();
     reset();
   };
 
@@ -97,7 +95,7 @@ export function NewBookingModal() {
     }
   };
 
-  return (
+  const modalContent = (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
       <div className="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
@@ -203,4 +201,6 @@ export function NewBookingModal() {
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 }

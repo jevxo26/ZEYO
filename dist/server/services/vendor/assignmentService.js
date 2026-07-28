@@ -59,6 +59,37 @@ exports.AssignmentService = {
         prisma_1.prisma.vendorAssignment.update({ where: { id: assignmentId }, data: { assignmentStatus: currentStatus } }),
         prisma_1.prisma.assignmentStatus.create({ data: { assignmentId, currentStatus, updatedBy, remarks } }),
     ])),
+    getVendorTasks: (0, catchServiceAsync_1.catchServiceAsync)(async (vendorId) => {
+        return prisma_1.prisma.vendorAssignment.findMany({
+            where: {
+                items: {
+                    some: {
+                        assignedVendors: {
+                            some: {
+                                vendorId,
+                            },
+                        },
+                    },
+                },
+            },
+            include: {
+                items: {
+                    include: {
+                        assignedVendors: true,
+                        assignmentService: true,
+                        schedule: true,
+                        acceptances: true,
+                        workProgress: { orderBy: { createdAt: 'asc' } },
+                        checklist: true,
+                        deliverables: true,
+                        notes: { orderBy: { createdAt: 'desc' } },
+                    },
+                },
+                statuses: { orderBy: { createdAt: 'desc' }, take: 1 },
+            },
+            orderBy: { createdAt: 'desc' },
+        });
+    }),
     // ── AssignmentItem ─────────────────────────────────────────────────────────
     addItem: (0, catchServiceAsync_1.catchServiceAsync)(async (data) => prisma_1.prisma.assignmentItem.create({ data })),
     // ── AssignedVendor ─────────────────────────────────────────────────────────

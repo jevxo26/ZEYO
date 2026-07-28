@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import apiClient from "@/lib/apiClient";
+import { NewBookingModal } from "@/components/dashboard/NewBookingModal";
+import { Plus } from "lucide-react";
 
 interface VendorItemType {
   id: string;
@@ -110,6 +112,7 @@ const DEFAULT_CUSTOMER_BOOKINGS = [
 export default function VendorsPage() {
   const [vendorsList, setVendorsList] = useState<VendorItemType[]>(DEFAULT_VENDORS);
   const [activeBookings, setActiveBookings] = useState<any[]>(DEFAULT_CUSTOMER_BOOKINGS);
+  const [showNewBooking, setShowNewBooking] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
@@ -261,6 +264,8 @@ export default function VendorsPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
+      <NewBookingModal isOpen={showNewBooking} onClose={() => setShowNewBooking(false)} />
+
       {/* Admin Notice Banner */}
       <div className="bg-slate-900 rounded-2xl p-6 text-white shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-slate-800">
         <div className="flex items-start gap-3.5">
@@ -279,12 +284,20 @@ export default function VendorsPage() {
             </p>
           </div>
         </div>
-        <button
-          onClick={handleOnboardVendor}
-          className="px-4 py-2.5 bg-white text-slate-900 hover:bg-slate-100 rounded-xl text-xs font-bold shadow-sm transition-colors flex items-center gap-2 shrink-0"
-        >
-          <UserCheck className="w-4 h-4 text-purple-700" /> Onboard Vendor Team
-        </button>
+        <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+          <button
+            onClick={() => setShowNewBooking(true)}
+            className="px-4 py-2.5 bg-purple-600 text-white hover:bg-purple-500 rounded-xl text-xs font-bold shadow-sm transition-colors flex items-center justify-center gap-2"
+          >
+            <Plus className="w-4 h-4 text-white" /> Add Custom Event
+          </button>
+          <button
+            onClick={handleOnboardVendor}
+            className="px-4 py-2.5 bg-white text-slate-900 hover:bg-slate-100 rounded-xl text-xs font-bold shadow-sm transition-colors flex items-center justify-center gap-2"
+          >
+            <UserCheck className="w-4 h-4 text-purple-700" /> Onboard Vendor Team
+          </button>
+        </div>
       </div>
 
       {/* Search + Filter Bar */}
