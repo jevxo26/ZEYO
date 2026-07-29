@@ -103,7 +103,7 @@ export default function Sidebar() {
             className="w-full cursor-pointer rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-slate-800"
           >
             <span className="flex items-center justify-center gap-2">
-              <Plus size={13} /> New Booking
+              <Plus size={13} /> {role === "admin" ? "Create Event" : "New Booking"}
             </span>
           </button>
         )}

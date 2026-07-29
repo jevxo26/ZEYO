@@ -6,11 +6,13 @@ import Link from "next/link";
 import apiClient from "@/lib/apiClient";
 import PlatformReviewModal from "@/components/reviews/PlatformReviewModal";
 import { NewBookingModal } from "@/components/dashboard/NewBookingModal";
+import { useAppSelector } from "@/store/store";
 
 const DEFAULT_MY_EVENTS = [
   {
-    id: "BKG-2026-192",
-    bookingNumber: "BKG-2026-192",
+    id: "EVT-2026-192",
+    eventCode: "#EVT-2026-192",
+    bookingNumber: "#BKG-2026-192",
     eventName: "Ahmed Weeding",
     eventType: "Wedding",
     eventDate: "2026-07-31",
@@ -20,8 +22,9 @@ const DEFAULT_MY_EVENTS = [
     createdAt: "2026-07-20T10:00:00Z",
   },
   {
-    id: "BKG-2026-967",
-    bookingNumber: "BKG-2026-967",
+    id: "EVT-2026-967",
+    eventCode: "#EVT-2026-967",
+    bookingNumber: "#BKG-2026-967",
     eventName: "Reception Celebration (Chattogram)",
     eventType: "Reception",
     eventDate: "2026-07-30",
@@ -31,8 +34,9 @@ const DEFAULT_MY_EVENTS = [
     createdAt: "2026-07-18T14:30:00Z",
   },
   {
-    id: "BKG-2026-172",
-    bookingNumber: "BKG-2026-172",
+    id: "EVT-2026-172",
+    eventCode: "#EVT-2026-172",
+    bookingNumber: "#BKG-2026-172",
     eventName: "Wedding Celebration (Dhaka)",
     eventType: "Wedding",
     eventDate: "2026-08-10",
@@ -42,8 +46,9 @@ const DEFAULT_MY_EVENTS = [
     createdAt: "2026-07-15T11:20:00Z",
   },
   {
-    id: "BKG-2026-001",
-    bookingNumber: "BKG-2026-001",
+    id: "EVT-2026-001",
+    eventCode: "#EVT-2026-001",
+    bookingNumber: "#BKG-2026-001",
     eventName: "Royal Wedding Ceremony",
     eventType: "Wedding",
     eventDate: "2026-11-15",
@@ -55,6 +60,9 @@ const DEFAULT_MY_EVENTS = [
 ];
 
 export default function MyEventsPage() {
+  const { user } = useAppSelector((state) => state.auth);
+  const role = (user?.role || "customer").toLowerCase();
+
   const [eventsList, setEventsList] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -171,7 +179,9 @@ export default function MyEventsPage() {
       {/* Header */}
       <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">My Events</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+            {role === "admin" ? "All Platform Events" : "My Events"}
+          </h1>
           <div className="flex items-center gap-2 mt-1.5">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
@@ -184,14 +194,18 @@ export default function MyEventsPage() {
               </span>
             )}
           </div>
-          <p className="text-sm text-slate-500 mt-1">Monitor event progression stages and track upcoming schedules.</p>
+          <p className="text-sm text-slate-500 mt-1">
+            {role === "admin"
+              ? "Monitor progression stages and track all scheduled events across Bangladesh."
+              : "Monitor event progression stages and track upcoming schedules."}
+          </p>
         </div>
         <div className="flex gap-3 shrink-0">
           <button
             onClick={handleOpenNewEvent}
-            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-sm font-semibold shadow-sm transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-sm font-semibold shadow-sm transition-colors flex items-center gap-2"
           >
-            <Plus className="w-4 h-4" /> New Booking
+            <Plus className="w-4 h-4" /> Create New Event
           </button>
         </div>
       </div>
@@ -256,9 +270,14 @@ export default function MyEventsPage() {
                         >
                           {status}
                         </span>
-                        <span className="text-xs font-mono font-bold text-slate-400">
-                          {evt.bookingNumber || `#EVT-${evt.id}`}
+                        <span className="text-xs font-mono font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded">
+                          {evt.eventCode || (String(evt.id).startsWith("#EVT") ? evt.id : `#EVT-${String(evt.id || "").replace("#", "").replace("BKG-", "")}`)}
                         </span>
+                        {(evt.bookingNumber || evt.bookingRef) && (
+                          <span className="text-[10px] font-mono text-slate-400 font-medium">
+                            Linked Order: {evt.bookingNumber || evt.bookingRef}
+                          </span>
+                        )}
                       </div>
                       <h3 className="text-lg font-bold text-slate-900 mt-2">
                         {evt.eventTitle || evt.eventName || evt.notes || "Untitled Event"}

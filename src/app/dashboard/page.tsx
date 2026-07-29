@@ -254,6 +254,13 @@ export default function DashboardOverviewPage() {
           {role === "admin" ? (
             <>
               <button
+                onClick={handleNewBooking}
+                className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white px-4 py-2.5 rounded-xl font-bold shadow-sm transition-colors text-xs cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                Create Event
+              </button>
+              <button
                 onClick={handleAddVendor}
                 className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl font-bold shadow-sm transition-colors text-xs cursor-pointer"
               >

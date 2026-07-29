@@ -252,7 +252,8 @@ export default function Modals() {
             </div>
             <div>
               <h2 className="text-base font-extrabold">
-                {(activeModal === "new-event" || activeModal === "new-booking") && "Create New Celebration Booking"}
+                {activeModal === "new-event" && "Create New Event"}
+                {activeModal === "new-booking" && "Create New Celebration Booking"}
                 {activeModal === "new-vendor" && "Onboard Vendor Team"}
                 {activeModal === "add-zone" && "Add Zone Configuration"}
               </h2>
@@ -386,7 +387,11 @@ export default function Modals() {
                   disabled={isLoading}
                   className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow-sm transition-all flex items-center gap-2 cursor-pointer"
                 >
-                  {isLoading ? "Submitting..." : "Submit Booking to Coordinator"}
+                  {isLoading
+                    ? "Submitting..."
+                    : activeModal === "new-event"
+                    ? "Submit & Create Event"
+                    : "Submit Booking to Coordinator"}
                 </button>
               </div>
             </form>
