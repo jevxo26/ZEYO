@@ -9,6 +9,39 @@ import { NewBookingModal } from "@/components/dashboard/NewBookingModal";
 
 const DEFAULT_MY_EVENTS = [
   {
+    id: "BKG-2026-192",
+    bookingNumber: "BKG-2026-192",
+    eventName: "Ahmed Weeding",
+    eventType: "Wedding",
+    eventDate: "2026-07-31",
+    location: "Rajshahi District",
+    bookingStatus: "confirmed",
+    grandTotal: 200000,
+    createdAt: "2026-07-20T10:00:00Z",
+  },
+  {
+    id: "BKG-2026-967",
+    bookingNumber: "BKG-2026-967",
+    eventName: "Reception Celebration (Chattogram)",
+    eventType: "Reception",
+    eventDate: "2026-07-30",
+    location: "Chattogram Metro",
+    bookingStatus: "confirmed",
+    grandTotal: 266225,
+    createdAt: "2026-07-18T14:30:00Z",
+  },
+  {
+    id: "BKG-2026-172",
+    bookingNumber: "BKG-2026-172",
+    eventName: "Wedding Celebration (Dhaka)",
+    eventType: "Wedding",
+    eventDate: "2026-08-10",
+    location: "Dhaka Metro",
+    bookingStatus: "confirmed",
+    grandTotal: 193000,
+    createdAt: "2026-07-15T11:20:00Z",
+  },
+  {
     id: "BKG-2026-001",
     bookingNumber: "BKG-2026-001",
     eventName: "Royal Wedding Ceremony",
@@ -18,17 +51,6 @@ const DEFAULT_MY_EVENTS = [
     bookingStatus: "confirmed",
     grandTotal: 380000,
     createdAt: "2026-07-20T10:00:00Z",
-  },
-  {
-    id: "BKG-2026-002",
-    bookingNumber: "BKG-2026-002",
-    eventName: "Gaye Holud Night Celebration",
-    eventType: "Gaye Holud",
-    eventDate: "2026-11-13",
-    location: "Banani Convention Hall, Dhaka",
-    bookingStatus: "completed",
-    grandTotal: 180000,
-    createdAt: "2026-07-05T14:30:00Z",
   },
 ];
 
@@ -46,7 +68,7 @@ export default function MyEventsPage() {
     let localCustom: any[] = [];
     if (typeof window !== "undefined") {
       try {
-        const stored = localStorage.getItem("customBookings");
+        const stored = localStorage.getItem("customBookings") || localStorage.getItem("custom_bookings");
         if (stored) {
           const parsed = JSON.parse(stored);
           localCustom = parsed.map((b: any, idx: number) => ({

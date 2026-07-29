@@ -5,14 +5,22 @@ interface ToggleProps {
   label: string;
   description: string;
   initialChecked?: boolean;
+  onChange?: (checked: boolean) => void;
 }
 
 export default function Toggle({
   label,
   description,
   initialChecked = false,
+  onChange,
 }: ToggleProps) {
   const [enabled, setEnabled] = useState(initialChecked);
+
+  const handleToggle = () => {
+    const next = !enabled;
+    setEnabled(next);
+    if (onChange) onChange(next);
+  };
 
   return (
     <div className="flex justify-between items-center py-2">
@@ -21,7 +29,8 @@ export default function Toggle({
         <p className="text-[10px] text-gray-400 font-medium">{description}</p>
       </div>
       <button
-        onClick={() => setEnabled(!enabled)}
+        type="button"
+        onClick={handleToggle}
         className="w-9 h-5 flex items-center rounded-full p-0.5 cursor-pointer transition-all duration-200"
         style={enabled ? { background: "linear-gradient(135deg, #7c3aed, #2563eb)", boxShadow: "0 2px 8px rgba(124,58,237,0.3)" } : { background: "#e5e7eb" }}
       >

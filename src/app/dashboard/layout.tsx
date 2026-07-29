@@ -19,6 +19,7 @@ import Modals from "@/components/dashboard/Modals";
 import { NewBookingModal } from "@/components/dashboard/NewBookingModal";
 import Link from "next/link";
 import apiClient from "@/lib/apiClient";
+import { getCustomNotifications } from "@/lib/notifications";
 // ─── Static notification data ────────────────────────────────────────────────
 const INITIAL_NOTIFICATIONS = [
   {
@@ -238,70 +239,109 @@ export default function DashboardLayout({
 
   // ── Real-time polling for notifications and messages ──────────────────────────
   useEffect(() => {
-    if (!isAuthenticated && !user) return;
-    
     const fetchRealTimeData = async () => {
-      try {
-        const [notifRes, msgRes] = await Promise.all([
-          apiClient.get('/notifications/in-app'),
-          apiClient.get('/communications/conversations')
-        ]);
-        
-        if (notifRes.data?.success) {
-          const raw = notifRes.data.data || [];
-          setNotifications(raw.map((n: any) => ({
-            id: n.id,
-            icon: n.notification?.notificationType === 'booking' ? "📦" : "🔔",
-            title: n.notification?.title || "Notification",
-            desc: n.notification?.message || "",
-            time: new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            read: n.isRead,
-          })));
+      const customNotifs = getCustomNotifications();
+      let apiNotifs: any[] = [];
+      
+      if (isAuthenticated || user) {
+        try {
+          const [notifRes, msgRes] = await Promise.all([
+            apiClient.get('/notifications/in-app').catch(() => null),
+            apiClient.get('/communications/conversations').catch(() => null)
+          ]);
+          
+          if (notifRes?.data?.success) {
+            const raw = notifRes.data.data || [];
+            apiNotifs = raw.map((n: any) => ({
+              id: n.id,
+              icon: n.notification?.notificationType === 'booking' ? "📦" : "🔔",
+              title: n.notification?.title || "Notification",
+              desc: n.notification?.message || "",
+              time: new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              read: n.isRead,
+            }));
+          }
+          
+          if (msgRes?.data?.success) {
+            const raw = msgRes.data.data || [];
+            setInbox(raw.map((c: any) => {
+              const latestMessage = c.messages?.[0];
+              const otherParticipant = c.admin || { firstName: 'System', lastName: '' };
+              return {
+                id: c.id,
+                initial: otherParticipant?.firstName?.[0] || 'U',
+                color: "bg-indigo-600",
+                name: `${otherParticipant.firstName || ''} ${otherParticipant.lastName || ''}`.trim() || "User",
+                preview: latestMessage ? latestMessage.message : "No messages yet",
+                time: latestMessage ? new Date(latestMessage.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "",
+                unread: c._count?.messages || 0,
+                online: true,
+              };
+            }));
+          }
+        } catch (error) {
+          console.error("Error fetching real-time data:", error);
         }
-        
-        if (msgRes.data?.success) {
-          const raw = msgRes.data.data || [];
-          setInbox(raw.map((c: any) => {
-            const latestMessage = c.messages?.[0];
-            const otherParticipant = c.admin || { firstName: 'System', lastName: '' };
-            return {
-              id: c.id,
-              initial: otherParticipant?.firstName?.[0] || 'U',
-              color: "bg-indigo-600",
-              name: `${otherParticipant.firstName || ''} ${otherParticipant.lastName || ''}`.trim() || "User",
-              preview: latestMessage ? latestMessage.message : "No messages yet",
-              time: latestMessage ? new Date(latestMessage.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "",
-              unread: c._count?.messages || 0,
-              online: true,
-            };
-          }));
-        }
-      } catch (error) {
-        console.error("Error fetching real-time data:", error);
       }
+
+      const merged = [...customNotifs, ...apiNotifs, ...INITIAL_NOTIFICATIONS];
+      // Deduplicate by ID
+      const unique = merged.filter((item, idx, self) => idx === self.findIndex((t) => String(t.id) === String(item.id)));
+      setNotifications(unique);
     };
 
     fetchRealTimeData();
     const interval = setInterval(fetchRealTimeData, 15000); // poll every 15s
-    return () => clearInterval(interval);
+
+    const handleUpdate = () => fetchRealTimeData();
+    window.addEventListener("dashboard-data-update", handleUpdate);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener("dashboard-data-update", handleUpdate);
+    };
   }, [isAuthenticated, user]);
 
   // ── Derived counts ───────────────────────────────────────────────────────────
   const unreadNotifCount = notifications.filter((n) => !n.read).length;
   const unreadMailCount = inbox.reduce((s, c) => s + c.unread, 0);
 
-  const markAllNotifRead = () =>
+  const markAllNotifRead = async () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-
-  const markNotifRead = async (id: number) => {
-    try {
-      await apiClient.put(`/notifications/in-app/${id}/read`);
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-      );
-    } catch (err) {
-      console.error(err);
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("custom_notifications");
+        if (stored) {
+          const list = JSON.parse(stored);
+          const updated = list.map((n: any) => ({ ...n, read: true }));
+          localStorage.setItem("custom_notifications", JSON.stringify(updated));
+        }
+      } catch (err) {}
     }
+    try {
+      await apiClient.put("/notifications/in-app/read-all").catch(() => null);
+    } catch (err) {}
+  };
+
+  const markNotifRead = async (id: number | string) => {
+    setNotifications((prev) =>
+      prev.map((n) => (String(n.id) === String(id) ? { ...n, read: true } : n))
+    );
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("custom_notifications");
+        if (stored) {
+          const list = JSON.parse(stored);
+          const updated = list.map((n: any) =>
+            String(n.id) === String(id) ? { ...n, read: true } : n
+          );
+          localStorage.setItem("custom_notifications", JSON.stringify(updated));
+        }
+      } catch (err) {}
+    }
+    try {
+      await apiClient.put(`/notifications/in-app/${id}/read`).catch(() => null);
+    } catch (err) {}
   };
 
   const getRoleHeaderBadge = () => {
@@ -494,9 +534,9 @@ export default function DashboardLayout({
 
                     {/* Notification items */}
                     <div className="divide-y divide-slate-100 max-h-72 overflow-y-auto">
-                      {notifications.map((n) => (
+                      {notifications.map((n, idx) => (
                         <button
-                          key={n.id}
+                          key={n.id ? `notif-${n.id}-${idx}` : `notif-idx-${idx}`}
                           onClick={() => markNotifRead(n.id)}
                           className={`w-full text-left px-4 py-3 flex items-start gap-3 transition-colors hover:bg-slate-50 ${
                             !n.read ? "bg-purple-50/60" : ""
@@ -578,9 +618,9 @@ export default function DashboardLayout({
 
                     {/* Inbox preview list */}
                     <div className="divide-y divide-slate-100 max-h-72 overflow-y-auto">
-                      {inbox.map((c) => (
+                      {inbox.map((c, idx) => (
                         <Link
-                          key={c.id}
+                          key={c.id ? `inbox-${c.id}-${idx}` : `inbox-idx-${idx}`}
                           href="/dashboard/messages"
                           onClick={() => {
                             setInbox((prev) =>

@@ -63,7 +63,7 @@ export default function BookingsPage() {
     let localCustom: any[] = [];
     if (typeof window !== "undefined") {
       try {
-        const stored = localStorage.getItem("customBookings");
+        const stored = localStorage.getItem("customBookings") || localStorage.getItem("custom_bookings");
         if (stored) localCustom = JSON.parse(stored);
       } catch (e) {}
     }

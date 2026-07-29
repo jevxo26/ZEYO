@@ -94,11 +94,7 @@ export default function Navbar() {
   };
 
   const getDashboardHref = () => {
-    if (!activeUser) return "/dashboard/bookings";
-    const r = (activeUser.role || "").toLowerCase();
-    if (r === "admin") return "/dashboard/vendors";
-    if (r === "vendor" || r === "partner") return "/dashboard/tasks";
-    return "/dashboard/bookings";
+    return "/dashboard";
   };
 
   const getRoleBadge = () => {

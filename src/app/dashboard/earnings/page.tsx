@@ -68,45 +68,75 @@ export default function EarningsPage() {
   const [isSubmittingPayout, setIsSubmittingPayout] = useState(false);
 
   const fetchFinancials = async () => {
-    let localCustom: any[] = [];
+    let localCustomBookings: any[] = [];
+    let localCustomTasks: any[] = [];
+
     if (typeof window !== "undefined") {
       try {
-        const stored = localStorage.getItem("customBookings");
-        if (stored) {
-          const list = JSON.parse(stored);
-          localCustom = list.map((b: any, idx: number) => ({
+        const storedTasks = localStorage.getItem("customVendorTasks");
+        if (storedTasks) {
+          const list = JSON.parse(storedTasks);
+          localCustomTasks = list.map((t: any, idx: number) => ({
+            id: t.id || `PAY-TSK-${idx}`,
+            bookingNumber: t.bookingRef || `#BKG-${idx}`,
+            eventName: `${t.title || "Assigned Service Execution"} (${t.category})`,
+            serviceCategory: t.category || "Fulfillment",
+            eventDate: t.date || "Upcoming",
+            payoutAmount: Number((t.payout || "").replace(/[^0-9]/g, "") || 35000),
+            status: t.status === "Completed" || t.status === "Paid Out" || t.status === "paid_out" ? "paid_out" : "escrow_pending",
+            clearedAt: t.status === "Completed" ? "Cleared" : "Pending QA",
+          }));
+        }
+      } catch (e) {}
+
+      try {
+        const storedBookings = localStorage.getItem("customBookings") || localStorage.getItem("custom_bookings");
+        if (storedBookings) {
+          const list = JSON.parse(storedBookings);
+          localCustomBookings = list.map((b: any, idx: number) => ({
             id: b.id || `PAY-CUSTOM-${idx}`,
             bookingNumber: b.bookingNumber || `#${b.id}`,
-            eventName: `${b.eventName || b.notes || "Custom Event"} (${b.eventType || "Service"})`,
-            serviceCategory: b.eventType || "Event Fulfillment",
-            eventDate: b.eventDate ? new Date(b.eventDate).toISOString().split("T")[0] : "2026-11-15",
+            eventName: `${b.eventName || b.notes || "Custom Event"} (${b.assignedService || b.eventType || "Service"})`,
+            serviceCategory: b.assignedService || b.eventType || "Event Fulfillment",
+            eventDate: b.eventDate ? new Date(b.eventDate).toISOString().split("T")[0] : "Upcoming",
             payoutAmount: Number(b.grandTotal || b.budget || 35000),
-            status: "escrow_pending",
+            status: b.bookingStatus === "completed" || b.status === "COMPLETED" ? "paid_out" : "escrow_pending",
             clearedAt: "Pending QA",
           }));
         }
       } catch (e) {}
     }
 
+    const mergedLocal = [...localCustomTasks, ...localCustomBookings];
+
     try {
       const response = await apiClient.get("/vendors/earnings");
       if (response.data && response.data.success !== false) {
         const rawData = response.data.data;
-        const list = Array.isArray(rawData)
+        const apiList = Array.isArray(rawData)
           ? rawData
           : Array.isArray(rawData?.data)
           ? rawData.data
           : [];
-        const combined = [...localCustom, ...list];
-        setPayoutsList(combined.length > 0 ? combined : DEFAULT_VENDOR_PAYOUTS);
+        const combined = [...mergedLocal, ...apiList];
+        const unique = combined.filter(
+          (item, idx, self) => idx === self.findIndex((t) => String(t.bookingNumber) === String(item.bookingNumber) || String(t.id) === String(item.id))
+        );
+        setPayoutsList(unique.length > 0 ? unique : DEFAULT_VENDOR_PAYOUTS);
       } else {
-        const combined = [...localCustom, ...DEFAULT_VENDOR_PAYOUTS];
-        setPayoutsList(combined);
+        const combined = [...mergedLocal, ...DEFAULT_VENDOR_PAYOUTS];
+        const unique = combined.filter(
+          (item, idx, self) => idx === self.findIndex((t) => String(t.bookingNumber) === String(item.bookingNumber) || String(t.id) === String(item.id))
+        );
+        setPayoutsList(unique);
       }
     } catch (error) {
-      console.error("Failed to fetch financial data", error);
-      const combined = [...localCustom, ...DEFAULT_VENDOR_PAYOUTS];
-      setPayoutsList(combined);
+      console.warn("Using local financial data");
+      const combined = [...mergedLocal, ...DEFAULT_VENDOR_PAYOUTS];
+      const unique = combined.filter(
+        (item, idx, self) => idx === self.findIndex((t) => String(t.bookingNumber) === String(item.bookingNumber) || String(t.id) === String(item.id))
+      );
+      setPayoutsList(unique);
     } finally {
       setIsLoading(false);
       setLastRefreshed(new Date());
@@ -116,27 +146,38 @@ export default function EarningsPage() {
   useEffect(() => {
     fetchFinancials();
 
-    const interval = setInterval(() => {
-      fetchFinancials();
-    }, 30000);
+    const handleUpdate = () => fetchFinancials();
+    const interval = setInterval(fetchFinancials, 15000);
 
-    return () => clearInterval(interval);
+    window.addEventListener("dashboard-data-update", handleUpdate);
+    return () => {
+      window.removeEventListener("dashboard-data-update", handleUpdate);
+      clearInterval(interval);
+    };
   }, []);
 
+  const parseAmount = (val: any): number => {
+    if (typeof val === "number") return isNaN(val) ? 0 : val;
+    if (!val) return 0;
+    const cleaned = String(val).replace(/[^0-9.]/g, "");
+    const parsed = parseFloat(cleaned);
+    return isNaN(parsed) ? 0 : parsed;
+  };
+
   const totalEarnings = payoutsList.reduce(
-    (acc, b) => acc + Number(b.payoutAmount || b.grandTotal || 0),
+    (acc, b) => acc + parseAmount(b.payoutAmount || b.grandTotal),
     0
   );
   const clearedPayouts = payoutsList
     .filter((b) => b.status === "paid_out" || b.status === "confirmed")
-    .reduce((acc, b) => acc + Number(b.payoutAmount || b.grandTotal || 0), 0);
+    .reduce((acc, b) => acc + parseAmount(b.payoutAmount || b.grandTotal), 0);
   const pendingEscrow = payoutsList
     .filter(
       (b) =>
         b.status === "escrow_pending" ||
         (b.status || "").toLowerCase() === "pending"
     )
-    .reduce((acc, b) => acc + Number(b.payoutAmount || b.grandTotal || 0), 0);
+    .reduce((acc, b) => acc + parseAmount(b.payoutAmount || b.grandTotal), 0);
 
   const handleConfirmWithdrawal = (e: React.FormEvent) => {
     e.preventDefault();
