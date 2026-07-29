@@ -39,7 +39,7 @@ export default function Sidebar() {
   const customerRoutes = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
     { name: "My Bookings", href: "/dashboard/bookings", icon: ShoppingBag },
-    { name: "My Events", href: "/dashboard/my-events", icon: Calendar },
+    { name: "Event Calendar", href: "/dashboard/my-events", icon: Calendar },
     { name: "Messages", href: "/dashboard/messages", icon: MessageSquare },
     { name: "Settings", href: "/dashboard/settings", icon: Settings },
   ];
@@ -97,13 +97,13 @@ export default function Sidebar() {
           <button
             onClick={() =>
               window.dispatchEvent(
-                new CustomEvent("open-dashboard-modal", { detail: "new-event" })
+                new CustomEvent("open-dashboard-modal", { detail: "new-booking" })
               )
             }
             className="w-full cursor-pointer rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-slate-800"
           >
             <span className="flex items-center justify-center gap-2">
-              <Plus size={13} /> New Event
+              <Plus size={13} /> New Booking
             </span>
           </button>
         )}

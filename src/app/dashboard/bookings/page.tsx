@@ -56,7 +56,6 @@ export default function BookingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("All Bookings");
-  const [showNewBooking, setShowNewBooking] = useState(false);
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
 
   const fetchBookings = async () => {
@@ -128,7 +127,7 @@ export default function BookingsPage() {
   ).length;
 
   const handleOpenNewBooking = () => {
-    setShowNewBooking(true);
+    window.dispatchEvent(new CustomEvent("open-dashboard-modal", { detail: "new-booking" }));
   };
 
   const getStatusColor = (status: string) => {
@@ -148,8 +147,6 @@ export default function BookingsPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      <NewBookingModal isOpen={showNewBooking} onClose={() => setShowNewBooking(false)} />
-
       {/* Header Banner */}
       <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

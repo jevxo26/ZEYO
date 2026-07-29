@@ -112,7 +112,6 @@ const DEFAULT_CUSTOMER_BOOKINGS = [
 export default function VendorsPage() {
   const [vendorsList, setVendorsList] = useState<VendorItemType[]>(DEFAULT_VENDORS);
   const [activeBookings, setActiveBookings] = useState<any[]>(DEFAULT_CUSTOMER_BOOKINGS);
-  const [showNewBooking, setShowNewBooking] = useState(false);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All Categories");
@@ -264,8 +263,6 @@ export default function VendorsPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      <NewBookingModal isOpen={showNewBooking} onClose={() => setShowNewBooking(false)} />
-
       {/* Admin Notice Banner */}
       <div className="bg-slate-900 rounded-2xl p-6 text-white shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-slate-800">
         <div className="flex items-start gap-3.5">
@@ -286,10 +283,14 @@ export default function VendorsPage() {
         </div>
         <div className="flex flex-col sm:flex-row gap-2 shrink-0">
           <button
-            onClick={() => setShowNewBooking(true)}
+            onClick={() =>
+              window.dispatchEvent(
+                new CustomEvent("open-dashboard-modal", { detail: "new-booking" })
+              )
+            }
             className="px-4 py-2.5 bg-purple-600 text-white hover:bg-purple-500 rounded-xl text-xs font-bold shadow-sm transition-colors flex items-center justify-center gap-2"
           >
-            <Plus className="w-4 h-4 text-white" /> Add Custom Event
+            <Plus className="w-4 h-4 text-white" /> Add Custom Booking
           </button>
           <button
             onClick={handleOnboardVendor}
