@@ -89,7 +89,7 @@ export default function Navbar() {
     setClientUser(null);
     setDropdownOpen(false);
     setIsOpen(false);
-    toast.success("✓ Signed out successfully!");
+    toast.success("✓ Signed out successfully!", { duration: 4000, closeButton: true });
     router.push("/");
   };
 
