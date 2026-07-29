@@ -75,7 +75,7 @@ export function SignInForm() {
           ? "Admin Operations Center"
           : "Vendor Task Board"
       }...`,
-      { duration: 3000 }
+      { duration: 4000, closeButton: true }
     );
     router.push(redirectPath);
   };
@@ -116,7 +116,7 @@ export function SignInForm() {
       dispatch(
         setCredentials({ user: result.data.user, token: result.data.token })
       );
-      toast.success("Signed in successfully!");
+      toast.success("Signed in successfully!", { duration: 4000, closeButton: true });
       router.push("/dashboard");
     } catch (error: any) {
       // Fallback resilience for demo accounts if backend auth is offline

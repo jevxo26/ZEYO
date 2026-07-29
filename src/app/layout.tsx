@@ -34,7 +34,7 @@ export default function RootLayout({
         <ReduxProvider>
           <AuthInitializer>{children}</AuthInitializer>
         </ReduxProvider>
-        <Toaster richColors position="top-right" />
+        <Toaster richColors position="top-right" closeButton />
         <FacebookSdkLoader />
       </body>
     </html>

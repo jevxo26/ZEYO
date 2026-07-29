@@ -32,7 +32,7 @@ export default function Sidebar() {
       localStorage.removeItem("accessToken");
       localStorage.removeItem("user");
     }
-    toast.success("✓ Signed out successfully!");
+    toast.success("✓ Signed out successfully!", { duration: 4000, closeButton: true });
     router.push("/");
   };
 
