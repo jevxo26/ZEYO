@@ -5,6 +5,7 @@ import { Search, CalendarDays, MapPin, Plus, CheckCircle2, Circle, Star } from "
 import Link from "next/link";
 import apiClient from "@/lib/apiClient";
 import PlatformReviewModal from "@/components/reviews/PlatformReviewModal";
+import { NewBookingModal } from "@/components/dashboard/NewBookingModal";
 
 const DEFAULT_MY_EVENTS = [
   {
@@ -115,7 +116,7 @@ export default function MyEventsPage() {
   });
 
   const handleOpenNewEvent = () => {
-    window.dispatchEvent(new CustomEvent("open-dashboard-modal", { detail: "new-event" }));
+    window.dispatchEvent(new CustomEvent("open-dashboard-modal", { detail: "new-booking" }));
   };
 
   const getStatusColor = (status: string) => {
@@ -168,7 +169,7 @@ export default function MyEventsPage() {
             onClick={handleOpenNewEvent}
             className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-sm font-semibold shadow-sm transition-colors flex items-center gap-2"
           >
-            <Plus className="w-4 h-4" /> New Event
+            <Plus className="w-4 h-4" /> New Booking
           </button>
         </div>
       </div>

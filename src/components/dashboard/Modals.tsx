@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Calendar, DollarSign, MapPin, Briefcase, Percent, UserCheck, ShieldCheck } from "lucide-react";
+import { X, Calendar, DollarSign, MapPin, Briefcase, Percent, UserCheck, ShieldCheck, Sparkles, Package, Tag } from "lucide-react";
 import apiClient from "@/lib/apiClient";
 import { toast } from "sonner";
+import Link from "next/link";
 
 type ModalType = "new-event" | "new-vendor" | "new-booking" | "add-zone" | null;
 
@@ -33,7 +34,7 @@ export default function Modals() {
   useEffect(() => {
     const handleOpenModal = (e: Event) => {
       const customEvent = e as CustomEvent<ModalType>;
-      if (customEvent.detail) {
+      if (customEvent.detail === "new-vendor" || customEvent.detail === "add-zone") {
         setActiveModal(customEvent.detail);
       }
     };
@@ -194,149 +195,152 @@ export default function Modals() {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
       <div className="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-slate-200">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-          <h2 className="text-base font-bold text-slate-900">
-            {activeModal === "new-event" && "Create New Event"}
-            {activeModal === "new-booking" && "New Booking"}
-            {activeModal === "new-vendor" && "Onboard Vendor Team"}
-            {activeModal === "add-zone" && "Add Zone Configuration"}
-          </h2>
-          <button onClick={closeModal} className="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-lg hover:bg-slate-100">
+        <div className="flex items-center justify-between px-6 py-4 bg-gradient-to-r from-slate-900 via-purple-950 to-indigo-950 text-white">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-purple-600/30 border border-purple-400/40 flex items-center justify-center font-bold text-sm">
+              ৳
+            </div>
+            <div>
+              <h2 className="text-base font-extrabold">
+                {(activeModal === "new-event" || activeModal === "new-booking") && "Create New Celebration Booking"}
+                {activeModal === "new-vendor" && "Onboard Vendor Team"}
+                {activeModal === "add-zone" && "Add Zone Configuration"}
+              </h2>
+              <p className="text-[11px] text-purple-300">
+                Managed Event OS • 100% Coordinator Protected
+              </p>
+            </div>
+          </div>
+          <button onClick={closeModal} className="p-1.5 rounded-full hover:bg-white/10 text-slate-300 hover:text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Modal Body: New Event */}
-        {activeModal === "new-event" && (
-          <form onSubmit={handleCreateEvent} className="p-6 space-y-4">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-700">Event Title</label>
-              <input
-                type="text"
-                required
-                placeholder="e.g. Royal Wedding Ceremony"
-                value={eventName}
-                onChange={(e) => setEventName(e.target.value)}
-                className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-slate-900 outline-none transition-all"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">Date</label>
-                <input
-                  type="date"
-                  required
-                  value={eventDate}
-                  onChange={(e) => setEventDate(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-slate-900 outline-none transition-all"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">Budget (BDT ৳)</label>
-                <input
-                  type="number"
-                  required
-                  placeholder="150000"
-                  value={eventBudget}
-                  onChange={(e) => setEventBudget(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-semibold text-slate-900 focus:ring-2 focus:ring-slate-900 outline-none transition-all"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-700">Venue Address</label>
-              <input
-                type="text"
-                placeholder="e.g. Gulshan Club, Dhaka"
-                value={eventLocation}
-                onChange={(e) => setEventLocation(e.target.value)}
-                className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-slate-900 outline-none transition-all"
-              />
-            </div>
-
-            <div className="pt-3 border-t border-slate-100 flex gap-2 justify-end">
-              <button type="button" onClick={closeModal} className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900">
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg shadow-sm transition-all"
+        {/* Modal Body: New Celebration Booking (BDT ৳) */}
+        {(activeModal === "new-event" || activeModal === "new-booking") && (
+          <div>
+            <div className="p-5 bg-slate-50 border-b border-slate-200 grid grid-cols-2 gap-3">
+              <Link
+                href="/calculator"
+                onClick={closeModal}
+                className="flex flex-col items-start p-3.5 rounded-2xl bg-gradient-to-br from-purple-900 to-indigo-900 text-white hover:shadow-md transition-all group"
               >
-                {isLoading ? "Creating..." : "Create Event"}
-              </button>
-            </div>
-          </form>
-        )}
+                <div className="flex items-center gap-2 text-xs font-bold mb-1">
+                  <Sparkles className="w-4 h-4 text-purple-300 group-hover:scale-110 transition-transform" />
+                  Smart Calculator
+                </div>
+                <span className="text-[10px] text-purple-200">
+                  4-step wizard with 7 BD zones
+                </span>
+              </Link>
 
-        {/* Modal Body: New Booking */}
-        {activeModal === "new-booking" && (
-          <form onSubmit={handleCreateBooking} className="p-6 space-y-4">
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-700">Booking / Event Title</label>
-              <input
-                type="text"
-                required
-                placeholder="e.g. Gaye Holud Night"
-                value={eventName}
-                onChange={(e) => setEventName(e.target.value)}
-                className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-slate-900 outline-none transition-all"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">Date</label>
-                <input
-                  type="date"
-                  required
-                  value={eventDate}
-                  onChange={(e) => setEventDate(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-slate-900 outline-none transition-all"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">Total Budget (BDT ৳)</label>
-                <input
-                  type="number"
-                  required
-                  placeholder="120000"
-                  value={eventBudget}
-                  onChange={(e) => setEventBudget(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-sm font-semibold text-slate-900 focus:ring-2 focus:ring-slate-900 outline-none transition-all"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <label className="text-xs font-semibold text-slate-700">Location / Venue</label>
-              <input
-                type="text"
-                required
-                placeholder="Banani Convention Hall, Dhaka"
-                value={eventLocation}
-                onChange={(e) => setEventLocation(e.target.value)}
-                className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 focus:ring-2 focus:ring-slate-900 outline-none transition-all"
-              />
-            </div>
-
-            <div className="pt-3 border-t border-slate-100 flex gap-2 justify-end">
-              <button type="button" onClick={closeModal} className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900">
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg shadow-sm transition-all"
+              <Link
+                href="/packages"
+                onClick={closeModal}
+                className="flex flex-col items-start p-3.5 rounded-2xl bg-white border border-slate-200 hover:border-purple-300 text-slate-900 hover:shadow-md transition-all group"
               >
-                {isLoading ? "Saving..." : "Create Booking"}
-              </button>
+                <div className="flex items-center gap-2 text-xs font-bold mb-1 text-purple-700">
+                  <Package className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                  Browse Packages
+                </div>
+                <span className="text-[10px] text-slate-500">
+                  Curated wedding & corporate sets
+                </span>
+              </Link>
             </div>
-          </form>
+
+            <form onSubmit={handleCreateBooking} className="p-6 space-y-4">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-900 pb-1 border-b border-slate-100">
+                <ShieldCheck className="w-4 h-4 text-purple-600" />
+                Or Submit Quick Custom Booking Request (BDT ৳)
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Celebration Title
+                </label>
+                <div className="relative">
+                  <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Ahmed & Fatima Royal Wedding"
+                    value={eventName}
+                    onChange={(e) => setEventName(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:ring-2 focus:ring-purple-600 focus:border-purple-600 outline-none transition-all font-semibold"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Celebration Date
+                  </label>
+                  <input
+                    type="date"
+                    required
+                    value={eventDate}
+                    onChange={(e) => setEventDate(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:ring-2 focus:ring-purple-600 outline-none transition-all font-semibold"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Estimated Budget (৳)
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-extrabold text-sm text-slate-400">
+                      ৳
+                    </span>
+                    <input
+                      type="number"
+                      required
+                      placeholder="380000"
+                      value={eventBudget}
+                      onChange={(e) => setEventBudget(e.target.value)}
+                      className="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:ring-2 focus:ring-purple-600 outline-none transition-all font-extrabold"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Venue / Hall Address
+                </label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Gulshan Club Hall, Dhaka"
+                    value={eventLocation}
+                    onChange={(e) => setEventLocation(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-900 focus:ring-2 focus:ring-purple-600 outline-none transition-all font-semibold"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-3 mt-4 border-t border-slate-100 flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-900 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow-sm transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  {isLoading ? "Submitting..." : "Submit Booking to Coordinator"}
+                </button>
+              </div>
+            </form>
+          </div>
         )}
 
         {/* Modal Body: Onboard Vendor */}

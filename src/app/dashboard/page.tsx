@@ -50,7 +50,6 @@ export default function DashboardOverviewPage() {
   const { user } = useAppSelector((state) => state.auth);
   const [bookings, setBookings] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [showNewBooking, setShowNewBooking] = useState(false);
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
 
   // ── Live countdown to nearest event ─────────────────────────────────────────
@@ -127,7 +126,7 @@ export default function DashboardOverviewPage() {
   }, []);
 
   const handleNewBooking = () => {
-    setShowNewBooking(true);
+    window.dispatchEvent(new CustomEvent("open-dashboard-modal", { detail: "new-booking" }));
   };
 
   const totalBudget = bookings.reduce(
@@ -140,8 +139,6 @@ export default function DashboardOverviewPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      <NewBookingModal isOpen={showNewBooking} onClose={() => setShowNewBooking(false)} />
-
       {/* Managed Event OS Assurance Card */}
       <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-950 via-slate-900 to-indigo-950 text-white border border-purple-800/40 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
@@ -188,7 +185,7 @@ export default function DashboardOverviewPage() {
           className="shrink-0 flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-bold shadow-sm transition-colors text-xs"
         >
           <Plus className="w-4 h-4" />
-          Add Custom Event
+          Add Custom Booking
         </button>
       </div>
 
@@ -309,7 +306,7 @@ export default function DashboardOverviewPage() {
                   No bookings yet
                 </p>
                 <p className="text-sm text-slate-500 mt-1">
-                  Click Add Custom Event to get started
+                  Click Add Custom Booking to get started
                 </p>
               </div>
             ) : (
