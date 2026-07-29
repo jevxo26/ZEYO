@@ -50,6 +50,38 @@ export default function DashboardOverviewPage() {
   const { user } = useAppSelector((state) => state.auth);
   const [bookings, setBookings] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showNewBooking, setShowNewBooking] = useState(false);
+  const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
+
+  // ── Live countdown to nearest event ─────────────────────────────────────────
+  const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  useEffect(() => {
+    const tick = () => {
+      const now = Date.now();
+      const upcoming = bookings
+        .map((b) => new Date(b.eventDate || Date.now()).getTime())
+        .filter((t) => t > now)
+        .sort((a, b) => a - b)[0];
+      if (!upcoming) return;
+      const diff = upcoming - now;
+      setCountdown({
+        days: Math.floor(diff / 86400000),
+        hours: Math.floor((diff % 86400000) / 3600000),
+        minutes: Math.floor((diff % 3600000) / 60000),
+        seconds: Math.floor((diff % 60000) / 1000),
+      });
+    };
+    tick();
+    const timer = setInterval(tick, 1000);
+    return () => clearInterval(timer);
+  }, [bookings]);
+
+  // ── Auto-refresh every 30 seconds ────────────────────────────────────────────
+  useEffect(() => {
+    const interval = setInterval(() => { fetchBookings(); }, 30000);
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchBookings = async () => {
     setIsLoading(true);
@@ -95,9 +127,7 @@ export default function DashboardOverviewPage() {
   }, []);
 
   const handleNewBooking = () => {
-    window.dispatchEvent(
-      new CustomEvent("open-dashboard-modal", { detail: "new-event" })
-    );
+    setShowNewBooking(true);
   };
 
   const totalBudget = bookings.reduce(
@@ -110,7 +140,7 @@ export default function DashboardOverviewPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      <NewBookingModal />
+      <NewBookingModal isOpen={showNewBooking} onClose={() => setShowNewBooking(false)} />
 
       {/* Managed Event OS Assurance Card */}
       <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-950 via-slate-900 to-indigo-950 text-white border border-purple-800/40 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -216,7 +246,40 @@ export default function DashboardOverviewPage() {
         </div>
       </div>
 
+      {/* ── Real-time countdown to next event ──────────────────────────── */}
+      {countdown.days > 0 || countdown.hours > 0 ? (
+        <div className="bg-gradient-to-r from-slate-900 via-purple-950 to-indigo-950 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-purple-800/30">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-purple-600/20 border border-purple-500/30">
+              <Clock className="w-5 h-5 text-purple-300" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-purple-400">Next Event Countdown</p>
+              <p className="text-sm font-bold text-white mt-0.5">Live time until your next celebration</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            {[
+              { value: countdown.days, label: "Days" },
+              { value: countdown.hours, label: "Hours" },
+              { value: countdown.minutes, label: "Min" },
+              { value: countdown.seconds, label: "Sec" },
+            ].map((unit) => (
+              <div key={unit.label} className="flex flex-col items-center">
+                <span className="text-2xl font-black text-white tabular-nums w-12 text-center">
+                  {String(unit.value).padStart(2, "0")}
+                </span>
+                <span className="text-[9px] font-bold uppercase tracking-widest text-purple-400 mt-0.5">
+                  {unit.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
       {/* Main Content Area */}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Bookings List */}
         <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
@@ -252,8 +315,8 @@ export default function DashboardOverviewPage() {
             ) : (
               bookings.map((booking, idx) => (
                 <Link
-                  key={booking.id || idx}
-                  href={`/dashboard/bookings/${booking.id}`}
+                  key={booking.id ? `booking-${booking.id}-${idx}` : `idx-${idx}`}
+                  href={`/dashboard/bookings/${booking.id || 'custom'}`}
                   className="p-6 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center hover:bg-slate-50 transition-colors block"
                 >
                   <div className="flex items-start gap-4">

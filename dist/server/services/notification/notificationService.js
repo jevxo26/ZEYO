@@ -13,32 +13,138 @@ var __rest = (this && this.__rest) || function (s, e) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NotificationService = void 0;
 const prisma_1 = require("../../config/prisma");
+const emailService_1 = require("../emailService");
+const smsService_1 = require("../smsService");
 class NotificationService {
     // Trigger a new notification
     static async sendNotification(data) {
         const { channels } = data, notificationData = __rest(data, ["channels"]);
-        // Create Base Notification
         const notification = await prisma_1.prisma.notification.create({
             data: Object.assign(Object.assign({}, notificationData), { priority: notificationData.priority || 'low', status: 'pending' }),
         });
-        // Queue for each channel
-        for (const channel of channels) {
-            await prisma_1.prisma.notificationQueue.create({
+        const queueItems = await Promise.all(channels.map(async (channel) => prisma_1.prisma.notificationQueue.create({
+            data: {
+                notificationId: notification.id,
+                channel,
+            },
+        })));
+        if (channels.includes('IN_APP') && data.customerId) {
+            await prisma_1.prisma.inAppNotification.create({
                 data: {
                     notificationId: notification.id,
-                    channel,
-                    status: 'pending',
+                    customerId: data.customerId,
                 },
             });
-            if (channel === 'IN_APP' && data.customerId) {
-                await prisma_1.prisma.inAppNotification.create({
+        }
+        await NotificationService.processNotificationQueue(notification.id, queueItems);
+        return notification;
+    }
+    static async processNotificationQueue(notificationId, queueItems) {
+        var _a, _b, _c, _d;
+        const notification = await prisma_1.prisma.notification.findUnique({
+            where: { id: notificationId },
+            include: {
+                customer: {
+                    select: {
+                        user: {
+                            select: {
+                                email: true,
+                                phone: true,
+                            },
+                        },
+                    },
+                },
+                notificationQueue: true,
+            },
+        });
+        if (!notification) {
+            return null;
+        }
+        const pendingItems = queueItems || notification.notificationQueue.filter((item) => item.status === 'pending');
+        const customerEmail = (_b = (_a = notification.customer) === null || _a === void 0 ? void 0 : _a.user) === null || _b === void 0 ? void 0 : _b.email;
+        const customerPhone = (_d = (_c = notification.customer) === null || _c === void 0 ? void 0 : _c.user) === null || _d === void 0 ? void 0 : _d.phone;
+        let overallSuccess = true;
+        for (const item of pendingItems) {
+            try {
+                if (item.channel === 'EMAIL') {
+                    if (!customerEmail) {
+                        throw new Error('Customer email not available');
+                    }
+                    await (0, emailService_1.sendEmail)(customerEmail, notification.title, notification.message, `<p>${notification.message}</p>`);
+                    await prisma_1.prisma.emailNotification.create({
+                        data: {
+                            notificationId: notification.id,
+                            email: customerEmail,
+                            subject: notification.title,
+                            body: notification.message,
+                            status: 'sent',
+                            sentAt: new Date(),
+                        },
+                    });
+                    await prisma_1.prisma.notificationQueue.update({
+                        where: { id: item.id },
+                        data: { status: 'sent', sentAt: new Date() },
+                    });
+                }
+                else if (item.channel === 'SMS') {
+                    if (!customerPhone) {
+                        throw new Error('Customer phone number not available');
+                    }
+                    await (0, smsService_1.sendSMS)(customerPhone, notification.message);
+                    await prisma_1.prisma.sMSNotification.create({
+                        data: {
+                            notificationId: notification.id,
+                            phone: customerPhone,
+                            message: notification.message,
+                            provider: 'twilio',
+                            status: 'sent',
+                            sentAt: new Date(),
+                        },
+                    });
+                    await prisma_1.prisma.notificationQueue.update({
+                        where: { id: item.id },
+                        data: { status: 'sent', sentAt: new Date() },
+                    });
+                }
+                else if (item.channel === 'IN_APP') {
+                    await prisma_1.prisma.notificationQueue.update({
+                        where: { id: item.id },
+                        data: { status: 'sent', sentAt: new Date() },
+                    });
+                }
+                else if (item.channel === 'PUSH') {
+                    console.warn(`Push notification queue entry ${item.id} created but no push delivery is configured.`);
+                    await prisma_1.prisma.notificationQueue.update({
+                        where: { id: item.id },
+                        data: { status: 'sent', sentAt: new Date() },
+                    });
+                }
+                else {
+                    await prisma_1.prisma.notificationQueue.update({
+                        where: { id: item.id },
+                        data: { status: 'failed' },
+                    });
+                    overallSuccess = false;
+                }
+            }
+            catch (error) {
+                overallSuccess = false;
+                console.error(`Notification queue dispatch failed for entry ${item.id}:`, error);
+                await prisma_1.prisma.notificationQueue.update({
+                    where: { id: item.id },
                     data: {
-                        notificationId: notification.id,
-                        customerId: data.customerId,
+                        status: 'failed',
+                        retryCount: { increment: 1 },
                     },
                 });
             }
         }
+        await prisma_1.prisma.notification.update({
+            where: { id: notificationId },
+            data: {
+                status: overallSuccess ? 'sent' : 'failed',
+            },
+        });
         return notification;
     }
     // Get In-App Notifications for a Customer

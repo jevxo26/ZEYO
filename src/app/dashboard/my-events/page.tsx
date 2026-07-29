@@ -38,6 +38,7 @@ export default function MyEventsPage() {
   const [activeTab, setActiveTab] = useState("All Events");
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
   const [reviewEventName, setReviewEventName] = useState("");
+  const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
 
   const fetchEvents = async () => {
     setIsLoading(true);
@@ -76,6 +77,7 @@ export default function MyEventsPage() {
       setEventsList([...localCustom, ...DEFAULT_MY_EVENTS]);
     } finally {
       setIsLoading(false);
+      setLastRefreshed(new Date());
     }
   };
 
@@ -86,9 +88,14 @@ export default function MyEventsPage() {
       fetchEvents();
     };
 
+    const interval = setInterval(() => {
+      fetchEvents();
+    }, 30000);
+
     window.addEventListener("dashboard-data-update", handleUpdate);
     return () => {
       window.removeEventListener("dashboard-data-update", handleUpdate);
+      clearInterval(interval);
     };
   }, []);
 
@@ -142,6 +149,18 @@ export default function MyEventsPage() {
       <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">My Events</h1>
+          <div className="flex items-center gap-2 mt-1.5">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+            </span>
+            <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Live</span>
+            {lastRefreshed && (
+              <span className="text-[10px] text-slate-400 font-medium">
+                Updated {lastRefreshed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </span>
+            )}
+          </div>
           <p className="text-sm text-slate-500 mt-1">Monitor event progression stages and track upcoming schedules.</p>
         </div>
         <div className="flex gap-3 shrink-0">
@@ -246,7 +265,7 @@ export default function MyEventsPage() {
                     <p className="text-xs font-semibold text-slate-700">Progression Stage</p>
                     <div className="grid grid-cols-4 gap-2 text-center">
                       {steps.map((step, i) => (
-                        <div key={i} className="flex flex-col items-center gap-1.5">
+                        <div key={`step-${idx}-${i}`} className="flex flex-col items-center gap-1.5">
                           {step.done ? (
                             <CheckCircle2 className="w-5 h-5 text-emerald-600" />
                           ) : (

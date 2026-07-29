@@ -42,6 +42,14 @@ AssignmentController.updateStatus = (0, catchAsync_1.catchAsync)(async (req, res
     const data = await assignmentService_1.AssignmentService.updateStatus(Number(req.params.id), currentStatus, userId, remarks);
     (0, sendResponse_1.sendResponse)(res, { statusCode: 200, message: `Status → ${currentStatus}`, data });
 });
+AssignmentController.getMyTasks = (0, catchAsync_1.catchAsync)(async (req, res) => {
+    var _b;
+    const userId = (_b = req.user) === null || _b === void 0 ? void 0 : _b.userId;
+    if (!userId)
+        return res.status(401).json({ success: false, message: 'Unauthorized' });
+    const data = await assignmentService_1.AssignmentService.getVendorTasks(userId);
+    (0, sendResponse_1.sendResponse)(res, { statusCode: 200, data });
+});
 // ── Items ──────────────────────────────────────────────────────────────────
 AssignmentController.addItem = (0, catchAsync_1.catchAsync)(async (req, res) => {
     const data = await assignmentService_1.AssignmentService.addItem(Object.assign({ assignmentId: Number(req.params.id) }, req.body));

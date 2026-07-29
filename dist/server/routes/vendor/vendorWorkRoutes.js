@@ -6,10 +6,14 @@ const assignmentController_1 = require("../../controllers/vendor/assignmentContr
 const authMiddleware_1 = require("../../middlewares/authMiddleware");
 const router = (0, express_1.Router)();
 router.use(authMiddleware_1.verifyToken);
+// Vendor fetches their assignments
+router.get('/tasks', assignmentController_1.AssignmentController.getMyTasks);
 // Vendor accepts/rejects assignments
 router.post('/acceptance', assignmentController_1.AssignmentController.recordAcceptance);
 // Vendor reports work progress
 router.post('/progress', assignmentController_1.AssignmentController.addProgress);
+// Vendor notes / dispatch communication
+router.post('/notes', assignmentController_1.AssignmentController.addNote);
 // Checklist management
 router.post('/checklist', assignmentController_1.AssignmentController.addChecklist);
 router.put('/checklist/:checklistId/complete', assignmentController_1.AssignmentController.completeChecklist);

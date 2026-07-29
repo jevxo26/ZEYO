@@ -121,6 +121,7 @@ export default function TaskDetailsPage() {
   const [tasksList, setTasksList] = useState<AssignedTaskType[]>(DEFAULT_VENDOR_TASKS);
   const [selectedTaskId, setSelectedTaskId] = useState<string>("TSK-001");
   const [filterStatus, setFilterStatus] = useState<string>("All");
+  const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
 
   const [notes, setNotes] = useState([
     {
@@ -189,18 +190,30 @@ export default function TaskDetailsPage() {
     if (merged.length > 0 && (!selectedTaskId || !merged.find((t) => t.id === selectedTaskId))) {
       setSelectedTaskId(merged[0].id);
     }
+    setLastRefreshed(new Date());
   };
 
   useEffect(() => {
     fetchVendorTasks();
 
     const handleUpdate = () => fetchVendorTasks();
+    const interval = setInterval(() => {
+      fetchVendorTasks();
+    }, 30000);
+
     window.addEventListener("dashboard-data-update", handleUpdate);
-    return () => window.removeEventListener("dashboard-data-update", handleUpdate);
+    return () => {
+      window.removeEventListener("dashboard-data-update", handleUpdate);
+      clearInterval(interval);
+    };
   }, []);
 
   const currentTask =
     tasksList.find((t) => String(t.id) === String(selectedTaskId)) || tasksList[0] || DEFAULT_VENDOR_TASKS[0];
+
+  // Safe accessors — API responses may omit these fields
+  const currentRequirements = Array.isArray(currentTask?.requirements) ? currentTask.requirements : [];
+  const currentCoordinatorNotes = currentTask?.coordinatorNotes || "Coordinate with EVENTO Dispatch officer upon arrival.";
 
   const handlePostNote = (e: React.FormEvent) => {
     e.preventDefault();
@@ -273,6 +286,18 @@ export default function TaskDetailsPage() {
             <h1 className="text-xl sm:text-2xl font-bold mt-1">
               Task Execution Workspace
             </h1>
+            <div className="flex items-center gap-2 mt-1.5">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              </span>
+              <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Live</span>
+              {lastRefreshed && (
+                <span className="text-[10px] text-slate-400 font-medium">
+                  Updated {lastRefreshed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                </span>
+              )}
+            </div>
             <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
               Technical event specifications, venue locations, and schedule instructions dispatched by EVENTO Operations.
             </p>
@@ -417,7 +442,7 @@ export default function TaskDetailsPage() {
               <span className="font-semibold uppercase tracking-wider block text-[10px] text-slate-500 mb-1">
                 Coordinator Dispatch Note
               </span>
-              <p className="leading-relaxed font-normal">{currentTask.coordinatorNotes}</p>
+              <p className="leading-relaxed font-normal">{currentCoordinatorNotes}</p>
             </div>
 
             {/* GPS Route Button */}
@@ -439,9 +464,9 @@ export default function TaskDetailsPage() {
               Technical Requirements
             </h2>
 
-            {currentTask.requirements.map((req, i) => (
+            {currentRequirements.map((req, i) => (
               <div
-                key={i}
+                key={`req-${i}`}
                 className="flex gap-3 items-start p-4 rounded-xl bg-slate-50 border border-slate-100"
               >
                 <div className="p-1 rounded-full bg-emerald-100 text-emerald-700 mt-0.5 shrink-0">
@@ -523,7 +548,7 @@ export default function TaskDetailsPage() {
                 const isCurrent = i === progressStep;
 
                 return (
-                  <div key={i} className="relative space-y-1">
+                  <div key={`step-${i}`} className="relative space-y-1">
                     <div
                       className={`absolute -left-[23px] top-1 w-3 h-3 rounded-full border-2 border-white ${
                         isCompleted ? "bg-slate-900" : "bg-slate-300"

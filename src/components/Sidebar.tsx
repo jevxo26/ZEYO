@@ -1,12 +1,13 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useAppSelector } from "@/store/store";
+import { usePathname, useRouter } from "next/navigation";
+import { useAppSelector, useAppDispatch } from "@/store/store";
+import { logout } from "@/store/slices/authSlice";
+import { toast } from "sonner";
 import {
   LayoutDashboard,
   ClipboardList,
   Wallet,
-  Star,
   Settings,
   HelpCircle,
   LogOut,
@@ -20,8 +21,20 @@ import {
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
   const role = user?.role || "customer";
+
+  const handleLogout = () => {
+    dispatch(logout());
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("user");
+    }
+    toast.success("✓ Signed out successfully!");
+    router.push("/");
+  };
 
   const customerRoutes = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
@@ -128,17 +141,17 @@ export default function Sidebar() {
 
       <div className="space-y-0.5 border-t border-slate-200 pt-4">
         <Link
-          href="#"
+          href="/dashboard/settings"
           className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
         >
           <HelpCircle size={15} /> Help Center
         </Link>
-        <Link
-          href="/login"
-          className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-medium text-rose-600 transition hover:bg-rose-50 hover:text-rose-700"
         >
           <LogOut size={15} /> Logout
-        </Link>
+        </button>
       </div>
     </aside>
   );

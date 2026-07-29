@@ -10,6 +10,13 @@ class CommunicationService {
             include: {
                 admin: { select: { id: true, firstName: true, lastName: true } },
                 booking: { select: { id: true, bookingStatus: true } },
+                messages: {
+                    orderBy: { createdAt: 'desc' },
+                    take: 1,
+                },
+                _count: {
+                    select: { messages: { where: { status: 'sent', senderType: 'admin' } } }
+                }
             },
             orderBy: { updatedAt: 'desc' },
         });

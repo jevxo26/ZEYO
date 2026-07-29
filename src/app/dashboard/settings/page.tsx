@@ -138,7 +138,7 @@ export default function SettingsPage() {
               </thead>
               <tbody className="divide-y divide-slate-100 font-semibold text-slate-700">
                 {zonesList.map((z, i) => (
-                  <tr key={i} className="hover:bg-slate-50 transition-colors">
+                  <tr key={`zone-${i}`} className="hover:bg-slate-50 transition-colors">
                     <td className="p-4 pl-6 font-bold text-slate-900">
                       {z.name}
                     </td>
