@@ -5,6 +5,7 @@ import { X, Calendar, DollarSign, MapPin, Briefcase, Percent, UserCheck, ShieldC
 import apiClient from "@/lib/apiClient";
 import { toast } from "sonner";
 import Link from "next/link";
+import { createNotification } from "@/lib/notifications";
 
 type ModalType = "new-event" | "new-vendor" | "new-booking" | "add-zone" | null;
 
@@ -33,9 +34,21 @@ export default function Modals() {
 
   useEffect(() => {
     const handleOpenModal = (e: Event) => {
-      const customEvent = e as CustomEvent<ModalType>;
-      if (customEvent.detail === "new-vendor" || customEvent.detail === "add-zone") {
-        setActiveModal(customEvent.detail);
+      const customEvent = e as CustomEvent<any>;
+      const detail =
+        typeof customEvent.detail === "string"
+          ? customEvent.detail
+          : customEvent.detail?.type || customEvent.detail?.modal;
+
+      if (detail === "new-vendor" || detail === "add-zone") {
+        setActiveModal(detail as ModalType);
+        if (customEvent.detail && typeof customEvent.detail === "object" && customEvent.detail.zone) {
+          const z = customEvent.detail.zone;
+          setZoneName(z.name || "");
+          if (z.mult) {
+            setZoneMultiplier(z.mult.replace(/[^0-9.]/g, ""));
+          }
+        }
       }
     };
 
@@ -186,7 +199,44 @@ export default function Modals() {
 
   const handleSaveZone = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Zone Configuration saved successfully!");
+    if (!zoneName) return;
+
+    const formattedMult = zoneMultiplier.includes("x")
+      ? zoneMultiplier
+      : `${parseFloat(zoneMultiplier || "1.0").toFixed(2)}x Base`;
+
+    const newZone = {
+      name: zoneName,
+      mult: formattedMult,
+      active: true,
+    };
+
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("customZones");
+        let list = stored ? JSON.parse(stored) : [];
+        const existingIdx = list.findIndex((z: any) => z.name.toLowerCase() === zoneName.toLowerCase());
+        if (existingIdx >= 0) {
+          list[existingIdx] = newZone;
+        } else {
+          list.unshift(newZone);
+        }
+        localStorage.setItem("customZones", JSON.stringify(list));
+      } catch (err) {}
+    }
+
+    try {
+      await apiClient.post("/zones", newZone);
+    } catch (err) {}
+
+    createNotification(
+      "Zone Multiplier Configured",
+      `Saved pricing multiplier for ${zoneName} as ${formattedMult}.`,
+      "🗺️"
+    );
+
+    window.dispatchEvent(new CustomEvent("dashboard-data-update"));
+    toast.success(`✓ Zone pricing for "${zoneName}" (${formattedMult}) saved successfully!`);
     closeModal();
   };
 
@@ -202,7 +252,8 @@ export default function Modals() {
             </div>
             <div>
               <h2 className="text-base font-extrabold">
-                {(activeModal === "new-event" || activeModal === "new-booking") && "Create New Celebration Booking"}
+                {activeModal === "new-event" && "Create New Event"}
+                {activeModal === "new-booking" && "Create New Celebration Booking"}
                 {activeModal === "new-vendor" && "Onboard Vendor Team"}
                 {activeModal === "add-zone" && "Add Zone Configuration"}
               </h2>
@@ -336,7 +387,11 @@ export default function Modals() {
                   disabled={isLoading}
                   className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow-sm transition-all flex items-center gap-2 cursor-pointer"
                 >
-                  {isLoading ? "Submitting..." : "Submit Booking to Coordinator"}
+                  {isLoading
+                    ? "Submitting..."
+                    : activeModal === "new-event"
+                    ? "Submit & Create Event"
+                    : "Submit Booking to Coordinator"}
                 </button>
               </div>
             </form>

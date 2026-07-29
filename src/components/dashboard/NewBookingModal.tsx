@@ -16,6 +16,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { toast } from "sonner";
 import Link from "next/link";
+import { createNotification } from "@/lib/notifications";
 
 const schema = yup.object({
   title: yup.string().required("Celebration title is required"),
@@ -68,7 +69,17 @@ export function NewBookingModal({
 
   useEffect(() => {
     setMounted(true);
-    const handleOpen = () => setInternalOpen(true);
+    const handleOpen = (e: Event) => {
+      const customEvent = e as CustomEvent<any>;
+      const detail =
+        typeof customEvent.detail === "string"
+          ? customEvent.detail
+          : customEvent.detail?.type || customEvent.detail?.modal;
+
+      if (detail === "new-booking" || detail === "new-event") {
+        setInternalOpen(true);
+      }
+    };
     window.addEventListener("open-dashboard-modal", handleOpen);
     return () =>
       window.removeEventListener("open-dashboard-modal", handleOpen);
@@ -96,11 +107,23 @@ export function NewBookingModal({
       bookingStatus: "confirmed",
     };
 
-    // Save to local storage for instant dashboard updates
-    const existing = localStorage.getItem("custom_bookings");
-    const list = existing ? JSON.parse(existing) : [];
-    list.unshift(newBookingObj);
-    localStorage.setItem("custom_bookings", JSON.stringify(list));
+    // Save to local storage for instant dashboard updates across all pages
+    try {
+      const existing1 = localStorage.getItem("customBookings");
+      const existing2 = localStorage.getItem("custom_bookings");
+      const existing = existing1 || existing2;
+      const list = existing ? JSON.parse(existing) : [];
+      list.unshift(newBookingObj);
+      localStorage.setItem("customBookings", JSON.stringify(list));
+      localStorage.setItem("custom_bookings", JSON.stringify(list));
+    } catch (err) {}
+
+    // Send real-time notification
+    createNotification(
+      "New Celebration Booking Created",
+      `Booking #${newBookingObj.bookingNumber} (${newBookingObj.eventName}) submitted to EVENTO Coordinator.`,
+      "📦"
+    );
 
     toast.success("✓ Custom celebration booking submitted to EVENTO Coordinator!");
     window.dispatchEvent(new CustomEvent("dashboard-data-update"));
@@ -119,7 +142,7 @@ export function NewBookingModal({
             </div>
             <div>
               <h2 className="text-base font-extrabold">
-                Create New Celebration Booking
+                Create New Event
               </h2>
               <p className="text-[11px] text-purple-300">
                 Managed Event OS • 100% Coordinator Protected
@@ -169,7 +192,7 @@ export function NewBookingModal({
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
           <div className="flex items-center gap-2 text-xs font-bold text-slate-900 pb-1 border-b border-slate-100">
             <ShieldCheck className="w-4 h-4 text-purple-600" />
-            Or Submit Quick Custom Booking Request (BDT ৳)
+            Or Submit Quick Custom Event Request (BDT ৳)
           </div>
 
           <div className="space-y-1">
@@ -313,7 +336,7 @@ export function NewBookingModal({
               disabled={isLoading}
               className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl shadow-sm transition-all flex items-center gap-2 cursor-pointer"
             >
-              {isLoading ? "Submitting..." : "Submit Booking to Coordinator"}
+              {isLoading ? "Submitting..." : "Submit & Create Event"}
             </button>
           </div>
         </form>

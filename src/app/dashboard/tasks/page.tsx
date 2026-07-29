@@ -18,10 +18,16 @@ import {
   MessageSquare,
   ListFilter,
   Check,
+  FileText,
+  Trash2,
+  Download,
+  Eye,
+  FileCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import apiClient from "@/lib/apiClient";
+import { createNotification } from "@/lib/notifications";
 
 interface AssignedTaskType {
   id: string;
@@ -136,18 +142,59 @@ export default function TaskDetailsPage() {
   const [progressStep, setProgressStep] = useState(1); // 0: Accepted, 1: At Venue, 2: Started, 3: Completed
   const [isUploading, setIsUploading] = useState(false);
 
+  interface DeliverableItem {
+    id: string;
+    fileName: string;
+    fileSize: string;
+    uploadedAt: string;
+    status: string;
+    url?: string;
+  }
+
+  const [deliverables, setDeliverables] = useState<DeliverableItem[]>([]);
+
   const fetchVendorTasks = async () => {
+    let customAssigned: AssignedTaskType[] = [];
     let customMapped: AssignedTaskType[] = [];
+
+    let currentUser: any = null;
     if (typeof window !== "undefined") {
       try {
-        const stored = localStorage.getItem("customBookings");
-        if (stored) {
-          const list = JSON.parse(stored);
-          customMapped = list.map((b: any, i: number) => ({
+        const uStr = localStorage.getItem("user");
+        if (uStr) currentUser = JSON.parse(uStr);
+      } catch (e) {}
+    }
+
+    const isVendorRole = currentUser?.role?.toLowerCase() === "vendor" || currentUser?.role?.toLowerCase() === "partner";
+    const currentVendorName = currentUser ? `${currentUser.firstName || currentUser.name || ""}`.trim() : "";
+    const currentVendorId = currentUser?.id;
+    const currentCategory = currentUser?.category || currentUser?.vendorCategory || "";
+
+    if (typeof window !== "undefined") {
+      try {
+        const storedAssigned = localStorage.getItem("customVendorTasks");
+        if (storedAssigned) {
+          const rawAssigned: AssignedTaskType[] = JSON.parse(storedAssigned);
+          customAssigned = rawAssigned.map((t: any, i: number) => ({
+            ...t,
+            bookingRef: t.bookingRef || (t.id ? (String(t.id).startsWith("#") ? String(t.id) : `#${t.id}`) : `#BKG-2026-10${i + 1}`),
+            title: t.title || t.eventName || "Assigned Celebration Service",
+            category: t.category || t.serviceCategory || "Fulfillment",
+          }));
+        }
+      } catch (e) {}
+
+      try {
+        const storedBookings = localStorage.getItem("customBookings") || localStorage.getItem("custom_bookings");
+        if (storedBookings) {
+          const list = JSON.parse(storedBookings);
+          const assignedOnly = list.filter((b: any) => b.assignedVendor || b.assignedVendorId || b.bookingStatus === "confirmed" || b.status === "CONFIRMED");
+
+          customMapped = assignedOnly.map((b: any, i: number) => ({
             id: String(b.id || `CUSTOM-${i}`),
             bookingRef: b.bookingNumber || `#${b.id || `BKG-${i + 1}`}`,
             title: b.eventName || b.notes || "Custom Celebration",
-            category: b.eventType || "Event Execution",
+            category: b.assignedService || b.eventType || "Event Execution",
             zone: "Dhaka Zone",
             venue: b.location || "Location TBD",
             date: b.eventDate ? new Date(b.eventDate).toLocaleDateString() : "Upcoming",
@@ -164,31 +211,45 @@ export default function TaskDetailsPage() {
                 desc: "Ensure all line items pass EVENTO QA criteria before event commencement.",
               },
             ],
-            coordinatorNotes: "Coordinate with EVENTO Dispatch officer upon arrival.",
+            coordinatorNotes: b.assignedVendor ? `Assigned to ${b.assignedVendor}. Coordinate with EVENTO Dispatch officer.` : "Coordinate with EVENTO Dispatch officer upon arrival.",
           }));
         }
       } catch (e) {}
     }
 
-    try {
-      const res = await apiClient.get("/vendors/tasks");
-      if (res.data?.success !== false && Array.isArray(res.data?.data) && res.data.data.length > 0) {
-        const apiTasks = res.data.data;
-        const merged = [...customMapped, ...apiTasks];
-        setTasksList(merged);
-        if (merged.length > 0 && !selectedTaskId) {
-          setSelectedTaskId(merged[0].id);
-        }
-        return;
+    // Merge explicitly dispatched tasks first (customAssigned has highest priority)
+    let combinedPool = [...customAssigned, ...customMapped];
+
+    // Deduplicate pool strictly by unique task ID so new Admin dispatches are never discarded
+    let uniquePool = combinedPool.filter(
+      (item, idx, self) => idx === self.findIndex((t) => String(t.id) === String(item.id))
+    );
+
+    // If logged in as Vendor or filtered by category, apply matching filter
+    if (isVendorRole && (currentVendorName || currentVendorId || currentCategory)) {
+      const vendorFiltered = uniquePool.filter((t: any) => {
+        if (t.assignedVendorId && String(t.assignedVendorId) === String(currentVendorId)) return true;
+        if (t.assignedVendorName && currentVendorName && t.assignedVendorName.toLowerCase().includes(currentVendorName.toLowerCase())) return true;
+        if (currentCategory && t.category && t.category.toLowerCase().includes(currentCategory.toLowerCase())) return true;
+        return false;
+      });
+      if (vendorFiltered.length > 0) {
+        uniquePool = vendorFiltered;
       }
-    } catch (e) {
-      console.warn("Using local vendor task data");
     }
 
-    const merged = [...customMapped, ...DEFAULT_VENDOR_TASKS];
-    setTasksList(merged);
-    if (merged.length > 0 && (!selectedTaskId || !merged.find((t) => t.id === selectedTaskId))) {
-      setSelectedTaskId(merged[0].id);
+    // Fall back to DEFAULT_VENDOR_TASKS only if uniquePool is empty
+    if (uniquePool.length === 0) {
+      uniquePool = DEFAULT_VENDOR_TASKS;
+    }
+
+    setTasksList(uniquePool);
+
+    // Automatically select newly dispatched customAssigned task if available
+    if (customAssigned.length > 0) {
+      setSelectedTaskId(customAssigned[0].id);
+    } else if (uniquePool.length > 0 && (!selectedTaskId || !uniquePool.find((t) => String(t.id) === String(selectedTaskId)))) {
+      setSelectedTaskId(uniquePool[0].id);
     }
     setLastRefreshed(new Date());
   };
@@ -211,44 +272,185 @@ export default function TaskDetailsPage() {
   const currentTask =
     tasksList.find((t) => String(t.id) === String(selectedTaskId)) || tasksList[0] || DEFAULT_VENDOR_TASKS[0];
 
+  // Load deliverables for current task
+  useEffect(() => {
+    if (!currentTask?.id) return;
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem(`custom_deliverables_${currentTask.id}`);
+        if (stored) {
+          setDeliverables(JSON.parse(stored));
+        } else {
+          setDeliverables([]);
+        }
+      } catch (e) {
+        setDeliverables([]);
+      }
+    }
+  }, [currentTask?.id]);
+
+  // Sync progressStep from localStorage for current task
+  useEffect(() => {
+    if (!currentTask?.id) return;
+    if (typeof window !== "undefined") {
+      try {
+        const storedStep = localStorage.getItem(`custom_task_step_${currentTask.id}`);
+        if (storedStep !== null && !isNaN(Number(storedStep))) {
+          setProgressStep(Number(storedStep));
+        } else if (typeof (currentTask as any).progressStep === "number") {
+          setProgressStep((currentTask as any).progressStep);
+        } else {
+          setProgressStep(1);
+        }
+      } catch (e) {
+        setProgressStep(1);
+      }
+    }
+  }, [currentTask?.id]);
+
+  // Load dispatch notes per task ID
+  useEffect(() => {
+    if (!currentTask?.id) return;
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem(`custom_task_notes_${currentTask.id}`);
+        if (stored) {
+          setNotes(JSON.parse(stored));
+        } else {
+          setNotes([
+            {
+              id: 1,
+              author: "EVENTO Operations Coordinator",
+              initials: "EO",
+              time: "Assigned Date",
+              text: currentTask.coordinatorNotes || "Coordinate with EVENTO Dispatch officer upon arrival at venue.",
+            },
+          ]);
+        }
+      } catch (e) {
+        setNotes([]);
+      }
+    }
+  }, [currentTask?.id, currentTask?.coordinatorNotes]);
+
   // Safe accessors — API responses may omit these fields
   const currentRequirements = Array.isArray(currentTask?.requirements) ? currentTask.requirements : [];
   const currentCoordinatorNotes = currentTask?.coordinatorNotes || "Coordinate with EVENTO Dispatch officer upon arrival.";
 
   const handlePostNote = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newNote.trim()) return;
+    if (!newNote.trim() || !currentTask?.id) return;
 
-    setNotes([
-      ...notes,
-      {
-        id: Date.now(),
-        author: "You (Vendor Partner)",
-        initials: "VP",
-        time: "Just now",
-        text: newNote.trim(),
-      },
-    ]);
+    const newNoteObj = {
+      id: Date.now(),
+      author: "You (Vendor Partner)",
+      initials: "VP",
+      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      text: newNote.trim(),
+    };
+
+    const updated = [...notes, newNoteObj];
+    setNotes(updated);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem(`custom_task_notes_${currentTask.id}`, JSON.stringify(updated));
+      } catch (e) {}
+    }
+
+    createNotification(
+      "Dispatch Channel Message Sent",
+      `Vendor message posted for ${currentTask.bookingRef}: "${newNote.trim()}".`,
+      "💬"
+    );
+    window.dispatchEvent(new CustomEvent("dashboard-data-update"));
+
     setNewNote("");
-    toast.success("Note posted to EVENTO dispatch channel!");
+    toast.success("✓ Note posted to EVENTO dispatch channel!");
   };
 
   const handleMessageCoordinator = () => {
+    if (!currentTask?.id) return;
+
+    const alertNote = {
+      id: Date.now(),
+      author: "Urgent Dispatch Alert",
+      initials: "⚠️",
+      time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      text: "⚡ Urgent: Vendor requested immediate coordinator callback for venue coordination.",
+    };
+
+    const updated = [...notes, alertNote];
+    setNotes(updated);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem(`custom_task_notes_${currentTask.id}`, JSON.stringify(updated));
+      } catch (e) {}
+    }
+
+    createNotification(
+      "Urgent Dispatch Coordinator Alert",
+      `Urgent callback requested by Vendor for ${currentTask.bookingRef}.`,
+      "🚨"
+    );
+    window.dispatchEvent(new CustomEvent("dashboard-data-update"));
+
     toast.success(
-      "Message alert sent to EVENTO Operations Desk! Your coordinator will reply in the dispatch channel.",
+      "✓ Message alert sent to EVENTO Operations Desk! Your coordinator will reply in the dispatch channel.",
       { duration: 4000 }
     );
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || !currentTask?.id) return;
 
     setIsUploading(true);
-    setTimeout(() => {
-      setIsUploading(false);
-      toast.success(`✓ Deliverable "${file.name}" uploaded successfully for QA review!`);
-    }, 1500);
+    
+    // Try backend API upload
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      await apiClient.post(`/vendors/tasks/${currentTask.id}/deliverables`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+    } catch (err) {}
+
+    const newDeliverable: DeliverableItem = {
+      id: `DEL-${Date.now()}`,
+      fileName: file.name,
+      fileSize: (file.size / (1024 * 1024)).toFixed(2) + " MB",
+      uploadedAt: new Date().toLocaleString([], { dateStyle: "short", timeStyle: "short" }),
+      status: "UNDER QA INSPECTION",
+      url: URL.createObjectURL(file),
+    };
+
+    const updated = [newDeliverable, ...deliverables];
+    setDeliverables(updated);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem(`custom_deliverables_${currentTask.id}`, JSON.stringify(updated));
+      } catch (e) {}
+    }
+
+    createNotification(
+      "Deliverable Uploaded",
+      `Uploaded "${file.name}" for ${currentTask.title} (Pending QA Review).`,
+      "📤"
+    );
+
+    setIsUploading(false);
+    toast.success(`✓ Deliverable "${file.name}" uploaded successfully for QA review!`);
+  };
+
+  const handleDeleteDeliverable = (delId: string) => {
+    const updated = deliverables.filter((d) => d.id !== delId);
+    setDeliverables(updated);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem(`custom_deliverables_${currentTask.id}`, JSON.stringify(updated));
+      } catch (e) {}
+    }
+    toast.success("Deliverable removed.");
   };
 
   const steps = [
@@ -263,7 +465,45 @@ export default function TaskDetailsPage() {
       t.id === currentTask.id ? { ...t, status: newStatus } : t
     );
     setTasksList(updated);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("customVendorTasks", JSON.stringify(updated));
+      } catch (e) {}
+    }
+    createNotification(
+      "Task Status Updated",
+      `Task ${currentTask.bookingRef} (${currentTask.category}) status changed to: ${newStatus}.`,
+      "⚡"
+    );
+    window.dispatchEvent(new CustomEvent("dashboard-data-update"));
     toast.success(`Task status updated to: ${newStatus}`);
+  };
+
+  const handleAdvanceStep = (i: number) => {
+    const nextStep = i + 1;
+    if (nextStep >= steps.length) return;
+
+    setProgressStep(nextStep);
+
+    if (typeof window !== "undefined" && currentTask?.id) {
+      try {
+        localStorage.setItem(`custom_task_step_${currentTask.id}`, String(nextStep));
+
+        const storedTasks = localStorage.getItem("customVendorTasks");
+        if (storedTasks) {
+          const list = JSON.parse(storedTasks);
+          const updated = list.map((t: any) =>
+            String(t.id) === String(currentTask.id)
+              ? { ...t, progressStep: nextStep, status: steps[nextStep].label }
+              : t
+          );
+          localStorage.setItem("customVendorTasks", JSON.stringify(updated));
+        }
+      } catch (e) {}
+    }
+
+    const stepLabel = steps[nextStep].label;
+    handleStatusChange(stepLabel);
   };
 
   const filteredTasks = tasksList.filter((t) => {
@@ -312,11 +552,16 @@ export default function TaskDetailsPage() {
             onChange={(e) => setSelectedTaskId(e.target.value)}
             className="px-3 py-1.5 rounded-xl bg-slate-800 border border-slate-700 text-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-slate-600"
           >
-            {tasksList.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.bookingRef} - {t.title} ({t.category})
-              </option>
-            ))}
+            {tasksList.map((t, idx) => {
+              const refStr = t.bookingRef || (t.id ? (String(t.id).startsWith("#") ? String(t.id) : `#${t.id}`) : `#BKG-2026-10${idx + 1}`);
+              const titleStr = t.title || "Assigned Event Execution";
+              const catStr = t.category || "Fulfillment";
+              return (
+                <option key={t.id ? `task-opt-${t.id}-${idx}` : `tsk-idx-${idx}`} value={t.id}>
+                  {refStr} - {titleStr} ({catStr})
+                </option>
+              );
+            })}
           </select>
         </div>
       </div>
@@ -565,15 +810,7 @@ export default function TaskDetailsPage() {
 
                     {isCurrent && i < steps.length - 1 && (
                       <button
-                        onClick={() => {
-                          const nextStep = i + 1;
-                          setProgressStep(nextStep);
-                          if (nextStep === steps.length - 1) {
-                            handleStatusChange("Completed");
-                          } else {
-                            handleStatusChange("In Progress");
-                          }
-                        }}
+                        onClick={() => handleAdvanceStep(i)}
                         className="mt-2 w-full py-1.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-md transition-colors"
                       >
                         Advance Step
@@ -588,29 +825,87 @@ export default function TaskDetailsPage() {
           {/* Deliverable File Upload */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
             <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-              Deliverables Upload
+              Deliverables Upload ({deliverables.length})
             </h2>
             <p className="text-xs text-slate-500 leading-relaxed">
               Upload raw drafts, media clips, or final edited files for EVENTO QA inspection.
             </p>
 
-            <label className="border-2 border-dashed border-slate-200 bg-slate-50 rounded-xl p-6 text-center space-y-2 cursor-pointer hover:bg-slate-100 transition-colors block">
+            <label className="border-2 border-dashed border-purple-200 bg-purple-50/40 rounded-xl p-5 text-center space-y-2 cursor-pointer hover:bg-purple-50 transition-colors block">
               <input
                 type="file"
                 className="hidden"
                 onChange={handleFileUpload}
                 disabled={isUploading}
               />
-              <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center mx-auto text-slate-600">
-                <CloudUpload className="w-5 h-5 text-slate-500" />
+              <div className="w-10 h-10 rounded-full bg-white border border-purple-200 flex items-center justify-center mx-auto text-purple-600 shadow-xs">
+                <CloudUpload className="w-5 h-5 text-purple-600" />
               </div>
               <p className="text-xs font-bold text-slate-800">
-                {isUploading ? "Uploading file..." : "Click or drag & drop file"}
+                {isUploading ? "Uploading deliverable..." : "Click or drag & drop file to upload"}
               </p>
               <p className="text-[10px] text-slate-400 font-semibold uppercase">
-                ZIP, JPG, PNG or MP4 (Max 800MB)
+                ZIP, RAW, JPG, PNG or MP4 (Up to 800MB)
               </p>
             </label>
+
+            {/* Render Uploaded Deliverables List */}
+            {deliverables.length > 0 && (
+              <div className="space-y-2.5 pt-2 border-t border-slate-100">
+                <p className="text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                  Uploaded Deliverables ({deliverables.length})
+                </p>
+                <div className="space-y-2">
+                  {deliverables.map((del) => (
+                    <div
+                      key={del.id}
+                      className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between gap-3 text-xs"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-purple-600 flex items-center justify-center shrink-0">
+                          <FileText className="w-4 h-4 text-purple-600" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-bold text-slate-900 truncate">
+                            {del.fileName}
+                          </p>
+                          <div className="flex items-center gap-2 text-[10px] text-slate-500 font-medium">
+                            <span>{del.fileSize}</span>
+                            <span>•</span>
+                            <span>{del.uploadedAt}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-100 text-amber-800 border border-amber-200">
+                          QA INSPECTION
+                        </span>
+                        {del.url && (
+                          <a
+                            href={del.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            download={del.fileName}
+                            className="p-1 text-slate-500 hover:text-slate-900 rounded hover:bg-slate-200 transition-colors"
+                            title="View / Download Deliverable"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                          </a>
+                        )}
+                        <button
+                          onClick={() => handleDeleteDeliverable(del.id)}
+                          className="p-1 text-rose-400 hover:text-rose-600 rounded hover:bg-rose-50 transition-colors"
+                          title="Delete Deliverable"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import apiClient from "@/lib/apiClient";
+import { createNotification } from "@/lib/notifications";
 import { NewBookingModal } from "@/components/dashboard/NewBookingModal";
 import { Plus } from "lucide-react";
 
@@ -30,7 +31,7 @@ interface VendorItemType {
 
 const DEFAULT_VENDORS: VendorItemType[] = [
   {
-    name: "Dhaka Royal Photography Studio",
+    name: "Dhaka Royal Photo Team",
     id: "V-4029",
     category: "Photography",
     zone: "Dhaka Zone",
@@ -140,12 +141,17 @@ export default function VendorsPage() {
     }
 
     const mergedBookings = [...customBookingsMapped, ...DEFAULT_CUSTOMER_BOOKINGS];
-    setActiveBookings(mergedBookings);
-    if (mergedBookings.length > 0) {
-      setTargetBookingId(mergedBookings[0].id);
+    const uniqueBookings = mergedBookings.filter(
+      (item, idx, self) => idx === self.findIndex((t) => String(t.id) === String(item.id))
+    );
+    setActiveBookings(uniqueBookings);
+    if (uniqueBookings.length > 0) {
+      setTargetBookingId(uniqueBookings[0].id);
     }
 
     let localCustomVendors: any[] = [];
+    let loggedInVendorList: any[] = [];
+
     if (typeof window !== "undefined") {
       try {
         const storedVendors = localStorage.getItem("customVendors");
@@ -153,19 +159,49 @@ export default function VendorsPage() {
           localCustomVendors = JSON.parse(storedVendors);
         }
       } catch (e) {}
+
+      try {
+        const uStr = localStorage.getItem("user");
+        if (uStr) {
+          const u = JSON.parse(uStr);
+          const userRole = (u.role || "").toLowerCase();
+          const fullName = `${u.firstName || u.name || ""} ${u.lastName || ""}`.trim() || u.email;
+          if (fullName && (userRole === "vendor" || userRole === "partner")) {
+            loggedInVendorList.push({
+              name: `${fullName} (Logged-in Partner)`,
+              id: u.id || `V-USER-${u.email?.slice(0, 4) || "LIVE"}`,
+              category: u.category || u.vendorCategory || u.companyName || "Verified Event Service",
+              zone: u.zone || "Dhaka Zone",
+              rating: "5.0",
+              jobs: u.jobsCount || 2,
+              verified: true,
+              payoutRate: "৳35,000 / Event",
+            });
+          }
+        }
+      } catch (e) {}
     }
+
+    let rawVendorsList = [...loggedInVendorList, ...localCustomVendors, ...DEFAULT_VENDORS];
 
     try {
       const res = await apiClient.get("/vendors");
       if (res.data && res.data.success !== false && Array.isArray(res.data.data) && res.data.data.length > 0) {
-        const combined = [...localCustomVendors, ...res.data.data];
-        setVendorsList(combined);
-        return;
+        rawVendorsList = [...loggedInVendorList, ...localCustomVendors, ...res.data.data];
       }
     } catch (e) {}
 
-    const combined = [...localCustomVendors, ...DEFAULT_VENDORS];
-    setVendorsList(combined);
+    const sanitizedVendors = rawVendorsList.map((v) => {
+      if (v.name && v.name.includes("Dhaka Royal Photography Studio")) {
+        return { ...v, name: "Dhaka Royal Photo Team" };
+      }
+      return v;
+    });
+
+    const uniqueVendors = sanitizedVendors.filter(
+      (v, idx, self) => idx === self.findIndex((t) => String(t.id) === String(v.id) || String(t.name) === String(v.name))
+    );
+    setVendorsList(uniqueVendors);
   };
 
   useEffect(() => {
@@ -186,13 +222,24 @@ export default function VendorsPage() {
     setTargetService(vendor.category);
   };
 
-  const handleAssignVendor = (e: React.FormEvent) => {
+  const handleAssignVendor = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedVendor) return;
 
     const updatedVendorId = selectedVendor.id;
+    const bookingRefStr = String(targetBookingId).startsWith("#") ? String(targetBookingId) : `#${targetBookingId}`;
 
-    // 1. Update vendor active jobs count
+    // 1. Try Backend API assignment
+    try {
+      await apiClient.post("/vendors/assign", {
+        vendorId: selectedVendor.id,
+        bookingId: targetBookingId,
+        service: targetService,
+        notes: dispatchNotes,
+      });
+    } catch (err) {}
+
+    // 2. Update vendor active jobs count locally
     setVendorsList((prev) => {
       const updated = prev.map((v) =>
         v.id === updatedVendorId ? { ...v, jobs: (v.jobs || 0) + 1 } : v
@@ -205,7 +252,7 @@ export default function VendorsPage() {
       return updated;
     });
 
-    // 2. Update customer booking status to CONFIRMED / Operational Dispatch
+    // 3. Update customer booking status & assigned vendor info
     if (typeof window !== "undefined") {
       try {
         const stored = localStorage.getItem("customBookings");
@@ -222,6 +269,7 @@ export default function VendorsPage() {
                 bookingStatus: "confirmed",
                 status: "CONFIRMED",
                 assignedVendor: selectedVendor.name,
+                assignedVendorId: selectedVendor.id,
                 assignedService: targetService,
               };
             }
@@ -229,12 +277,55 @@ export default function VendorsPage() {
           });
           localStorage.setItem("customBookings", JSON.stringify(list));
         }
-        window.dispatchEvent(new CustomEvent("dashboard-data-update"));
       } catch (err) {}
     }
 
+    // 4. Create explicit Task entry in customVendorTasks for Vendor Task Board
+    if (typeof window !== "undefined") {
+      try {
+        const storedTasks = localStorage.getItem("customVendorTasks");
+        const tasksList = storedTasks ? JSON.parse(storedTasks) : [];
+        const newTask = {
+          id: `TSK-${Math.floor(1000 + Math.random() * 9000)}`,
+          bookingRef: bookingRefStr,
+          title: `Dispatched ${targetService} Execution`,
+          category: targetService,
+          zone: selectedVendor.zone,
+          venue: `Assigned Venue for ${bookingRefStr}`,
+          date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+          duration: "Full Event Duration",
+          payout: `${selectedVendor.payoutRate} (Protected Escrow)`,
+          status: "Confirmed",
+          requirements: [
+            {
+              title: `${targetService} Service Delivery`,
+              desc: dispatchNotes || "Execute assigned service line item according to EVENTO specifications.",
+            },
+            {
+              title: "Quality Assurance & Deliverables Upload",
+              desc: "Upload media files / work completion proof for EVENTO QA inspection upon event finish.",
+            },
+          ],
+          coordinatorNotes: dispatchNotes || "Coordinate with EVENTO Dispatch Officer upon arrival.",
+          assignedVendorId: selectedVendor.id,
+          assignedVendorName: selectedVendor.name,
+        };
+        tasksList.unshift(newTask);
+        localStorage.setItem("customVendorTasks", JSON.stringify(tasksList));
+      } catch (err) {}
+    }
+
+    // 5. Create live real-time notification
+    createNotification(
+      "Vendor Dispatched to Booking",
+      `Assigned ${selectedVendor.name} (${targetService}) to ${bookingRefStr}.`,
+      "📦"
+    );
+
+    window.dispatchEvent(new CustomEvent("dashboard-data-update"));
+
     toast.success(
-      `✓ Dispatched ${selectedVendor.name} to booking #${targetBookingId} for ${targetService}!`,
+      `✓ Dispatched ${selectedVendor.name} to booking ${bookingRefStr} for ${targetService}!`,
       { duration: 5000 }
     );
     setSelectedVendor(null);
@@ -499,8 +590,8 @@ export default function VendorsPage() {
                   onChange={(e) => setTargetBookingId(e.target.value)}
                   className="w-full px-3.5 py-2 rounded-lg border border-slate-300 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900"
                 >
-                  {activeBookings.map((b) => (
-                    <option key={b.id} value={b.id}>
+                  {activeBookings.map((b, idx) => (
+                    <option key={b.id ? `booking-opt-${b.id}-${idx}` : `opt-idx-${idx}`} value={b.id}>
                       {b.label}
                     </option>
                   ))}

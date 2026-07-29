@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Save, Sliders, Lock, Plus, Edit2, ShieldAlert, MapPin } from "lucide-react";
 import InputField from "../../../components/ui/InputField";
 import Toggle from "../../../components/ui/Toggle";
 import { toast } from "sonner";
+import { createNotification } from "@/lib/notifications";
 
 interface ZonePricingItem {
   name: string;
@@ -23,15 +24,79 @@ const DEFAULT_BD_ZONES: ZonePricingItem[] = [
 ];
 
 export default function SettingsPage() {
-  const [zonesList] = useState<ZonePricingItem[]>(DEFAULT_BD_ZONES);
+  const [zonesList, setZonesList] = useState<ZonePricingItem[]>(DEFAULT_BD_ZONES);
+  const [osControls, setOsControls] = useState({
+    smartCalculator: true,
+    autoDispatch: true,
+    reviewTrigger: true,
+    milestoneAlerts: true,
+  });
 
-  const handleAddZone = () => {
+  const fetchZones = () => {
+    let custom: ZonePricingItem[] = [];
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("customZones");
+        if (stored) custom = JSON.parse(stored);
+      } catch (e) {}
+    }
+    const merged = [...custom, ...DEFAULT_BD_ZONES];
+    const unique = merged.filter(
+      (z, idx, self) => idx === self.findIndex((t) => t.name.toLowerCase() === z.name.toLowerCase())
+    );
+    setZonesList(unique);
+  };
+
+  useEffect(() => {
+    fetchZones();
+
+    if (typeof window !== "undefined") {
+      try {
+        const storedControls = localStorage.getItem("managed_os_controls");
+        if (storedControls) {
+          setOsControls(JSON.parse(storedControls));
+        }
+      } catch (e) {}
+    }
+
+    const handleUpdate = () => fetchZones();
+    window.addEventListener("dashboard-data-update", handleUpdate);
+    return () => window.removeEventListener("dashboard-data-update", handleUpdate);
+  }, []);
+
+  const handleToggleOSControl = (key: string, label: string, value: boolean) => {
+    const updated = { ...osControls, [key]: value };
+    setOsControls(updated);
+
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("managed_os_controls", JSON.stringify(updated));
+      } catch (e) {}
+    }
+
+    createNotification(
+      "Managed OS Setting Changed",
+      `Updated '${label}' status to ${value ? "Active" : "Disabled"}.`,
+      "⚙️"
+    );
+    window.dispatchEvent(new CustomEvent("dashboard-data-update"));
+    toast.success(`✓ Managed OS Control '${label}' is now ${value ? "Active" : "Disabled"}!`);
+  };
+
+  const handleAddZone = (zone?: ZonePricingItem) => {
     window.dispatchEvent(
-      new CustomEvent("open-dashboard-modal", { detail: "add-zone" })
+      new CustomEvent("open-dashboard-modal", {
+        detail: zone ? { type: "add-zone", zone } : "add-zone",
+      })
     );
   };
 
   const handleSave = () => {
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("managed_os_controls", JSON.stringify(osControls));
+      } catch (e) {}
+    }
     toast.success("✓ Managed Event OS system configurations saved successfully!");
   };
 
@@ -120,7 +185,7 @@ export default function SettingsPage() {
                 </p>
               </div>
               <button
-                onClick={handleAddZone}
+                onClick={() => handleAddZone()}
                 className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors flex items-center gap-1.5"
               >
                 <Plus className="w-4 h-4" /> Add Custom Sector
@@ -156,8 +221,9 @@ export default function SettingsPage() {
                     </td>
                     <td className="p-4 pr-6 text-right">
                       <button
-                        onClick={handleAddZone}
+                        onClick={() => handleAddZone(z)}
                         className="p-1.5 text-slate-400 hover:text-slate-900 rounded hover:bg-slate-200 transition-colors"
+                        title="Edit Zone"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
@@ -183,28 +249,32 @@ export default function SettingsPage() {
               <Toggle
                 label="Smart Event Calculator"
                 description="Enable real-time interactive zone pricing & budget estimator."
-                initialChecked={true}
+                initialChecked={osControls.smartCalculator}
+                onChange={(val) => handleToggleOSControl("smartCalculator", "Smart Event Calculator", val)}
               />
             </div>
             <div className="py-3">
               <Toggle
                 label="Managed Auto-Dispatch"
                 description="Automatically suggest pre-vetted teams for urgent bookings."
-                initialChecked={true}
+                initialChecked={osControls.autoDispatch}
+                onChange={(val) => handleToggleOSControl("autoDispatch", "Managed Auto-Dispatch", val)}
               />
             </div>
             <div className="py-3">
               <Toggle
                 label="Platform Review Trigger"
                 description="Prompt customers to rate EVENTO after event completion."
-                initialChecked={true}
+                initialChecked={osControls.reviewTrigger}
+                onChange={(val) => handleToggleOSControl("reviewTrigger", "Platform Review Trigger", val)}
               />
             </div>
             <div className="py-3">
               <Toggle
                 label="Milestone SMS & Email Alerts"
                 description="Send immediate updates to customers when coordinators dispatch teams."
-                initialChecked={true}
+                initialChecked={osControls.milestoneAlerts}
+                onChange={(val) => handleToggleOSControl("milestoneAlerts", "Milestone SMS & Email Alerts", val)}
               />
             </div>
           </div>

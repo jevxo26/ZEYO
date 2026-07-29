@@ -28,7 +28,7 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Response interceptor to handle global errors (like 401)
+// Response interceptor to handle global errors (like 401 & 500)
 apiClient.interceptors.response.use(
   (response) => {
     return response;
@@ -41,6 +41,8 @@ apiClient.interceptors.response.use(
         localStorage.removeItem('user');
         window.location.href = '/login';
       }
+    } else if (error.response?.status === 500) {
+      console.warn('[apiClient] Backend API returned 500. Falling back to client state.', error.config?.url);
     }
     return Promise.reject(error);
   }

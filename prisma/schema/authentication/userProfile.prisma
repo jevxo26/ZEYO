@@ -9,26 +9,24 @@ model UserProfile {
   userId Int    @unique
 
   // ── Relation ───────────────────────────────────────────────────────────────
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // ── Professional Info ──────────────────────────────────────────────────────
-  occupation   String?
-  companyName  String?
-  organization String?
-  bio          String?
-  website      String?
+  occupation    String?
+  companyName   String?
+  organization  String?
+  bio           String?
+  website       String?
 
-  // ── Social Links ───────────────────────────────────────────────────────────
-  facebook  String?
-  instagram String?
-  linkedin  String?
 
-  // ── Localisation Preferences ───────────────────────────────────────────────
+  facebook      String?
+  instagram     String?
+  linkedin      String?
+
   preferredLanguage String @default("bn")
   preferredCurrency String @default("BDT")
   timezone          String @default("Asia/Dhaka")
 
-  // ── Timestamps ─────────────────────────────────────────────────────────────
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
