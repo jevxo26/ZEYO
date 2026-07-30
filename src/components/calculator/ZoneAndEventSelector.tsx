@@ -66,7 +66,7 @@ export default function ZoneAndEventSelector({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 mt-4">
+        <div className="flex flex-wrap gap-3 sm:gap-4 mt-4">
           {BANGLADESH_ZONES.map((zone) => {
             const isSelected = selectedZoneId === zone.id;
             return (
@@ -74,26 +74,34 @@ export default function ZoneAndEventSelector({
                 key={zone.id}
                 type="button"
                 onClick={() => onSelectZone(zone.id)}
-                className={`relative flex flex-col items-center justify-center p-3.5 rounded-xl border text-center transition-all duration-200 ${
+                className={`group relative flex flex-col items-center justify-center gap-2.5 min-h-[108px] px-5 py-5 rounded-xl border text-center transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 ${
                   isSelected
                     ? "border-indigo-600 bg-indigo-50/90 dark:bg-indigo-950/40 text-indigo-900 dark:text-indigo-200 shadow-md ring-2 ring-indigo-500/20"
                     : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-slate-50 dark:hover:bg-slate-800/50"
                 }`}
               >
                 {isSelected && (
-                  <span className="absolute top-2 right-2 flex h-4 w-4 items-center justify-center rounded-full bg-indigo-600 text-white">
+                  <span className="absolute top-2.5 right-2.5 flex h-4 w-4 items-center justify-center rounded-full bg-indigo-600 text-white">
                     <Check className="h-2.5 w-2.5" />
                   </span>
                 )}
-                <span className="font-semibold text-sm sm:text-base">
+                <span className="font-semibold text-sm sm:text-base leading-snug whitespace-nowrap pr-1">
                   {zone.name}
                 </span>
-                <span className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                <span
+                  className={`inline-flex items-center justify-center px-2.5 py-1 rounded-full text-[11px] font-semibold leading-none whitespace-nowrap ${
+                    zone.priceMultiplier === 1.0
+                      ? "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400"
+                      : zone.priceMultiplier > 1
+                      ? "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400"
+                      : "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400"
+                  }`}
+                >
                   {zone.priceMultiplier === 1.0
                     ? "Standard Rate"
                     : `${zone.priceMultiplier > 1 ? "+" : ""}${Math.round(
                         (zone.priceMultiplier - 1) * 100
-                      )}% Zone Rate`}
+                      )}%`}
                 </span>
               </button>
             );
@@ -117,7 +125,7 @@ export default function ZoneAndEventSelector({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mt-4">
           {EVENT_TYPES.map((evt) => {
             const isSelected = selectedEventTypeId === evt.id;
             return (
@@ -125,7 +133,7 @@ export default function ZoneAndEventSelector({
                 key={evt.id}
                 type="button"
                 onClick={() => onSelectEventType(evt.id)}
-                className={`relative flex items-start gap-3.5 p-4 rounded-xl border text-left transition-all duration-200 ${
+                className={`relative flex items-start gap-4 min-h-[104px] p-5 rounded-xl border text-left transition-all duration-200 ${
                   isSelected
                     ? "border-purple-600 bg-purple-50/90 dark:bg-purple-950/40 shadow-md ring-2 ring-purple-500/20"
                     : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-purple-300 dark:hover:border-purple-700 hover:bg-slate-50 dark:hover:bg-slate-800/50"
@@ -134,21 +142,21 @@ export default function ZoneAndEventSelector({
                 <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 shrink-0">
                   {iconMap[evt.icon] || <Sparkles className="w-5 h-5 text-purple-500" />}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <span className="font-semibold text-slate-900 dark:text-white text-sm sm:text-base">
+                <div className="flex-1 min-w-0 pr-6">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="font-semibold text-slate-900 dark:text-white text-sm sm:text-base leading-snug break-words">
                       {evt.name}
                     </span>
-                    {isSelected && (
-                      <span className="flex h-4 w-4 items-center justify-center rounded-full bg-purple-600 text-white shrink-0">
-                        <Check className="h-2.5 w-2.5" />
-                      </span>
-                    )}
                   </div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed line-clamp-2">
                     {evt.description}
                   </p>
                 </div>
+                {isSelected && (
+                  <span className="absolute top-4 right-4 flex h-4 w-4 items-center justify-center rounded-full bg-purple-600 text-white shrink-0">
+                    <Check className="h-2.5 w-2.5" />
+                  </span>
+                )}
               </button>
             );
           })}
