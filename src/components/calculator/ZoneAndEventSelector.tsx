@@ -125,7 +125,7 @@ export default function ZoneAndEventSelector({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 mt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mt-5">
           {EVENT_TYPES.map((evt) => {
             const isSelected = selectedEventTypeId === evt.id;
             return (
@@ -133,30 +133,33 @@ export default function ZoneAndEventSelector({
                 key={evt.id}
                 type="button"
                 onClick={() => onSelectEventType(evt.id)}
-                className={`relative flex items-start gap-4 min-h-[104px] p-5 rounded-xl border text-left transition-all duration-200 ${
+                className={`group flex flex-col min-h-[148px] p-5 sm:p-6 rounded-xl border text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 ${
                   isSelected
                     ? "border-purple-600 bg-purple-50/90 dark:bg-purple-950/40 shadow-md ring-2 ring-purple-500/20"
                     : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-purple-300 dark:hover:border-purple-700 hover:bg-slate-50 dark:hover:bg-slate-800/50"
                 }`}
               >
-                <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 shrink-0">
-                  {iconMap[evt.icon] || <Sparkles className="w-5 h-5 text-purple-500" />}
-                </div>
-                <div className="flex-1 min-w-0 pr-6">
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="font-semibold text-slate-900 dark:text-white text-sm sm:text-base leading-snug break-words">
-                      {evt.name}
-                    </span>
+                {/* Icon + selection indicator row — never collides with text below */}
+                <div className="flex items-center justify-between">
+                  <div className="p-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 shrink-0">
+                    {iconMap[evt.icon] || <Sparkles className="w-5 h-5 text-purple-500" />}
                   </div>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed line-clamp-2">
+                  {isSelected && (
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-purple-600 text-white shrink-0">
+                      <Check className="h-3 w-3" />
+                    </span>
+                  )}
+                </div>
+
+                {/* Title + description flow naturally underneath, full width */}
+                <div className="mt-4 min-w-0">
+                  <h4 className="font-semibold text-slate-900 dark:text-white text-sm sm:text-base leading-snug break-words">
+                    {evt.name}
+                  </h4>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed break-words">
                     {evt.description}
                   </p>
                 </div>
-                {isSelected && (
-                  <span className="absolute top-4 right-4 flex h-4 w-4 items-center justify-center rounded-full bg-purple-600 text-white shrink-0">
-                    <Check className="h-2.5 w-2.5" />
-                  </span>
-                )}
               </button>
             );
           })}
