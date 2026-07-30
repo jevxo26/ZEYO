@@ -6,22 +6,27 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import SocialLogin from "../SocialLogin";
 import { useAppDispatch } from "@/store/store";
 import { setCredentials } from "@/store/slices/authSlice";
-import { Camera, User } from "lucide-react";
+import {
+  Camera,
+  User,
+  Mail,
+  Phone,
+  CalendarDays,
+  Lock,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 import apiClient from "@/lib/apiClient";
 
 const schema = yup.object({
   firstName: yup.string().required("First name is required"),
   lastName: yup.string().required("Last name is required"),
-  email: yup
-    .string()
-    .email("Invalid email format")
-    .required("Email is required"),
+  email: yup.string().email("Invalid email format").required("Email is required"),
   phone: yup.string().required("Phone number is required"),
   dateOfBirth: yup.string().required("Date of birth is required"),
   gender: yup.string().required("Gender is required"),
@@ -39,9 +44,26 @@ type FormData = yup.InferType<typeof schema> & {
   profileImage?: FileList;
 };
 
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-2 pt-1">
+      <span
+        className="w-1 h-1 rounded-full shrink-0"
+        style={{ background: "linear-gradient(135deg, #4F7DF3, #9B5DE5)" }}
+      />
+      <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-[#7E7AA6] whitespace-nowrap">
+        {children}
+      </span>
+      <span className="flex-1 h-px bg-[#7C6FE8]/15" />
+    </div>
+  );
+}
+
 export function SignUpForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -57,11 +79,8 @@ export function SignUpForm() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     const reader = new FileReader();
-    reader.onload = () => {
-      setImagePreview(reader.result as string);
-    };
+    reader.onload = () => setImagePreview(reader.result as string);
     reader.readAsDataURL(file);
   };
 
@@ -87,12 +106,7 @@ export function SignUpForm() {
       }
 
       if (result.data?.token) {
-        dispatch(
-          setCredentials({
-            user: result.data.user,
-            token: result.data.token,
-          })
-        );
+        dispatch(setCredentials({ user: result.data.user, token: result.data.token }));
         toast.success("Account created successfully!");
         router.push("/dashboard");
         return;
@@ -106,10 +120,7 @@ export function SignUpForm() {
       const loginResult = loginRes.data;
       if (loginResult && loginResult.data?.token) {
         dispatch(
-          setCredentials({
-            user: loginResult.data.user,
-            token: loginResult.data.token,
-          })
+          setCredentials({ user: loginResult.data.user, token: loginResult.data.token })
         );
         toast.success("Account created successfully!");
         router.push("/dashboard");
@@ -125,29 +136,40 @@ export function SignUpForm() {
   };
 
   const inputClass =
-    "w-full bg-[#F1F0FA] border-transparent text-[#171334] placeholder-[#8A85B0] focus:ring-2 focus:ring-[#7C6FE8] focus:border-transparent rounded-lg h-9 text-sm transition-all";
+    "w-full bg-[#F1F0FA] border-transparent text-[#171334] placeholder-[#8A85B0] focus:ring-2 focus:ring-[#7C6FE8] focus:border-transparent rounded-lg h-9 text-sm transition-all pl-9";
   const labelClass = "text-[#D6D2EF] font-semibold text-xs";
   const errorClass = "text-rose-400 text-[11px] font-semibold mt-0.5";
+  const iconClass =
+    "absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#8A85B0] pointer-events-none";
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-2.5 text-left w-full">
-      {/* Circle Profile Photo Uploader */}
+      {/* Gradient-ring Profile Photo Uploader */}
       <div className="flex flex-col items-center space-y-1.5 mb-1">
         <div
-          className="relative group w-16 h-16 rounded-full overflow-hidden border-2 flex items-center justify-center cursor-pointer transition-all"
-          style={{ backgroundColor: "#1F1B44", borderColor: "rgba(124,111,232,0.3)" }}
+          className="relative w-[72px] h-[72px] rounded-full p-[2px]"
+          style={{ background: "linear-gradient(135deg, #4F7DF3, #9B5DE5)" }}
         >
-          {imagePreview ? (
-            <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-          ) : (
-            <User className="w-7 h-7 text-[#9B8CF0]" />
-          )}
+          <div className="relative group w-full h-full rounded-full overflow-hidden bg-[#1F1B44] flex items-center justify-center cursor-pointer">
+            {imagePreview ? (
+              <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+            ) : (
+              <User className="w-7 h-7 text-[#9B8CF0]" />
+            )}
+            <label
+              htmlFor="profileImage"
+              className="absolute inset-0 bg-[#171334]/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-[9px] text-white font-semibold transition-opacity cursor-pointer"
+            >
+              <Camera className="w-4 h-4 mb-0.5" />
+              Upload
+            </label>
+          </div>
           <label
             htmlFor="profileImage"
-            className="absolute inset-0 bg-[#171334]/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-[9px] text-white font-semibold transition-opacity cursor-pointer"
+            className="absolute bottom-0 right-0 w-5 h-5 rounded-full flex items-center justify-center border-2 border-[#171334] cursor-pointer"
+            style={{ background: "linear-gradient(135deg, #4F7DF3, #9B5DE5)" }}
           >
-            <Camera className="w-4 h-4 mb-0.5" />
-            Upload
+            <Camera className="w-2.5 h-2.5 text-white" />
           </label>
         </div>
 
@@ -156,72 +178,157 @@ export function SignUpForm() {
           type="file"
           accept="image/*"
           className="hidden"
-          {...register("profileImage", {
-            onChange: handleImageChange,
-          })}
+          {...register("profileImage", { onChange: handleImageChange })}
         />
       </div>
 
+      <SectionLabel>Personal Details</SectionLabel>
+
       <div className="grid grid-cols-2 gap-2.5">
         <div className="space-y-1">
-          <Label className={labelClass}>First Name</Label>
-          <Input {...register("firstName")} placeholder="John" className={inputClass} />
+          <label className={labelClass}>First Name</label>
+          <div className="relative">
+            <User className={iconClass} />
+            <Input {...register("firstName")} placeholder="John" className={inputClass} />
+          </div>
           {errors.firstName && <p className={errorClass}>{errors.firstName.message}</p>}
         </div>
 
         <div className="space-y-1">
-          <Label className={labelClass}>Last Name</Label>
-          <Input {...register("lastName")} placeholder="Doe" className={inputClass} />
+          <label className={labelClass}>Last Name</label>
+          <div className="relative">
+            <User className={iconClass} />
+            <Input {...register("lastName")} placeholder="Doe" className={inputClass} />
+          </div>
           {errors.lastName && <p className={errorClass}>{errors.lastName.message}</p>}
         </div>
       </div>
 
-      <div className="space-y-1">
-        <Label className={labelClass}>Email Address</Label>
-        <Input type="email" {...register("email")} placeholder="name@company.com" className={inputClass} />
-        {errors.email && <p className={errorClass}>{errors.email.message}</p>}
-      </div>
-
-      <div className="space-y-1">
-        <Label className={labelClass}>Phone Number</Label>
-        <Input {...register("phone")} placeholder="+880 1700 000000" className={inputClass} />
-        {errors.phone && <p className={errorClass}>{errors.phone.message}</p>}
-      </div>
-
       <div className="grid grid-cols-2 gap-2.5">
         <div className="space-y-1">
-          <Label className={labelClass}>Date of Birth</Label>
-          <Input type="date" {...register("dateOfBirth")} className={`${inputClass} block`} />
+          <label className={labelClass}>Date of Birth</label>
+          <div className="relative">
+            <CalendarDays className={iconClass} />
+            <Input type="date" {...register("dateOfBirth")} className={`${inputClass} block`} />
+          </div>
           {errors.dateOfBirth && <p className={errorClass}>{errors.dateOfBirth.message}</p>}
         </div>
 
+        {/* Gender — fixed: named peer groups so each radio only affects its own label */}
         <div className="space-y-1">
-          <Label className={labelClass}>Gender</Label>
-          <select
-            {...register("gender")}
-            className="w-full bg-[#F1F0FA] border border-transparent text-[#171334] focus:ring-2 focus:ring-[#7C6FE8] focus:border-transparent rounded-lg h-9 px-3 text-sm transition-all focus:outline-none"
-            defaultValue=""
-          >
-            <option value="" disabled className="text-[#8A85B0]">
-              Select
-            </option>
-            <option value="male">Male</option>
-            <option value="female">Female</option>
-            <option value="other">Other</option>
-          </select>
+          <label className={labelClass}>Gender</label>
+          <div className="grid grid-cols-3 gap-1">
+            <div className="relative">
+              <input
+                type="radio"
+                id="gender-male"
+                value="male"
+                {...register("gender")}
+                className="peer/male hidden"
+              />
+              <label
+                htmlFor="gender-male"
+                className="peer-checked/male:text-white peer-checked/male:border-transparent peer-checked/male:[background-image:linear-gradient(135deg,#4F7DF3,#9B5DE5)] cursor-pointer text-center rounded-lg h-9 flex items-center justify-center text-[10px] font-bold capitalize border border-[#7C6FE8]/15 bg-[#1F1B44] text-[#A8A3C9] transition-all block w-full"
+              >
+                Male
+              </label>
+            </div>
+
+            <div className="relative">
+              <input
+                type="radio"
+                id="gender-female"
+                value="female"
+                {...register("gender")}
+                className="peer/female hidden"
+              />
+              <label
+                htmlFor="gender-female"
+                className="peer-checked/female:text-white peer-checked/female:border-transparent peer-checked/female:[background-image:linear-gradient(135deg,#4F7DF3,#9B5DE5)] cursor-pointer text-center rounded-lg h-9 flex items-center justify-center text-[10px] font-bold capitalize border border-[#7C6FE8]/15 bg-[#1F1B44] text-[#A8A3C9] transition-all block w-full"
+              >
+                Female
+              </label>
+            </div>
+
+            <div className="relative">
+              <input
+                type="radio"
+                id="gender-other"
+                value="other"
+                {...register("gender")}
+                className="peer/other hidden"
+              />
+              <label
+                htmlFor="gender-other"
+                className="peer-checked/other:text-white peer-checked/other:border-transparent peer-checked/other:[background-image:linear-gradient(135deg,#4F7DF3,#9B5DE5)] cursor-pointer text-center rounded-lg h-9 flex items-center justify-center text-[10px] font-bold capitalize border border-[#7C6FE8]/15 bg-[#1F1B44] text-[#A8A3C9] transition-all block w-full"
+              >
+                Other
+              </label>
+            </div>
+          </div>
           {errors.gender && <p className={errorClass}>{errors.gender.message}</p>}
         </div>
       </div>
 
+      <SectionLabel>Contact & Security</SectionLabel>
+
       <div className="space-y-1">
-        <Label className={labelClass}>Password</Label>
-        <Input type="password" {...register("password")} placeholder="••••••••" className={inputClass} />
+        <label className={labelClass}>Email Address</label>
+        <div className="relative">
+          <Mail className={iconClass} />
+          <Input type="email" {...register("email")} placeholder="name@company.com" className={inputClass} />
+        </div>
+        {errors.email && <p className={errorClass}>{errors.email.message}</p>}
+      </div>
+
+      <div className="space-y-1">
+        <label className={labelClass}>Phone Number</label>
+        <div className="relative">
+          <Phone className={iconClass} />
+          <Input {...register("phone")} placeholder="+880 1700 000000" className={inputClass} />
+        </div>
+        {errors.phone && <p className={errorClass}>{errors.phone.message}</p>}
+      </div>
+
+      <div className="space-y-1">
+        <label className={labelClass}>Password</label>
+        <div className="relative">
+          <Lock className={iconClass} />
+          <Input
+            type={showPassword ? "text" : "password"}
+            {...register("password")}
+            placeholder="••••••••"
+            className={`${inputClass} pr-9`}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((v) => !v)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8A85B0] hover:text-[#171334] transition-colors"
+          >
+            {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+          </button>
+        </div>
         {errors.password && <p className={errorClass}>{errors.password.message}</p>}
       </div>
 
       <div className="space-y-1">
-        <Label className={labelClass}>Confirm Password</Label>
-        <Input type="password" {...register("confirmPassword")} placeholder="••••••••" className={inputClass} />
+        <label className={labelClass}>Confirm Password</label>
+        <div className="relative">
+          <Lock className={iconClass} />
+          <Input
+            type={showConfirmPassword ? "text" : "password"}
+            {...register("confirmPassword")}
+            placeholder="••••••••"
+            className={`${inputClass} pr-9`}
+          />
+          <button
+            type="button"
+            onClick={() => setShowConfirmPassword((v) => !v)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8A85B0] hover:text-[#171334] transition-colors"
+          >
+            {showConfirmPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+          </button>
+        </div>
         {errors.confirmPassword && <p className={errorClass}>{errors.confirmPassword.message}</p>}
       </div>
 
