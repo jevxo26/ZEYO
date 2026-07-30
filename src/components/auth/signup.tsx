@@ -98,7 +98,6 @@ export function SignUpForm() {
         return;
       }
 
-      // Fallback sign in
       const loginRes = await apiClient.post("/auth/login", {
         email: data.email,
         password: data.password,
@@ -125,29 +124,33 @@ export function SignUpForm() {
     }
   };
 
+  const inputClass =
+    "w-full bg-[#F1F0FA] border-transparent text-[#171334] placeholder-[#8A85B0] focus:ring-2 focus:ring-[#7C6FE8] focus:border-transparent rounded-lg h-9 text-sm transition-all";
+  const labelClass = "text-[#D6D2EF] font-semibold text-xs";
+  const errorClass = "text-rose-400 text-[11px] font-semibold mt-0.5";
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 text-left w-full">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-2.5 text-left w-full">
       {/* Circle Profile Photo Uploader */}
-      <div className="flex flex-col items-center space-y-2 mb-6">
-        <div className="relative group w-24 h-24 rounded-full overflow-hidden bg-slate-100 border-2 border-slate-200 flex items-center justify-center cursor-pointer transition-all hover:border-slate-400">
+      <div className="flex flex-col items-center space-y-1.5 mb-1">
+        <div
+          className="relative group w-16 h-16 rounded-full overflow-hidden border-2 flex items-center justify-center cursor-pointer transition-all"
+          style={{ backgroundColor: "#1F1B44", borderColor: "rgba(124,111,232,0.3)" }}
+        >
           {imagePreview ? (
-            <img
-              src={imagePreview}
-              alt="Preview"
-              className="w-full h-full object-cover"
-            />
+            <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
           ) : (
-            <User className="w-10 h-10 text-slate-400" />
+            <User className="w-7 h-7 text-[#9B8CF0]" />
           )}
           <label
             htmlFor="profileImage"
-            className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-[10px] text-white font-semibold transition-opacity cursor-pointer"
+            className="absolute inset-0 bg-[#171334]/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-[9px] text-white font-semibold transition-opacity cursor-pointer"
           >
-            <Camera className="w-5 h-5 mb-1" />
+            <Camera className="w-4 h-4 mb-0.5" />
             Upload
           </label>
         </div>
-        
+
         <Input
           id="profileImage"
           type="file"
@@ -159,118 +162,72 @@ export function SignUpForm() {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1.5">
-          <Label className="text-slate-700 font-semibold text-sm">First Name</Label>
-          <Input 
-            {...register("firstName")} 
-            placeholder="John"
-            className="bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-slate-900 focus:border-slate-900 rounded-lg h-10 transition-all"
-          />
-          {errors.firstName && (
-            <p className="text-rose-500 text-xs font-semibold mt-0.5">{errors.firstName.message}</p>
-          )}
+      <div className="grid grid-cols-2 gap-2.5">
+        <div className="space-y-1">
+          <Label className={labelClass}>First Name</Label>
+          <Input {...register("firstName")} placeholder="John" className={inputClass} />
+          {errors.firstName && <p className={errorClass}>{errors.firstName.message}</p>}
         </div>
 
-        <div className="space-y-1.5">
-          <Label className="text-slate-700 font-semibold text-sm">Last Name</Label>
-          <Input 
-            {...register("lastName")} 
-            placeholder="Doe"
-            className="bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-slate-900 focus:border-slate-900 rounded-lg h-10 transition-all"
-          />
-          {errors.lastName && (
-            <p className="text-rose-500 text-xs font-semibold mt-0.5">{errors.lastName.message}</p>
-          )}
+        <div className="space-y-1">
+          <Label className={labelClass}>Last Name</Label>
+          <Input {...register("lastName")} placeholder="Doe" className={inputClass} />
+          {errors.lastName && <p className={errorClass}>{errors.lastName.message}</p>}
         </div>
       </div>
 
-      <div className="space-y-1.5">
-        <Label className="text-slate-700 font-semibold text-sm">Email Address</Label>
-        <Input 
-          type="email" 
-          {...register("email")} 
-          placeholder="name@company.com"
-          className="bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-slate-900 focus:border-slate-900 rounded-lg h-10 transition-all"
-        />
-        {errors.email && (
-          <p className="text-rose-500 text-xs font-semibold mt-0.5">{errors.email.message}</p>
-        )}
+      <div className="space-y-1">
+        <Label className={labelClass}>Email Address</Label>
+        <Input type="email" {...register("email")} placeholder="name@company.com" className={inputClass} />
+        {errors.email && <p className={errorClass}>{errors.email.message}</p>}
       </div>
 
-      <div className="space-y-1.5">
-        <Label className="text-slate-700 font-semibold text-sm">Phone Number</Label>
-        <Input 
-          {...register("phone")} 
-          placeholder="+880 1700 000000"
-          className="bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-slate-900 focus:border-slate-900 rounded-lg h-10 transition-all"
-        />
-        {errors.phone && (
-          <p className="text-rose-500 text-xs font-semibold mt-0.5">{errors.phone.message}</p>
-        )}
+      <div className="space-y-1">
+        <Label className={labelClass}>Phone Number</Label>
+        <Input {...register("phone")} placeholder="+880 1700 000000" className={inputClass} />
+        {errors.phone && <p className={errorClass}>{errors.phone.message}</p>}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-1.5">
-          <Label className="text-slate-700 font-semibold text-sm">Date of Birth</Label>
-          <Input
-            type="date"
-            {...register("dateOfBirth")}
-            className="bg-white border-slate-300 text-slate-900 focus:ring-slate-900 focus:border-slate-900 rounded-lg h-10 transition-all block w-full"
-          />
-          {errors.dateOfBirth && (
-            <p className="text-rose-500 text-xs font-semibold mt-0.5">{errors.dateOfBirth.message}</p>
-          )}
+      <div className="grid grid-cols-2 gap-2.5">
+        <div className="space-y-1">
+          <Label className={labelClass}>Date of Birth</Label>
+          <Input type="date" {...register("dateOfBirth")} className={`${inputClass} block`} />
+          {errors.dateOfBirth && <p className={errorClass}>{errors.dateOfBirth.message}</p>}
         </div>
 
-        <div className="space-y-1.5">
-          <Label className="text-slate-700 font-semibold text-sm">Gender</Label>
+        <div className="space-y-1">
+          <Label className={labelClass}>Gender</Label>
           <select
             {...register("gender")}
-            className="w-full bg-white border border-slate-300 text-slate-900 focus:ring-slate-900 focus:border-slate-900 rounded-lg h-10 px-3 transition-all focus:outline-none"
+            className="w-full bg-[#F1F0FA] border border-transparent text-[#171334] focus:ring-2 focus:ring-[#7C6FE8] focus:border-transparent rounded-lg h-9 px-3 text-sm transition-all focus:outline-none"
             defaultValue=""
           >
-            <option value="" disabled className="text-slate-400">
+            <option value="" disabled className="text-[#8A85B0]">
               Select
             </option>
             <option value="male">Male</option>
             <option value="female">Female</option>
             <option value="other">Other</option>
           </select>
-          {errors.gender && (
-            <p className="text-rose-500 text-xs font-semibold mt-0.5">{errors.gender.message}</p>
-          )}
+          {errors.gender && <p className={errorClass}>{errors.gender.message}</p>}
         </div>
       </div>
 
-      <div className="space-y-1.5">
-        <Label className="text-slate-700 font-semibold text-sm">Password</Label>
-        <Input
-          type="password"
-          {...register("password")}
-          placeholder="••••••••"
-          className="bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-slate-900 focus:border-slate-900 rounded-lg h-10 transition-all"
-        />
-        {errors.password && (
-          <p className="text-rose-500 text-xs font-semibold mt-0.5">{errors.password.message}</p>
-        )}
+      <div className="space-y-1">
+        <Label className={labelClass}>Password</Label>
+        <Input type="password" {...register("password")} placeholder="••••••••" className={inputClass} />
+        {errors.password && <p className={errorClass}>{errors.password.message}</p>}
       </div>
 
-      <div className="space-y-1.5">
-        <Label className="text-slate-700 font-semibold text-sm">Confirm Password</Label>
-        <Input
-          type="password"
-          {...register("confirmPassword")}
-          placeholder="••••••••"
-          className="bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-slate-900 focus:border-slate-900 rounded-lg h-10 transition-all"
-        />
-        {errors.confirmPassword && (
-          <p className="text-rose-500 text-xs font-semibold mt-0.5">{errors.confirmPassword.message}</p>
-        )}
+      <div className="space-y-1">
+        <Label className={labelClass}>Confirm Password</Label>
+        <Input type="password" {...register("confirmPassword")} placeholder="••••••••" className={inputClass} />
+        {errors.confirmPassword && <p className={errorClass}>{errors.confirmPassword.message}</p>}
       </div>
 
       <Button
-        className="w-full h-11 mt-4 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg transition-all shadow-sm"
+        className="w-full h-9 mt-1 text-white font-bold text-sm rounded-lg transition-all shadow-sm border-0"
+        style={{ background: "linear-gradient(135deg, #4F7DF3, #9B5DE5)" }}
         type="submit"
         disabled={isLoading}
       >
@@ -278,7 +235,11 @@ export function SignUpForm() {
           <span className="flex items-center justify-center gap-2">
             <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              />
             </svg>
             Creating account...
           </span>
@@ -287,14 +248,12 @@ export function SignUpForm() {
         )}
       </Button>
 
-      <div className="relative my-6">
+      <div className="relative my-2">
         <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-slate-200" />
+          <span className="w-full border-t border-[#7C6FE8]/15" />
         </div>
-        <div className="relative flex justify-center text-xs uppercase tracking-wider">
-          <span className="bg-white px-3 text-slate-400 font-semibold">
-            Or continue with
-          </span>
+        <div className="relative flex justify-center text-[10px] uppercase tracking-wider">
+          <span className="bg-[#171334] px-3 text-[#7E7AA6] font-semibold">Or continue with</span>
         </div>
       </div>
 
@@ -302,11 +261,11 @@ export function SignUpForm() {
         <SocialLogin />
       </div>
 
-      <div className="text-center text-sm mt-6 text-slate-500 font-medium">
+      <div className="text-center text-xs mt-2 text-[#A8A3C9] font-medium">
         Already have an account?{" "}
         <button
           type="button"
-          className="text-slate-900 font-bold hover:underline"
+          className="text-[#C7BEFA] font-bold hover:underline"
           onClick={() => router.push("/login")}
         >
           Sign In
