@@ -18,7 +18,6 @@ import {
   ShoppingBag,
   Users,
   Zap,
-  Menu,
   X,
 } from "lucide-react";
 
@@ -29,8 +28,14 @@ export default function Sidebar() {
   const { user } = useAppSelector((state) => state.auth);
   const role = user?.role || "customer";
 
-  // Mobile off-canvas state
+  // Mobile off-canvas state - opened externally via "toggle-mobile-sidebar" event
   const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const handleToggle = () => setIsOpen((prev) => !prev);
+    window.addEventListener("toggle-mobile-sidebar", handleToggle);
+    return () => window.removeEventListener("toggle-mobile-sidebar", handleToggle);
+  }, []);
 
   // Close drawer whenever the route changes (link tap on mobile)
   useEffect(() => {
@@ -190,26 +195,7 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Mobile top bar with hamburger trigger */}
-      <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 lg:hidden">
-        <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-violet-600 to-blue-600">
-            <Zap size={14} className="text-white" />
-          </div>
-          <h2 className="bg-gradient-to-r from-violet-700 to-blue-700 bg-clip-text text-base font-black tracking-tight text-transparent">
-            EVENTO
-          </h2>
-        </div>
-        <button
-          onClick={() => setIsOpen(true)}
-          className="rounded-lg p-2 text-slate-600 hover:bg-slate-100"
-          aria-label="Open menu"
-        >
-          <Menu size={20} />
-        </button>
-      </div>
-
-      {/* Backdrop overlay - mobile only, shown when drawer is open */}
+      {/* Backdrop overlay - mobile only, shown when drawer is open. Fixed = no flex layout impact. */}
       {isOpen && (
         <div
           onClick={() => setIsOpen(false)}
@@ -223,7 +209,7 @@ export default function Sidebar() {
         {sidebarContent}
       </aside>
 
-      {/* Mobile sidebar - off-canvas drawer, slides in from the left */}
+      {/* Mobile sidebar - off-canvas drawer, fixed positioned so it never affects flex layout */}
       <aside
         className={`fixed inset-y-0 left-0 z-50 flex w-[260px] max-w-[80vw] flex-col justify-between border-r border-slate-200 bg-white p-4 shadow-xl transition-transform duration-300 ease-in-out lg:hidden ${
           isOpen ? "translate-x-0" : "-translate-x-full"
