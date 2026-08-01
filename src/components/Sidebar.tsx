@@ -108,10 +108,10 @@ export default function Sidebar() {
         <div className="flex items-center justify-between px-2 py-2">
           <div>
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-violet-600 to-blue-600">
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 to-blue-500">
                 <Zap size={14} className="text-white" />
               </div>
-              <h2 className="bg-gradient-to-r from-violet-700 to-blue-700 bg-clip-text text-lg font-black tracking-tight text-transparent">
+              <h2 className="bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-lg font-black tracking-tight text-transparent">
                 EVENTO
               </h2>
             </div>
@@ -137,7 +137,7 @@ export default function Sidebar() {
                 new CustomEvent("open-dashboard-modal", { detail: "new-booking" })
               )
             }
-            className="w-full cursor-pointer rounded-xl bg-gradient-to-r from-violet-600 to-blue-600 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:from-violet-700 hover:to-blue-700"
+            className="w-full cursor-pointer rounded-xl bg-gradient-to-r from-purple-600 to-blue-500 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:from-purple-700 hover:to-blue-600"
           >
             <span className="flex items-center justify-center gap-2">
               <Plus size={13} /> {role === "admin" ? "Create Event" : "New Booking"}
@@ -158,7 +158,7 @@ export default function Sidebar() {
                 href={route.href}
                 className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold tracking-wide transition ${
                   isActive
-                    ? "bg-gradient-to-r from-violet-600 to-blue-600 text-white shadow-sm"
+                    ? "bg-gradient-to-r from-purple-600 to-blue-500 text-white shadow-sm"
                     : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                 }`}
               >
