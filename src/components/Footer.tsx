@@ -8,7 +8,8 @@ import {
     MapPin, 
     Send, 
     Check,
-    ArrowRight
+    ArrowRight,
+    Zap
 } from "lucide-react";
 import { 
     FaFacebook, 
@@ -52,12 +53,17 @@ export function Footer() {
                     <div className="md:col-span-2 space-y-6">
                         <div className="flex items-center space-x-2">
                             {/* Stylish Geometric Mini-logo */}
-                            <Link href="/" className="flex items-baseline gap-2">
-          <span className="text-[15px] font-bold tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-500">
-            EVENTO
-          </span>
-          <span className="hidden lg:inline text-[11px] font-medium text-slate-400 tracking-wide">
-            — Every moment, perfectly planned
+                            <Link href="/" className="flex items-center gap-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 to-blue-500 shadow-sm shrink-0">
+            <Zap size={16} className="text-white" />
+          </div>
+          <span className="flex items-baseline gap-2">
+            <span className="text-[15px] font-bold tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-500">
+              EVENTO
+            </span>
+            <span className="hidden lg:inline text-[11px] font-medium text-slate-400 tracking-wide">
+              — Every moment, perfectly planned
+            </span>
           </span>
         </Link>
                         </div>
