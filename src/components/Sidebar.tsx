@@ -10,7 +10,6 @@ import {
   ClipboardList,
   Wallet,
   Settings,
-  HelpCircle,
   LogOut,
   Plus,
   MessageSquare,
@@ -18,7 +17,20 @@ import {
   ShoppingBag,
   Users,
   X,
+  Briefcase,
+  CheckCircle2,
+  Heart,
+  Star,
+  User as UserIcon,
 } from "lucide-react";
+
+interface RouteItem {
+  name: string;
+  href: string;
+  icon: React.ElementType;
+  badge?: number;
+  badgeColor?: "blue" | "emerald" | "amber";
+}
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -63,22 +75,30 @@ export default function Sidebar() {
     router.push("/");
   };
 
-  const customerRoutes = [
-    { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
-    { name: "My Bookings", href: "/dashboard/bookings", icon: ShoppingBag },
-    { name: "Event Calendar", href: "/dashboard/my-events", icon: Calendar },
+  // ── Role-based nav lists ────────────────────────────────────────────────
+  const customerRoutes: RouteItem[] = [
+    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    { name: "Booking", href: "/dashboard/bookings", icon: ShoppingBag },
+    { name: "Wallet", href: "/dashboard/earnings", icon: Wallet },
     { name: "Messages", href: "/dashboard/messages", icon: MessageSquare },
-    { name: "Settings", href: "/dashboard/settings", icon: Settings },
+    { name: "Profile", href: "/dashboard/settings", icon: UserIcon },
   ];
 
-  const vendorRoutes = [
-    { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
-    { name: "My Tasks", href: "/dashboard/tasks", icon: ClipboardList },
-    { name: "Earnings", href: "/dashboard/earnings", icon: Wallet },
-    { name: "Settings", href: "/dashboard/settings", icon: Settings },
+  // Matches the "LensLife" vendor sidebar from Figma: Dashboard, New Jobs,
+  // Active Jobs, Completed Jobs, Wallet, My Services, Reviews, Profile —
+  // with colored count badges on New/Active Jobs and My Services.
+  const vendorRoutes: RouteItem[] = [
+    { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    { name: "New Jobs", href: "/dashboard/jobs/new", icon: Briefcase, badge: 4, badgeColor: "blue" },
+    { name: "Active Jobs", href: "/dashboard/jobs/active", icon: CheckCircle2, badge: 3, badgeColor: "emerald" },
+    { name: "Completed Jobs", href: "/dashboard/jobs/completed", icon: ClipboardList },
+    { name: "Wallet", href: "/dashboard/earnings", icon: Wallet },
+    { name: "My Services", href: "/dashboard/services", icon: Heart, badge: 1, badgeColor: "amber" },
+    { name: "Reviews", href: "/dashboard/reviews", icon: Star },
+    { name: "Profile", href: "/dashboard/settings", icon: UserIcon },
   ];
 
-  const adminRoutes = [
+  const adminRoutes: RouteItem[] = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
     { name: "All Bookings", href: "/dashboard/bookings", icon: ShoppingBag },
     { name: "All Events", href: "/dashboard/my-events", icon: Calendar },
@@ -89,40 +109,41 @@ export default function Sidebar() {
   ];
 
   const activeRoutes =
-    role === "vendor"
-      ? vendorRoutes
-      : role === "admin"
-      ? adminRoutes
-      : customerRoutes;
+    role === "vendor" ? vendorRoutes : role === "admin" ? adminRoutes : customerRoutes;
 
-  const getPortalTitle = () => {
-    if (role === "vendor") return "Vendor Portal";
-    if (role === "admin") return "Admin Operations";
-    return "Customer Portal";
+  // ── Role-based brand + profile info ─────────────────────────────────────
+  const brand =
+    role === "vendor"
+      ? { name: "LensLife", boxClass: "bg-blue-600" }
+      : { name: "ZEYO", boxClass: "bg-slate-900" };
+
+  const displayName = user?.name || (role === "vendor" ? "Alex Kumar" : "Rahim Ahmed");
+  const roleLabel = role === "vendor" ? "Photographer" : role === "admin" ? "Administrator" : "Customer";
+  const initials = displayName
+    .split(" ")
+    .map((s) => s[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
+  const badgeStyles: Record<NonNullable<RouteItem["badgeColor"]>, string> = {
+    blue: "bg-blue-100 text-blue-600",
+    emerald: "bg-emerald-100 text-emerald-600",
+    amber: "bg-amber-100 text-amber-600",
   };
 
   const sidebarContent = (
     <>
       <div className="space-y-5">
-        <div className="flex items-center justify-between px-2 py-2">
-          <div>
-            <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 to-blue-500">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <rect x="5" y="4" width="3.4" height="16" rx="1.7" fill="white" />
-                  <rect x="5" y="4" width="14" height="3.4" rx="1.7" fill="white" />
-                  <rect x="5" y="10.3" width="10" height="3.4" rx="1.7" fill="white" />
-                  <rect x="5" y="16.6" width="14" height="3.4" rx="1.7" fill="white" />
-                  <circle cx="20.4" cy="3.6" r="1.7" fill="#FBBF24" />
-                </svg>
-              </div>
-              <h2 className="bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-lg font-black tracking-tight text-transparent">
-                EVENTO
-              </h2>
+        {/* Brand */}
+        <div className="flex items-center justify-between px-2 py-1">
+          <div className="flex items-center gap-2">
+            <div className={`flex h-6 w-6 items-center justify-center rounded-md ${brand.boxClass}`}>
+              <span className="text-white font-extrabold text-[10px] leading-none">
+                {brand.name[0]}
+              </span>
             </div>
-            <p className="mt-1 pl-9 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-500">
-              {getPortalTitle()}
-            </p>
+            <h2 className="text-sm font-extrabold tracking-tight text-slate-900">{brand.name}</h2>
           </div>
 
           {/* Close button - mobile only */}
@@ -135,6 +156,30 @@ export default function Sidebar() {
           </button>
         </div>
 
+        {/* Profile card */}
+        <div className="px-2">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-slate-900 text-xs font-bold text-white">
+              {initials}
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-xs font-bold text-slate-900">{displayName}</p>
+              <p className="text-[10px] text-slate-400">{roleLabel}</p>
+            </div>
+          </div>
+
+          {role === "vendor" && (
+            <div className="mt-2.5 flex items-center gap-3">
+              <span className="flex items-center gap-1 text-[10px] font-bold text-blue-600">
+                <span className="h-1.5 w-1.5 rounded-full bg-blue-600" /> 4 new jobs
+              </span>
+              <span className="flex items-center gap-1 text-[10px] font-bold text-amber-600">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-500" /> 1 pending
+              </span>
+            </div>
+          )}
+        </div>
+
         {role !== "vendor" && (
           <button
             onClick={() =>
@@ -142,7 +187,7 @@ export default function Sidebar() {
                 new CustomEvent("open-dashboard-modal", { detail: "new-booking" })
               )
             }
-            className="w-full cursor-pointer rounded-xl bg-gradient-to-r from-purple-600 to-blue-500 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:from-purple-700 hover:to-blue-600"
+            className="w-full cursor-pointer rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:bg-slate-800"
           >
             <span className="flex items-center justify-center gap-2">
               <Plus size={13} /> {role === "admin" ? "Create Event" : "New Booking"}
@@ -150,49 +195,51 @@ export default function Sidebar() {
           </button>
         )}
 
-        <nav className="space-y-0.5">
-          {activeRoutes.map((route) => {
-            const isActive =
-              pathname === route.href ||
-              (route.href !== "/dashboard" && pathname.startsWith(route.href));
-            const Icon = route.icon;
+        <div className="space-y-1.5">
+          <p className="px-3 text-[9px] font-bold uppercase tracking-[0.2em] text-slate-400">
+            Main Menu
+          </p>
+          <nav className="space-y-0.5">
+            {activeRoutes.map((route) => {
+              const isActive =
+                pathname === route.href ||
+                (route.href !== "/dashboard" && pathname.startsWith(route.href));
+              const Icon = route.icon;
 
-            return (
-              <Link
-                key={route.name}
-                href={route.href}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold tracking-wide transition ${
-                  isActive
-                    ? "bg-gradient-to-r from-purple-600 to-blue-500 text-white shadow-sm"
-                    : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
-                }`}
-              >
-                <Icon
-                  size={15}
-                  className={isActive ? "text-white" : "text-slate-400"}
-                />
-                {route.name}
-                {isActive && (
-                  <span className="ml-auto h-1.5 w-1.5 rounded-full bg-white" />
-                )}
-              </Link>
-            );
-          })}
-        </nav>
+              return (
+                <Link
+                  key={route.name}
+                  href={route.href}
+                  className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold tracking-wide transition ${
+                    isActive
+                      ? "bg-slate-900 text-white shadow-sm"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                  }`}
+                >
+                  <Icon size={15} className={isActive ? "text-white" : "text-slate-400"} />
+                  {route.name}
+                  {typeof route.badge === "number" && route.badge > 0 && (
+                    <span
+                      className={`ml-auto flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[9px] font-bold ${
+                        isActive ? "bg-white/20 text-white" : badgeStyles[route.badgeColor || "blue"]
+                      }`}
+                    >
+                      {route.badge}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
       </div>
 
-      <div className="space-y-0.5 border-t border-slate-200 pt-4">
-        <Link
-          href="/dashboard/settings"
-          className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
-        >
-          <HelpCircle size={15} /> Help Center
-        </Link>
+      <div className="border-t border-slate-200 pt-4">
         <button
           onClick={handleLogout}
-          className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-medium text-rose-600 transition hover:bg-rose-50 hover:text-rose-700"
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
         >
-          <LogOut size={15} /> Logout
+          <LogOut size={15} /> Sign Out
         </button>
       </div>
     </>

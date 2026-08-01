@@ -15,8 +15,6 @@ import {
   MapPin,
   Calendar,
   DollarSign,
-  LayoutGrid,
-  User as UserIcon,
 } from "lucide-react";
 import { useAppSelector } from "@/store/store";
 import apiClient from "@/lib/apiClient";
@@ -128,7 +126,6 @@ function CustomerDashboard() {
   const [completedCount, setCompletedCount] = useState(47);
   const [weekStats, setWeekStats] = useState({ newBookings: 5, revenue: 68000, conversion: 82 });
   const [notifCount, setNotifCount] = useState(1);
-  const [activeTab, setActiveTab] = useState<"dashboard" | "bookings" | "wallet" | "profile">("dashboard");
 
   useEffect(() => {
     const fetchOverview = async () => {
@@ -154,7 +151,7 @@ function CustomerDashboard() {
       }
 
       try {
-        const walletRes = await apiClient.get("/wallet/summary");
+        const walletRes = await apiClient.get("/wallet/earnings");
         if (walletRes.data?.success !== false && walletRes.data?.data) {
           const d = walletRes.data.data;
           if (typeof d.balance === "number") setWalletBalance(d.balance);
@@ -172,10 +169,6 @@ function CustomerDashboard() {
     window.addEventListener("dashboard-data-update", handleUpdate);
     return () => window.removeEventListener("dashboard-data-update", handleUpdate);
   }, []);
-
-  const handleNewBooking = () => {
-    window.dispatchEvent(new CustomEvent("open-dashboard-modal", { detail: "new-booking" }));
-  };
 
   const displayName = user?.name || "Rahim Ahmed";
 
@@ -282,68 +275,11 @@ function CustomerDashboard() {
         </div>
       </div>
 
-      {/* Bottom tab bar — mobile/tablet only, with a raised floating "+" action button */}
-      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white border-t border-slate-100">
-        <div className="relative max-w-4xl mx-auto grid grid-cols-4 items-center px-2 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
-          <TabItem
-            icon={<LayoutGrid className="w-5 h-5" />}
-            label="Dashboard"
-            active={activeTab === "dashboard"}
-            onClick={() => setActiveTab("dashboard")}
-          />
-          <TabItem
-            icon={<Briefcase className="w-5 h-5" />}
-            label="Bookings"
-            active={activeTab === "bookings"}
-            onClick={() => setActiveTab("bookings")}
-          />
-          <TabItem
-            icon={<WalletIcon className="w-5 h-5" />}
-            label="Wallet"
-            active={activeTab === "wallet"}
-            onClick={() => setActiveTab("wallet")}
-          />
-          <TabItem
-            icon={<UserIcon className="w-5 h-5" />}
-            label="Profile"
-            active={activeTab === "profile"}
-            onClick={() => setActiveTab("profile")}
-          />
-
-          <button
-            onClick={handleNewBooking}
-            className="absolute left-1/2 -translate-x-1/2 -top-6 w-14 h-14 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-lg shadow-slate-900/30 active:scale-95 transition-transform"
-            aria-label="New booking"
-          >
-            <Plus className="w-6 h-6" />
-          </button>
-        </div>
-      </nav>
+      {/* Bottom tab bar now lives in the shared dashboard layout (see
+          components/CustomerBottomNav.tsx) so it persists across every
+          customer route — /dashboard, /dashboard/bookings, /dashboard/wallet,
+          /dashboard/profile — instead of disappearing when this page unmounts. */}
     </div>
-  );
-}
-
-function TabItem({
-  icon,
-  label,
-  active,
-  onClick,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  active: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex flex-col items-center gap-1 py-1.5 transition-colors ${
-        active ? "text-amber-600" : "text-slate-400"
-      }`}
-    >
-      {icon}
-      <span className="text-[10px] font-bold">{label}</span>
-    </button>
   );
 }
 

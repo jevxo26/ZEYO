@@ -2,6 +2,7 @@
 
 import Sidebar from "@/components/Sidebar";
 import Navbar from "@/components/Navbar";
+import BottomNav from "@/components/dashboard/BottomNav";
 import {
   Bell,
   Mail,
@@ -692,11 +693,20 @@ export default function DashboardLayout({
             </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto bg-slate-50 p-6 lg:p-8">
+          {/*
+            pb-28 on mobile/tablet reserves room for the fixed BottomNav
+            (bar height + floating button + safe-area) so content is never
+            hidden behind it. lg:pb-8 restores the normal desktop padding
+            once the sidebar takes over navigation.
+          */}
+          <main className="flex-1 overflow-y-auto bg-slate-50 p-4 pb-28 sm:p-6 sm:pb-28 lg:p-8 lg:pb-8">
             {children}
           </main>
         </div>
       </div>
+
+      {/* Bottom navigation — fixed, renders on every /dashboard/* route, hidden at lg+ */}
+      <BottomNav />
     </div>
   );
 }
