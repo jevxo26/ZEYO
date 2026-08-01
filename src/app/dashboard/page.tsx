@@ -2,898 +2,708 @@
 
 import { useEffect, useState } from "react";
 import {
-  ArrowUpRight,
-  Calendar,
-  CheckCircle,
-  Clock,
-  MapPin,
-  DollarSign,
+  Bell,
   Plus,
-  ShieldCheck,
-  Briefcase,
+  ChevronRight,
+  LayoutGrid,
+  CalendarDays,
+  Wallet as WalletIcon,
   User as UserIcon,
-  Sparkles,
-  Users,
-  Sliders,
-  Wallet,
-  ClipboardList,
+  Coins,
+  Briefcase,
+  CheckCircle2,
+  CircleCheckBig,
+  Heart,
+  Star,
+  LogOut,
+  Menu,
+  X,
+  MapPin,
+  Calendar,
+  DollarSign,
 } from "lucide-react";
-import Link from "next/link";
 import { useAppSelector } from "@/store/store";
 import apiClient from "@/lib/apiClient";
 
-const DEFAULT_OVERVIEW_BOOKINGS = [
-  {
-    id: "BKG-2026-001",
-    eventName: "Royal Wedding Ceremony",
-    eventType: "Wedding",
-    eventDate: new Date(Date.now() + 86400000 * 5).toISOString(),
-    location: "Gulshan Club, Dhaka Metro",
-    budget: 380000,
-    status: "CONFIRMED",
-  },
-  {
-    id: "BKG-2026-002",
-    eventName: "Gaye Holud Night Celebration",
-    eventType: "Gaye Holud",
-    eventDate: new Date(Date.now() + 86400000 * 12).toISOString(),
-    location: "Radisson Blu Water Garden, Dhaka",
-    budget: 180000,
-    status: "OPERATIONAL DISPATCH",
-  },
-  {
-    id: "BKG-2026-003",
-    eventName: "Corporate Tech Summit 2026",
-    eventType: "Corporate",
-    eventDate: new Date(Date.now() + 86400000 * 20).toISOString(),
-    location: "Bangabandhu Convention Hall, Dhaka",
-    budget: 450000,
-    status: "CONFIRMED",
-  },
+// ═════════════════════════════════════════════════════════════════════════
+// Shared types
+// ═════════════════════════════════════════════════════════════════════════
+interface CustomerBooking {
+  id: string;
+  clientName: string;
+  eventType: string;
+  location: string;
+  date: string;
+  amount: number;
+  status: "CONFIRMED" | "PENDING" | "COMPLETED";
+}
+
+interface VendorJob {
+  id: string;
+  client: string;
+  title: string;
+  venue: string;
+  amount: number;
+  status: "NEW" | "ACTIVE";
+}
+
+interface VendorRequest {
+  id: string;
+  client: string;
+  title: string;
+  description: string;
+  location: string;
+  date: string;
+  service: string;
+  budget: number;
+}
+
+// ═════════════════════════════════════════════════════════════════════════
+// Fallback / demo data (used until the real API responds)
+// ═════════════════════════════════════════════════════════════════════════
+const DEFAULT_CUSTOMER_BOOKINGS: CustomerBooking[] = [
+  { id: "BKG-1", clientName: "Farhan Islam", eventType: "Wedding", location: "Banani, Dhaka", date: "2026-08-10", amount: 65000, status: "CONFIRMED" },
+  { id: "BKG-2", clientName: "Nasima Begum", eventType: "Birthday", location: "Dhanmondi, Dhaka", date: "2026-08-12", amount: 35000, status: "PENDING" },
+  { id: "BKG-3", clientName: "Kabir Hossain", eventType: "Corporate", location: "Uttara, Dhaka", date: "2026-08-05", amount: 120000, status: "COMPLETED" },
 ];
 
-const DEFAULT_VENDOR_DISPATCHES = [
-  {
-    id: "TSK-001",
-    title: "Royal Wedding Ceremony",
-    category: "Photography",
-    zone: "Dhaka Zone",
-    venue: "Gulshan Club, Hall A",
-    date: "Nov 15, 2026",
-    payout: "৳35,000",
-    status: "In Progress",
-  },
-  {
-    id: "TSK-002",
-    title: "Gaye Holud Night Celebration",
-    category: "Decoration",
-    zone: "Dhaka Zone",
-    venue: "Banani Convention Hall",
-    date: "Nov 13, 2026",
-    payout: "৳65,000",
-    status: "Confirmed",
-  },
-  {
-    id: "TSK-003",
-    title: "Corporate Annual Summit",
-    category: "Audio/Visual & Sound",
-    zone: "Chattogram Zone",
-    venue: "Radisson Blu, Chattogram",
-    date: "Dec 01, 2026",
-    payout: "৳38,000",
-    status: "Confirmed",
-  },
+const DEFAULT_VENDOR_JOBS: VendorJob[] = [
+  { id: "J1", client: "Sarah & James", title: "Wedding Ceremony", venue: "Grand Ballroom, New York", amount: 1200, status: "NEW" },
+  { id: "J2", client: "TechCorp Inc.", title: "Corporate Conference", venue: "Hilton Hotel, Chicago", amount: 3500, status: "NEW" },
+  { id: "J3", client: "Marcus Lee", title: "Birthday Party", venue: "Rooftop Venue, Miami", amount: 800, status: "NEW" },
+  { id: "J4", client: "Nova Brands", title: "Product Launch", venue: "Convention Center, LA", amount: 2200, status: "NEW" },
+  { id: "J5", client: "Emily & Robert", title: "Anniversary Dinner", venue: "The Ritz, Boston", amount: 950, status: "ACTIVE" },
+  { id: "J6", client: "Johnson Family", title: "Graduation Party", venue: "Garden Estate, Houston", amount: 1800, status: "ACTIVE" },
 ];
 
+const DEFAULT_VENDOR_REQUESTS: VendorRequest[] = [
+  { id: "R1", client: "Sarah & James", title: "Wedding Ceremony", description: "Full-day wedding photography coverage including ceremony and reception.", location: "Grand Ballroom", date: "2026-04-24", service: "Photography", budget: 1200 },
+  { id: "R2", client: "Nova Brands", title: "Product Launch", description: "Full venue decoration with branded elements and floral arrangements.", location: "Convention Ce...", date: "2026-05-09", service: "Decoration", budget: 2200 },
+];
+
+const STATUS_STYLES: Record<CustomerBooking["status"], string> = {
+  CONFIRMED: "bg-blue-50 text-blue-600",
+  PENDING: "bg-amber-50 text-amber-600",
+  COMPLETED: "bg-emerald-50 text-emerald-600",
+};
+
+// ═════════════════════════════════════════════════════════════════════════
+// ROOT — reads role and renders the matching dashboard
+// ═════════════════════════════════════════════════════════════════════════
 export default function DashboardOverviewPage() {
   const { user } = useAppSelector((state) => state.auth);
   const role = (user?.role || "customer").toLowerCase();
 
-  const [bookings, setBookings] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  if (role === "vendor") return <VendorDashboard />;
+  return <CustomerDashboard />;
+}
 
-  // ── Live countdown to nearest event ─────────────────────────────────────────
-  const [countdown, setCountdown] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+// ═════════════════════════════════════════════════════════════════════════
+// CUSTOMER DASHBOARD — matches "ZEYO" Figma design
+// ═════════════════════════════════════════════════════════════════════════
+function CustomerDashboard() {
+  const { user } = useAppSelector((state) => state.auth);
+
+  const [bookings, setBookings] = useState<CustomerBooking[]>(DEFAULT_CUSTOMER_BOOKINGS);
+  const [walletBalance, setWalletBalance] = useState(125000);
+  const [totalEarnings, setTotalEarnings] = useState(345000);
+  const [monthEarnings, setMonthEarnings] = useState(125000);
+  const [completedCount, setCompletedCount] = useState(47);
+  const [weekStats, setWeekStats] = useState({ newBookings: 5, revenue: 68000, conversion: 82 });
+  const [notifCount, setNotifCount] = useState(1);
+  const [activeTab, setActiveTab] = useState<"dashboard" | "bookings" | "wallet" | "profile">("dashboard");
+
   useEffect(() => {
-    const tick = () => {
-      const now = Date.now();
-      const upcoming = bookings
-        .map((b) => new Date(b.eventDate || Date.now()).getTime())
-        .filter((t) => t > now)
-        .sort((a, b) => a - b)[0];
-      if (!upcoming) return;
-      const diff = upcoming - now;
-      setCountdown({
-        days: Math.floor(diff / 86400000),
-        hours: Math.floor((diff % 86400000) / 3600000),
-        minutes: Math.floor((diff % 3600000) / 60000),
-        seconds: Math.floor((diff % 60000) / 1000),
-      });
-    };
-    tick();
-    const timer = setInterval(tick, 1000);
-    return () => clearInterval(timer);
-  }, [bookings]);
-
-  // ── Auto-refresh every 30 seconds ────────────────────────────────────────────
-  useEffect(() => {
-    const interval = setInterval(() => { fetchBookings(); }, 30000);
-    return () => clearInterval(interval);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const fetchBookings = async () => {
-    setIsLoading(true);
-    let localCustom: any[] = [];
-    if (typeof window !== "undefined") {
-      try {
-        const stored = localStorage.getItem("customBookings") || localStorage.getItem("custom_bookings");
-        if (stored) localCustom = JSON.parse(stored);
-      } catch (e) {}
-    }
-
-    try {
-      const response = await apiClient.get("/bookings/my");
-      let apiList: any[] = [];
-      if (response.data && response.data.success !== false) {
-        const rawData = response.data.data;
-        apiList = Array.isArray(rawData)
-          ? rawData
-          : Array.isArray(rawData?.data)
-          ? rawData.data
-          : [];
+    const fetchOverview = async () => {
+      let localCustom: any[] = [];
+      if (typeof window !== "undefined") {
+        try {
+          const stored = localStorage.getItem("customBookings") || localStorage.getItem("custom_bookings");
+          if (stored) localCustom = JSON.parse(stored);
+        } catch (e) {}
       }
-      const combined = [...localCustom, ...apiList];
-      setBookings(combined.length > 0 ? combined : DEFAULT_OVERVIEW_BOOKINGS);
-    } catch (error) {
-      const combined = [...localCustom, ...DEFAULT_OVERVIEW_BOOKINGS];
-      setBookings(combined);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
-  useEffect(() => {
-    fetchBookings();
+      try {
+        const res = await apiClient.get("/bookings/my");
+        let apiList: any[] = [];
+        if (res.data && res.data.success !== false) {
+          const rawData = res.data.data;
+          apiList = Array.isArray(rawData) ? rawData : Array.isArray(rawData?.data) ? rawData.data : [];
+        }
+        const combined = [...localCustom, ...apiList];
+        if (combined.length > 0) setBookings(combined);
+      } catch (e) {
+        if (localCustom.length > 0) setBookings([...localCustom, ...DEFAULT_CUSTOMER_BOOKINGS]);
+      }
 
-    const handleUpdate = () => {
-      fetchBookings();
+      try {
+        const walletRes = await apiClient.get("/wallet/summary");
+        if (walletRes.data?.success !== false && walletRes.data?.data) {
+          const d = walletRes.data.data;
+          if (typeof d.balance === "number") setWalletBalance(d.balance);
+          if (typeof d.totalEarnings === "number") setTotalEarnings(d.totalEarnings);
+          if (typeof d.monthEarnings === "number") setMonthEarnings(d.monthEarnings);
+          if (typeof d.completedCount === "number") setCompletedCount(d.completedCount);
+          if (d.weekStats) setWeekStats(d.weekStats);
+          if (typeof d.notifCount === "number") setNotifCount(d.notifCount);
+        }
+      } catch (e) {}
     };
+
+    fetchOverview();
+    const handleUpdate = () => fetchOverview();
     window.addEventListener("dashboard-data-update", handleUpdate);
-    return () => {
-      window.removeEventListener("dashboard-data-update", handleUpdate);
-    };
+    return () => window.removeEventListener("dashboard-data-update", handleUpdate);
   }, []);
 
   const handleNewBooking = () => {
     window.dispatchEvent(new CustomEvent("open-dashboard-modal", { detail: "new-booking" }));
   };
 
-  const handleAddZone = () => {
-    window.dispatchEvent(new CustomEvent("open-dashboard-modal", { detail: "add-zone" }));
-  };
-
-  const handleAddVendor = () => {
-    window.dispatchEvent(new CustomEvent("open-dashboard-modal", { detail: "new-vendor" }));
-  };
-
-  const totalBudget = bookings.reduce(
-    (acc, b) => acc + (Number(b.budget || b.grandTotal) || 0),
-    0
-  );
-  const activeCount = bookings.filter(
-    (b) => b.status !== "CANCELLED" && b.status !== "COMPLETED"
-  ).length;
+  const displayName = user?.name || "Rahim Ahmed";
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
-      {/* ── Role Banner & Header ──────────────────────────────────────────────── */}
-      <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-800 via-indigo-800 to-blue-700 text-white border border-indigo-500/40 shadow-md hover:shadow-indigo-900/30 hover:shadow-xl transition-shadow duration-500 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-white/15 border border-white/30 flex items-center justify-center shrink-0 transition-all duration-300 hover:bg-white/25 hover:border-white/50 hover:scale-110">
-            <ShieldCheck className="w-5 h-5 text-white" />
+    <div className="min-h-screen bg-slate-50 md:bg-white">
+      <div className="md:flex md:min-h-screen">
+        {/* Tablet / desktop sidebar */}
+        <aside className="hidden md:flex md:w-60 lg:w-64 md:flex-col md:border-r md:border-slate-100 md:px-5 md:py-6 md:shrink-0">
+          <div className="flex items-center gap-2.5 px-1 mb-8">
+            <div className="w-9 h-9 rounded-xl bg-slate-900 flex items-center justify-center text-white font-black text-sm">Z</div>
+            <span className="font-extrabold text-slate-900 text-lg tracking-tight">ZEYO</span>
           </div>
-          <div>
-            <span className="text-xs font-bold text-blue-100 uppercase tracking-wider">
-              {role === "vendor"
-                ? "Vendor Partner Operations Portal"
-                : role === "admin"
-                ? "Admin Operations Center — Managed Event OS"
-                : "Customer Celebration Portal"}
-            </span>
-            <p className="text-sm text-white/80">
-              {role === "vendor"
-                ? "Dispatched technical tasks, venue specifications, and protected escrow payouts."
-                : role === "admin"
-                ? "Platform-wide management across all 7 Bangladesh zones, vendor onboarding, and task dispatches."
-                : "All bookings, calculations, and vendor task dispatches are centralized by EVENTO Platform Operations."}
-            </p>
+          <nav className="flex-1 space-y-1">
+            {[
+              { key: "dashboard", label: "Dashboard", icon: LayoutGrid },
+              { key: "bookings", label: "Bookings", icon: CalendarDays },
+              { key: "wallet", label: "Wallet", icon: WalletIcon },
+              { key: "profile", label: "Profile", icon: UserIcon },
+            ].map((item) => {
+              const Icon = item.icon;
+              const active = activeTab === (item.key as typeof activeTab);
+              return (
+                <button
+                  key={item.key}
+                  onClick={() => setActiveTab(item.key as typeof activeTab)}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                    active ? "bg-amber-50 text-amber-700" : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
+                  }`}
+                >
+                  <Icon className="w-[18px] h-[18px]" />
+                  {item.label}
+                </button>
+              );
+            })}
+          </nav>
+        </aside>
+
+        {/* Main column */}
+        <div className="flex-1 md:max-w-3xl lg:max-w-4xl md:mx-auto md:px-8 md:py-8 pb-24 md:pb-8">
+          {/* Top bar */}
+          <header className="flex items-center justify-between px-4 pt-5 pb-2 md:px-0 md:pt-0">
+            <div className="flex items-center gap-2 md:hidden">
+              <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-white font-black text-xs">Z</div>
+              <span className="font-extrabold text-slate-900 tracking-tight">ZEYO</span>
+            </div>
+            <div className="hidden md:block">
+              <h1 className="text-xl font-extrabold text-slate-900">Dashboard</h1>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-1.5 bg-amber-50 text-amber-700 px-2.5 py-1.5 rounded-full text-xs font-bold">
+                <Coins className="w-3.5 h-3.5" />
+                {walletBalance.toLocaleString()}
+              </div>
+              <button className="relative w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center hover:bg-slate-200 transition-colors">
+                <Bell className="w-4 h-4 text-slate-600" />
+                {notifCount > 0 && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center">
+                    {notifCount}
+                  </span>
+                )}
+              </button>
+            </div>
+          </header>
+
+          {/* Welcome */}
+          <div className="px-4 mt-4 md:px-0 md:mt-6">
+            <p className="text-xs text-slate-400 font-medium">Welcome back,</p>
+            <h2 className="text-2xl font-extrabold text-slate-900 mt-0.5">{displayName}</h2>
           </div>
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <Link
-            href="/calculator"
-            className="px-3 py-1.5 rounded-xl bg-white text-purple-700 hover:bg-blue-50 text-xs font-bold transition-all duration-200 shadow-sm hover:shadow-lg hover:shadow-black/10 hover:-translate-y-0.5 active:translate-y-0"
-          >
-            + Smart Calculator
-          </Link>
-          <Link
-            href="/packages"
-            className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
-          >
-            Browse Packages
-          </Link>
+
+          {/* Stat cards */}
+          <div className="grid grid-cols-3 gap-3 px-4 mt-5 md:px-0 md:gap-4">
+            <StatCard label="Total Earnings" value={`৳${totalEarnings.toLocaleString()}`} />
+            <StatCard label="This Month" value={monthEarnings.toLocaleString()} accent />
+            <StatCard label="Completed" value={String(completedCount)} />
+          </div>
+
+          {/* Recent Bookings */}
+          <div className="mt-7 px-4 md:px-0">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-base font-extrabold text-slate-900">Recent Bookings</h3>
+              <button className="text-xs font-bold text-amber-600 hover:text-amber-700 flex items-center gap-0.5">
+                See All <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            <div className="space-y-2.5">
+              {bookings.map((b, idx) => (
+                <div
+                  key={b.id ? `bk-${b.id}-${idx}` : idx}
+                  className="bg-white border border-slate-100 rounded-2xl p-4 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <div>
+                    <p className="font-bold text-slate-900 text-sm">
+                      {b.clientName || (b as any).eventName || "Untitled Booking"}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      {b.eventType || (b as any).eventType} • {b.location || "Location TBD"}
+                    </p>
+                    <p className="text-[11px] text-slate-300 mt-0.5">
+                      {new Date(b.date || (b as any).eventDate || Date.now()).toLocaleDateString(undefined, {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="font-extrabold text-slate-900 text-sm">
+                      ৳{Number(b.amount || (b as any).budget || 0).toLocaleString()}
+                    </p>
+                    <span
+                      className={`inline-block mt-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        STATUS_STYLES[(b.status as CustomerBooking["status"]) || "CONFIRMED"]
+                      }`}
+                    >
+                      {b.status || "CONFIRMED"}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* This Week */}
+          <div className="mt-6 mx-4 md:mx-0 bg-slate-900 rounded-2xl p-5">
+            <p className="text-white font-extrabold text-sm mb-4">This Week</p>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">New Bookings</p>
+                <p className="text-white font-extrabold text-lg mt-1">{weekStats.newBookings}</p>
+              </div>
+              <div>
+                <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Revenue</p>
+                <p className="text-amber-400 font-extrabold text-lg mt-1">৳{weekStats.revenue.toLocaleString()}</p>
+              </div>
+              <div>
+                <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Conversion</p>
+                <p className="text-emerald-400 font-extrabold text-lg mt-1">{weekStats.conversion}%</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* ── Welcome Header per Role ───────────────────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700">
-              {role === "vendor"
-                ? "Vendor Partner"
-                : role === "admin"
-                ? "System Administrator"
-                : "Customer Portal"}
-            </span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mt-2">
-            Welcome back, {user?.name ? user.name.split(" ")[0] : "EVENTO User"}
-          </h1>
-          <p className="mt-1.5 text-slate-500 max-w-xl text-xs sm:text-sm leading-relaxed">
-            {role === "vendor"
-              ? "Access your assigned execution specifications, submit progress updates, and track escrow payouts with zero client identity exposure."
-              : role === "admin"
-              ? "Oversee platform financial margins, coordinate vendor partner dispatches, and manage zone pricing multipliers across Bangladesh."
-              : "Track your active celebration milestones across Bangladesh, estimate budgets by zone, and communicate with EVENTO lead coordinators."}
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-          {role === "admin" ? (
-            <>
-              <button
-                onClick={handleNewBooking}
-                className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white px-4 py-2.5 rounded-xl font-bold shadow-sm hover:shadow-lg hover:shadow-purple-600/30 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 text-xs cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                Create Event
-              </button>
-              <button
-                onClick={handleAddVendor}
-                className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl font-bold shadow-sm hover:shadow-lg hover:shadow-slate-900/20 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 text-xs cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                Onboard Vendor
-              </button>
-              <button
-                onClick={handleAddZone}
-                className="flex items-center gap-2 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 hover:border-purple-300 px-4 py-2.5 rounded-xl font-bold transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 text-xs cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                Add Zone
-              </button>
-            </>
-          ) : role === "vendor" ? (
-            <>
-              <Link
-                href="/dashboard/tasks"
-                className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-bold shadow-sm hover:shadow-lg hover:shadow-slate-900/20 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 text-xs"
-              >
-                <ClipboardList className="w-4 h-4" />
-                My Task Board
-              </Link>
-              <Link
-                href="/dashboard/earnings"
-                className="flex items-center gap-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 hover:border-emerald-300 px-4 py-2.5 rounded-xl font-bold transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 text-xs"
-              >
-                <Wallet className="w-4 h-4" />
-                Earnings
-              </Link>
-            </>
+      {/* Mobile bottom nav */}
+      <nav className="md:hidden fixed bottom-0 inset-x-0 bg-white border-t border-slate-100 px-6 py-2.5 flex items-center justify-between z-40">
+        {[
+          { key: "dashboard", label: "Dashboard", icon: LayoutGrid },
+          { key: "bookings", label: "Bookings", icon: CalendarDays },
+          null,
+          { key: "wallet", label: "Wallet", icon: WalletIcon },
+          { key: "profile", label: "Profile", icon: UserIcon },
+        ].map((item, idx) =>
+          item === null ? (
+            <div key={`gap-${idx}`} className="w-12" />
           ) : (
             <button
-              onClick={handleNewBooking}
-              className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-bold shadow-sm hover:shadow-lg hover:shadow-slate-900/20 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 text-xs cursor-pointer"
+              key={item.key}
+              onClick={() => setActiveTab(item.key as typeof activeTab)}
+              className={`flex flex-col items-center gap-1 text-[10px] font-bold ${
+                activeTab === item.key ? "text-amber-600" : "text-slate-400"
+              }`}
             >
-              <Plus className="w-4 h-4" />
-              Add Custom Booking
+              <item.icon className="w-5 h-5" />
+              {item.label}
             </button>
-          )}
-        </div>
-      </div>
-
-      {/* ── Role Specific KPI Cards ───────────────────────────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {role === "vendor" ? (
-          <>
-            <div className="group bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:shadow-emerald-900/5 hover:-translate-y-1 hover:border-emerald-200 transition-all duration-300">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 transition-transform duration-300 group-hover:scale-110">
-                  <span className="text-lg font-black">৳</span>
-                </div>
-                <h3 className="font-semibold text-slate-700 text-sm">
-                  Assigned Escrow Payout
-                </h3>
-              </div>
-              <p className="text-3xl font-extrabold text-slate-900">
-                ৳ 138,000
-              </p>
-              <p className="text-xs text-slate-500 mt-1">
-                Protected in EVENTO Escrow for 3 Active Dispatches
-              </p>
-            </div>
-
-            <div className="group bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:shadow-purple-900/5 hover:-translate-y-1 hover:border-purple-200 transition-all duration-300">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600 transition-transform duration-300 group-hover:scale-110">
-                  <ClipboardList className="w-5 h-5" />
-                </div>
-                <h3 className="font-semibold text-slate-700 text-sm">
-                  Active Dispatched Jobs
-                </h3>
-              </div>
-              <p className="text-3xl font-extrabold text-slate-900">
-                3 Dispatches
-              </p>
-              <p className="text-xs text-slate-500 mt-1">
-                Photography, Decoration & Sound System
-              </p>
-            </div>
-
-            <div className="group bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:shadow-amber-900/5 hover:-translate-y-1 hover:border-amber-200 transition-all duration-300">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 transition-transform duration-300 group-hover:scale-110">
-                  <CheckCircle className="w-5 h-5" />
-                </div>
-                <h3 className="font-semibold text-slate-700 text-sm">
-                  Partner Verified Status
-                </h3>
-              </div>
-              <p className="text-2xl font-extrabold text-amber-600">
-                4.9 ★ Verified
-              </p>
-              <p className="text-xs text-slate-500 mt-1">
-                100% Quality & Timely Delivery Score
-              </p>
-            </div>
-          </>
-        ) : role === "admin" ? (
-          <>
-            <div className="group bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:shadow-indigo-900/5 hover:-translate-y-1 hover:border-indigo-200 transition-all duration-300">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 transition-transform duration-300 group-hover:scale-110">
-                  <span className="text-lg font-black">৳</span>
-                </div>
-                <h3 className="font-semibold text-slate-700 text-sm">
-                  Platform Managed Volume
-                </h3>
-              </div>
-              <p className="text-3xl font-extrabold text-slate-900">
-                ৳ 1,010,000
-              </p>
-              <p className="text-xs text-slate-500 mt-1">
-                Across 7 Bangladesh Metropolitan & Regional Zones
-              </p>
-            </div>
-
-            <div className="group bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:shadow-emerald-900/5 hover:-translate-y-1 hover:border-emerald-200 transition-all duration-300">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 transition-transform duration-300 group-hover:scale-110">
-                  <Users className="w-5 h-5" />
-                </div>
-                <h3 className="font-semibold text-slate-700 text-sm">
-                  Active Vendor Partners
-                </h3>
-              </div>
-              <p className="text-3xl font-extrabold text-slate-900">
-                12 Partners
-              </p>
-              <p className="text-xs text-slate-500 mt-1">
-                Dhaka, Chattogram & Sylhet Coverage
-              </p>
-            </div>
-
-            <div className="group bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:shadow-purple-900/5 hover:-translate-y-1 hover:border-purple-200 transition-all duration-300">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600 transition-transform duration-300 group-hover:scale-110">
-                  <Sliders className="w-5 h-5" />
-                </div>
-                <h3 className="font-semibold text-slate-700 text-sm">
-                  Platform Commission Rules
-                </h3>
-              </div>
-              <p className="text-2xl font-extrabold text-purple-700">
-                15.0% Margin
-              </p>
-              <p className="text-xs text-slate-500 mt-1">
-                Standard 5.0% BDT Tax / VAT Applied
-              </p>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="group bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:shadow-purple-900/5 hover:-translate-y-1 hover:border-purple-200 transition-all duration-300">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600 transition-transform duration-300 group-hover:scale-110">
-                  <span className="text-lg font-black">৳</span>
-                </div>
-                <h3 className="font-semibold text-slate-700 text-sm">
-                  Total Celebration Budget
-                </h3>
-              </div>
-              <p className="text-3xl font-extrabold text-slate-900">
-                ৳ {totalBudget.toLocaleString()}
-              </p>
-              <p className="text-xs text-slate-500 mt-1">
-                Across all your active Bangladesh celebrations
-              </p>
-            </div>
-
-            <div className="group bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:shadow-indigo-900/5 hover:-translate-y-1 hover:border-indigo-200 transition-all duration-300">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 transition-transform duration-300 group-hover:scale-110">
-                  <Briefcase className="w-5 h-5" />
-                </div>
-                <h3 className="font-semibold text-slate-700 text-sm">
-                  Active Bookings
-                </h3>
-              </div>
-              <p className="text-3xl font-extrabold text-slate-900">
-                {activeCount}
-              </p>
-              <p className="text-xs text-slate-500 mt-1">
-                Coordinated by EVENTO Dispatch Officers
-              </p>
-            </div>
-
-            <div className="group bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:shadow-emerald-900/5 hover:-translate-y-1 hover:border-emerald-200 transition-all duration-300">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 transition-transform duration-300 group-hover:scale-110">
-                  <CheckCircle className="w-5 h-5" />
-                </div>
-                <h3 className="font-semibold text-slate-700 text-sm">
-                  Escrow Guarantee
-                </h3>
-              </div>
-              <p className="text-2xl font-extrabold text-emerald-700">
-                100% Protected
-              </p>
-              <p className="text-xs text-slate-500 mt-1">
-                Zero vendor identity or price leakage
-              </p>
-            </div>
-          </>
+          )
         )}
-      </div>
+      </nav>
 
-      {/* ── Countdown Banner for Customer ──────────────────────────────────── */}
-      {role === "customer" && (countdown.days > 0 || countdown.hours > 0) && (
-        <div className="bg-gradient-to-r from-purple-900 via-indigo-900 to-blue-800 rounded-2xl p-5 shadow-sm hover:shadow-lg hover:shadow-indigo-900/25 transition-shadow duration-500 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-indigo-500/30">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-white/15 border border-white/30 transition-all duration-300 hover:bg-white/25 hover:scale-110">
-              <Clock className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-blue-100">Next Event Countdown</p>
-              <p className="text-sm font-bold text-white mt-0.5">Live time until your next celebration</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            {[
-              { value: countdown.days, label: "Days" },
-              { value: countdown.hours, label: "Hours" },
-              { value: countdown.minutes, label: "Min" },
-              { value: countdown.seconds, label: "Sec" },
-            ].map((unit) => (
-              <div
-                key={unit.label}
-                className="flex flex-col items-center rounded-xl px-1.5 py-1 transition-colors duration-200 hover:bg-white/5"
-              >
-                <span className="text-2xl font-black text-white tabular-nums w-12 text-center">
-                  {String(unit.value).padStart(2, "0")}
-                </span>
-                <span className="text-[9px] font-bold uppercase tracking-widest text-blue-100 mt-0.5">
-                  {unit.label}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+      <button
+        onClick={handleNewBooking}
+        className="md:hidden fixed bottom-5 left-1/2 -translate-x-1/2 w-14 h-14 rounded-full bg-slate-900 text-white flex items-center justify-center shadow-lg shadow-slate-900/30 z-50 active:scale-95 transition-transform"
+      >
+        <Plus className="w-6 h-6" />
+      </button>
+    </div>
+  );
+}
+
+function StatCard({ label, value, accent = false }: { label: string; value: string; accent?: boolean }) {
+  return (
+    <div className="bg-white border border-slate-100 rounded-2xl p-3.5 shadow-sm">
+      <p className="text-[10px] text-slate-400 font-semibold leading-tight">{label}</p>
+      <p className={`text-lg font-extrabold mt-1.5 ${accent ? "text-amber-600" : "text-slate-900"}`}>{value}</p>
+    </div>
+  );
+}
+
+// ═════════════════════════════════════════════════════════════════════════
+// VENDOR DASHBOARD — matches "LensLife" Figma design
+// ═════════════════════════════════════════════════════════════════════════
+const VENDOR_NAV_ITEMS = [
+  { key: "dashboard", label: "Dashboard", icon: LayoutGrid, badge: null as string | null },
+  { key: "new-jobs", label: "New Jobs", icon: Briefcase, badge: "4", badgeColor: "bg-blue-500" },
+  { key: "active-jobs", label: "Active Jobs", icon: CircleCheckBig, badge: "3", badgeColor: "bg-emerald-500" },
+  { key: "completed-jobs", label: "Completed Jobs", icon: CheckCircle2, badge: null },
+  { key: "wallet", label: "Wallet", icon: WalletIcon, badge: null },
+  { key: "services", label: "My Services", icon: Heart, badge: "1", badgeColor: "bg-amber-500" },
+  { key: "reviews", label: "Reviews", icon: Star, badge: null },
+  { key: "profile", label: "Profile", icon: UserIcon, badge: null },
+] as const;
+
+function VendorDashboard() {
+  const { user } = useAppSelector((state) => state.auth);
+
+  const [jobs, setJobs] = useState<VendorJob[]>(DEFAULT_VENDOR_JOBS);
+  const [requests, setRequests] = useState<VendorRequest[]>(DEFAULT_VENDOR_REQUESTS);
+  const [todayEarnings, setTodayEarnings] = useState(1240);
+  const [totalBalance, setTotalBalance] = useState(8650);
+  const [activeJobsCount, setActiveJobsCount] = useState(3);
+  const [pendingPayout, setPendingPayout] = useState(2350);
+  const [monthPerf, setMonthPerf] = useState({ jobsCompleted: 68, earningsGoal: 82, clientRating: 96 });
+
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [requestsOpen, setRequestsOpen] = useState(false);
+  const [activeNav, setActiveNav] = useState<(typeof VENDOR_NAV_ITEMS)[number]["key"]>("dashboard");
+
+  useEffect(() => {
+    const fetchVendorOverview = async () => {
+      let localTasks: any[] = [];
+      if (typeof window !== "undefined") {
+        try {
+          const stored = localStorage.getItem("customVendorTasks");
+          if (stored) localTasks = JSON.parse(stored);
+        } catch (e) {}
+      }
+
+      try {
+        const res = await apiClient.get("/vendor/overview");
+        if (res.data?.success !== false && res.data?.data) {
+          const d = res.data.data;
+          if (Array.isArray(d.jobs) && d.jobs.length > 0) setJobs(d.jobs);
+          else if (localTasks.length > 0) setJobs(localTasks);
+          if (Array.isArray(d.requests)) setRequests(d.requests);
+          if (typeof d.todayEarnings === "number") setTodayEarnings(d.todayEarnings);
+          if (typeof d.totalBalance === "number") setTotalBalance(d.totalBalance);
+          if (typeof d.activeJobsCount === "number") setActiveJobsCount(d.activeJobsCount);
+          if (typeof d.pendingPayout === "number") setPendingPayout(d.pendingPayout);
+          if (d.monthPerf) setMonthPerf(d.monthPerf);
+        } else if (localTasks.length > 0) {
+          setJobs(localTasks);
+        }
+      } catch (e) {
+        if (localTasks.length > 0) setJobs(localTasks);
+      }
+    };
+
+    fetchVendorOverview();
+    const handleUpdate = () => fetchVendorOverview();
+    window.addEventListener("dashboard-data-update", handleUpdate);
+    return () => window.removeEventListener("dashboard-data-update", handleUpdate);
+  }, []);
+
+  const handleRespond = async (id: string, accept: boolean) => {
+    try {
+      await apiClient.post(`/vendor/requests/${id}/respond`, { accept });
+    } catch (e) {}
+    setRequests((prev) => prev.filter((r) => r.id !== id));
+  };
+
+  const displayName = user?.name || "Alex Kumar";
+  const initials = displayName.split(" ").map((s) => s[0]).slice(0, 2).join("").toUpperCase();
+
+  return (
+    <div className="min-h-screen bg-slate-50 flex">
+      {sidebarOpen && (
+        <div className="fixed inset-0 bg-slate-900/40 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
-      {/* ── Main Content Grid per Role ───────────────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left 2 Cols: Feed based on Role */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
-          {role === "vendor" ? (
-            <div>
-              <div className="p-6 border-b border-slate-200 flex justify-between items-center">
-                <div>
-                  <h2 className="text-lg font-bold text-slate-900">
-                    Assigned Task Dispatches
-                  </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    Technical event execution specifications assigned to your team
-                  </p>
-                </div>
-                <Link
-                  href="/dashboard/tasks"
-                  className="text-xs font-bold text-purple-600 hover:text-purple-700 transition-colors duration-200 hover:underline underline-offset-4"
-                >
-                  Open Task Board →
-                </Link>
-              </div>
+      {/* Sidebar */}
+      <aside
+        className={`fixed lg:static z-50 lg:z-auto top-0 left-0 h-full w-64 bg-white border-r border-slate-100 flex flex-col px-4 py-5 transition-transform duration-300 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        }`}
+      >
+        <div className="flex items-center justify-between mb-6 px-1">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-slate-900 flex items-center justify-center text-white font-black text-sm">L</div>
+            <span className="font-extrabold text-slate-900 tracking-tight">LensLife</span>
+          </div>
+          <button className="lg:hidden text-slate-400" onClick={() => setSidebarOpen(false)}>
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
-              <div className="divide-y divide-slate-100">
-                {DEFAULT_VENDOR_DISPATCHES.map((task, idx) => (
-                  <Link
-                    key={task.id ? `dispatch-${task.id}-${idx}` : `dsp-idx-${idx}`}
-                    href="/dashboard/tasks"
-                    className="group p-6 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center hover:bg-slate-50 transition-colors duration-200 block"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center shrink-0 font-bold text-indigo-700 text-xs transition-transform duration-300 group-hover:scale-105 group-hover:border-indigo-300">
-                        {task.id}
+        <div className="flex items-center gap-3 px-2 py-3 mb-4 rounded-xl bg-slate-50">
+          <div className="w-10 h-10 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs shrink-0">
+            {initials}
+          </div>
+          <div className="min-w-0">
+            <p className="font-bold text-slate-900 text-sm truncate">{displayName}</p>
+            <p className="text-xs text-slate-400 truncate">{(user as any)?.category || "Photographer"}</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 px-2 mb-4">
+          <span className="flex items-center gap-1 text-[11px] font-bold text-blue-600">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" /> 4 new jobs
+          </span>
+          <span className="text-slate-200">•</span>
+          <span className="flex items-center gap-1 text-[11px] font-bold text-amber-600">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500" /> 1 pending
+          </span>
+        </div>
+
+        <p className="px-2 text-[10px] font-bold uppercase tracking-widest text-slate-300 mb-1.5">Main Menu</p>
+        <nav className="flex-1 space-y-1">
+          {VENDOR_NAV_ITEMS.map((item) => {
+            const Icon = item.icon;
+            const active = activeNav === item.key;
+            return (
+              <button
+                key={item.key}
+                onClick={() => {
+                  setActiveNav(item.key);
+                  setSidebarOpen(false);
+                }}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                  active ? "bg-slate-900 text-white" : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
+                }`}
+              >
+                <span className="flex items-center gap-3">
+                  <Icon className="w-[18px] h-[18px]" />
+                  {item.label}
+                </span>
+                {item.badge && (
+                  <span className={`w-5 h-5 rounded-full text-white text-[10px] font-bold flex items-center justify-center ${item.badgeColor}`}>
+                    {item.badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </nav>
+
+        <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-400 hover:bg-slate-50 hover:text-slate-700 transition-colors">
+          <LogOut className="w-[18px] h-[18px]" />
+          Sign Out
+        </button>
+      </aside>
+
+      {/* Main area */}
+      <div className="flex-1 min-w-0 flex flex-col xl:flex-row">
+        <div className="flex-1 min-w-0 px-4 sm:px-6 lg:px-8 py-5 lg:py-8">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <button className="lg:hidden text-slate-500" onClick={() => setSidebarOpen(true)}>
+                <Menu className="w-5 h-5" />
+              </button>
+              <div>
+                <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900">Dashboard</h1>
+                <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
+                  Welcome back, {displayName.split(" ")[0]}! Here&apos;s what&apos;s happening today.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setRequestsOpen(true)}
+              className="xl:hidden relative px-3 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold flex items-center gap-1.5"
+            >
+              Requests
+              <span className="w-[18px] h-[18px] rounded-full bg-red-500 text-[10px] flex items-center justify-center">
+                {requests.length}
+              </span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+            <VendorStatCard label="Today's Earnings" value={`$${todayEarnings.toLocaleString()}`} delta="+12% from yesterday" color="emerald" icon={<DollarSign className="w-[18px] h-[18px]" />} />
+            <VendorStatCard label="Total Balance" value={`$${totalBalance.toLocaleString()}`} delta="+5.2% this month" color="blue" icon={<WalletIcon className="w-[18px] h-[18px]" />} />
+            <VendorStatCard label="Active Jobs" value={String(activeJobsCount)} delta="+2 starting soon" color="amber" icon={<Briefcase className="w-[18px] h-[18px]" />} />
+            <VendorStatCard label="Client Rating" value={`${(monthPerf.clientRating / 20).toFixed(1)} ★`} delta="Top rated partner" color="purple" icon={<Star className="w-[18px] h-[18px]" />} />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+              <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-slate-100">
+                <h2 className="font-extrabold text-slate-900 text-sm sm:text-base">Recent Jobs</h2>
+                <button className="text-xs font-bold text-slate-400 hover:text-slate-700">View all</button>
+              </div>
+              <div className="divide-y divide-slate-50">
+                {jobs.map((job, idx) => (
+                  <div key={job.id ? `job-${job.id}-${idx}` : idx} className="flex items-center justify-between gap-4 px-5 sm:px-6 py-4 hover:bg-slate-50 transition-colors">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-9 h-9 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-xs shrink-0">
+                        {(job.client || "").split(" ").map((s) => s[0]).slice(0, 2).join("")}
                       </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-bold text-slate-900 text-sm">
-                            {task.title}
-                          </h3>
-                          <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-purple-100 text-purple-700">
-                            {task.category}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-3 mt-1.5 text-xs text-slate-500 font-medium">
-                          <span className="flex items-center gap-1">
-                            <Clock className="w-3.5 h-3.5 text-indigo-600" /> {task.date}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <MapPin className="w-3.5 h-3.5 text-indigo-600" /> {task.venue} ({task.zone})
-                          </span>
-                        </div>
+                      <div className="min-w-0">
+                        <p className="font-bold text-slate-900 text-sm truncate">{job.title}</p>
+                        <p className="text-xs text-slate-400 truncate">{job.client} • {job.venue}</p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
-                      <div className="text-left sm:text-right">
-                        <p className="font-extrabold text-emerald-700">{task.payout}</p>
-                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider mt-1 bg-emerald-100 text-emerald-800">
-                          {task.status}
-                        </span>
-                      </div>
-                      <div className="p-2 text-slate-400 group-hover:text-slate-900 rounded-lg group-hover:bg-slate-200 transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
-                        <ArrowUpRight className="w-5 h-5" />
-                      </div>
+                    <div className="text-right shrink-0">
+                      <p className="font-extrabold text-slate-900 text-sm">${Number(job.amount || 0).toLocaleString()}</p>
+                      <span className={`inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase ${job.status === "NEW" ? "bg-blue-50 text-blue-600" : "bg-amber-50 text-amber-600"}`}>
+                        {job.status}
+                      </span>
                     </div>
-                  </Link>
+                  </div>
                 ))}
               </div>
             </div>
-          ) : (
-            <div>
-              <div className="p-6 border-b border-slate-200 flex justify-between items-center">
-                <div>
-                  <h2 className="text-lg font-bold text-slate-900">
-                    {role === "admin" ? "All Platform Bookings" : "Recent Celebrations (BDT ৳)"}
-                  </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">
-                    {role === "admin"
-                      ? "Track live celebrations and vendor assignments across Bangladesh"
-                      : "Overview of your custom and calculated event bookings"}
-                  </p>
+
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-3">
+                <button className="bg-blue-50 hover:bg-blue-100 border border-blue-100 rounded-2xl p-4 text-left transition-colors">
+                  <Briefcase className="w-5 h-5 text-blue-600 mb-2" />
+                  <p className="text-xs font-bold text-slate-900">New Jobs</p>
+                </button>
+                <button className="bg-emerald-50 hover:bg-emerald-100 border border-emerald-100 rounded-2xl p-4 text-left transition-colors">
+                  <WalletIcon className="w-5 h-5 text-emerald-600 mb-2" />
+                  <p className="text-xs font-bold text-slate-900">Wallet</p>
+                </button>
+              </div>
+
+              <div className="bg-slate-900 rounded-2xl p-5">
+                <p className="text-white font-extrabold text-sm mb-1">This Month</p>
+                <p className="text-slate-400 text-xs mb-4">April 2026 performance</p>
+                <div className="space-y-3.5">
+                  <PerfBar label="Jobs Completed" value={monthPerf.jobsCompleted} color="bg-blue-500" />
+                  <PerfBar label="Earnings Goal" value={monthPerf.earningsGoal} color="bg-emerald-500" />
+                  <PerfBar label="Client Rating" value={monthPerf.clientRating} color="bg-amber-500" />
                 </div>
-                <Link
-                  href="/dashboard/bookings"
-                  className="text-xs font-bold text-purple-600 hover:text-purple-700 transition-colors duration-200 hover:underline underline-offset-4"
-                >
-                  View All Bookings →
-                </Link>
               </div>
 
-              <div className="divide-y divide-slate-100">
-                {isLoading ? (
-                  <div className="p-12 text-center text-slate-400 font-medium">
-                    Loading bookings...
-                  </div>
-                ) : bookings.length === 0 ? (
-                  <div className="p-12 text-center">
-                    <div className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <Calendar className="w-6 h-6 text-slate-400" />
-                    </div>
-                    <p className="text-slate-900 font-semibold">
-                      No bookings yet
-                    </p>
-                    <p className="text-sm text-slate-500 mt-1">
-                      Click Add Custom Booking to get started
-                    </p>
-                  </div>
-                ) : (
-                  bookings.map((booking, idx) => (
-                    <Link
-                      key={booking.id ? `booking-${booking.id}-${idx}` : `idx-${idx}`}
-                      href={`/dashboard/bookings/${booking.bookingNumber ? booking.bookingNumber.replace("#", "") : booking.id}`}
-                      className="group p-6 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center hover:bg-slate-50 transition-colors duration-200 block"
-                    >
-                      <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center shrink-0 font-bold text-purple-700 text-xs transition-transform duration-300 group-hover:scale-105 group-hover:border-purple-300">
-                          {booking.id ? String(booking.id).slice(-3) : "BKG"}
-                        </div>
-                        <div>
-                          <h3 className="font-bold text-slate-900 text-sm">
-                            {booking.eventName ||
-                              booking.notes ||
-                              booking.title ||
-                              "Untitled Celebration"}
-                          </h3>
-                          <div className="flex items-center gap-3 mt-1.5 text-xs text-slate-500 font-medium">
-                            <span className="flex items-center gap-1">
-                              <Clock className="w-3.5 h-3.5 text-purple-600" />{" "}
-                              {new Date(
-                                booking.eventDate || Date.now()
-                              ).toLocaleDateString()}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <MapPin className="w-3.5 h-3.5 text-purple-600" />{" "}
-                              {booking.location || "Dhaka Metro"}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
-                        <div className="text-left sm:text-right">
-                          <p className="font-extrabold text-slate-900">
-                            ৳{" "}
-                            {Number(
-                              booking.budget || booking.grandTotal || 0
-                            ).toLocaleString()}
-                          </p>
-                          <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider mt-1 bg-purple-100 text-purple-700">
-                            {booking.bookingStatus ||
-                              booking.status ||
-                              "CONFIRMED"}
-                          </span>
-                        </div>
-                        <div className="p-2 text-slate-400 group-hover:text-slate-900 rounded-lg group-hover:bg-slate-200 transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
-                          <ArrowUpRight className="w-5 h-5" />
-                        </div>
-                      </div>
-                    </Link>
-                  ))
-                )}
+              <div className="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
+                <p className="text-xs font-bold text-slate-500 mb-1">Pending Payout</p>
+                <p className="text-2xl font-extrabold text-slate-900">${pendingPayout.toLocaleString()}</p>
+                <p className="text-xs text-slate-400 mt-1 mb-4">Clears in 2-3 business days</p>
+                <button className="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold py-2.5 rounded-xl transition-colors">
+                  Go to Wallet
+                </button>
               </div>
             </div>
-          )}
-        </div>
-
-        {/* Right Sidebar: Role Shortcuts & Tools */}
-        <div className="space-y-6">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
-            <div className="p-6 border-b border-slate-200">
-              <h2 className="text-base font-bold text-slate-900">
-                {role === "vendor"
-                  ? "Vendor Tools"
-                  : role === "admin"
-                  ? "Admin Control Desk"
-                  : "Customer Portals"}
-              </h2>
-            </div>
-            <div className="p-4 space-y-2">
-              {role === "vendor" ? (
-                <>
-                  <Link
-                    href="/dashboard/tasks"
-                    className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 border border-slate-100 hover:border-emerald-200 transition-all duration-200"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold transition-transform duration-300 group-hover:scale-110">
-                        <ClipboardList className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-slate-900">
-                          Task Execution Board
-                        </p>
-                        <p className="text-[11px] text-slate-500">
-                          View technical requirements & GPS venue map
-                        </p>
-                      </div>
-                    </div>
-                    <ArrowUpRight className="w-4 h-4 text-slate-400 transition-all duration-200 group-hover:text-slate-900 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                  </Link>
-
-                  <Link
-                    href="/dashboard/earnings"
-                    className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 border border-slate-100 hover:border-purple-200 transition-all duration-200"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold transition-transform duration-300 group-hover:scale-110">
-                        <Wallet className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-slate-900">
-                          Earnings & Escrow
-                        </p>
-                        <p className="text-[11px] text-slate-500">
-                          Track completed jobs & payout transfers
-                        </p>
-                      </div>
-                    </div>
-                    <ArrowUpRight className="w-4 h-4 text-slate-400 transition-all duration-200 group-hover:text-slate-900 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                  </Link>
-
-                  <Link
-                    href="/dashboard/messages"
-                    className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 border border-slate-100 hover:border-indigo-200 transition-all duration-200"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold transition-transform duration-300 group-hover:scale-110">
-                        <Briefcase className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-slate-900">
-                          Dispatch Communication
-                        </p>
-                        <p className="text-[11px] text-slate-500">
-                          Coordinate with EVENTO Lead Officers
-                        </p>
-                      </div>
-                    </div>
-                    <ArrowUpRight className="w-4 h-4 text-slate-400 transition-all duration-200 group-hover:text-slate-900 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                  </Link>
-                </>
-              ) : role === "admin" ? (
-                <>
-                  <Link
-                    href="/dashboard/vendors"
-                    className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 border border-slate-100 hover:border-indigo-200 transition-all duration-200"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold transition-transform duration-300 group-hover:scale-110">
-                        <Users className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-slate-900">
-                          Vendor Partner Onboarding
-                        </p>
-                        <p className="text-[11px] text-slate-500">
-                          Onboard & manage technical teams
-                        </p>
-                      </div>
-                    </div>
-                    <ArrowUpRight className="w-4 h-4 text-slate-400 transition-all duration-200 group-hover:text-slate-900 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                  </Link>
-
-                  <Link
-                    href="/dashboard/settings"
-                    className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 border border-slate-100 hover:border-purple-200 transition-all duration-200"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold transition-transform duration-300 group-hover:scale-110">
-                        <Sliders className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-slate-900">
-                          Bangladesh Zone Multipliers
-                        </p>
-                        <p className="text-[11px] text-slate-500">
-                          Configure pricing across 7 BD zones
-                        </p>
-                      </div>
-                    </div>
-                    <ArrowUpRight className="w-4 h-4 text-slate-400 transition-all duration-200 group-hover:text-slate-900 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                  </Link>
-
-                  <Link
-                    href="/dashboard/tasks"
-                    className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 border border-slate-100 hover:border-emerald-200 transition-all duration-200"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold transition-transform duration-300 group-hover:scale-110">
-                        <ClipboardList className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-slate-900">
-                          Dispatch Task Monitor
-                        </p>
-                        <p className="text-[11px] text-slate-500">
-                          Monitor live vendor task progress
-                        </p>
-                      </div>
-                    </div>
-                    <ArrowUpRight className="w-4 h-4 text-slate-400 transition-all duration-200 group-hover:text-slate-900 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <Link
-                    href="/dashboard/bookings"
-                    className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 border border-slate-100 hover:border-purple-200 transition-all duration-200"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold transition-transform duration-300 group-hover:scale-110">
-                        <UserIcon className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-slate-900">
-                          My Event Bookings
-                        </p>
-                        <p className="text-[11px] text-slate-500">
-                          View event milestones & details
-                        </p>
-                      </div>
-                    </div>
-                    <ArrowUpRight className="w-4 h-4 text-slate-400 transition-all duration-200 group-hover:text-slate-900 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                  </Link>
-
-                  <Link
-                    href="/calculator"
-                    className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 border border-slate-100 hover:border-indigo-200 transition-all duration-200"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold transition-transform duration-300 group-hover:scale-110">
-                        <Sparkles className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-slate-900">
-                          Smart Event Calculator
-                        </p>
-                        <p className="text-[11px] text-slate-500">
-                          4-step estimation for 7 BD zones
-                        </p>
-                      </div>
-                    </div>
-                    <ArrowUpRight className="w-4 h-4 text-slate-400 transition-all duration-200 group-hover:text-slate-900 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                  </Link>
-
-                  <Link
-                    href="/packages"
-                    className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 border border-slate-100 hover:border-emerald-200 transition-all duration-200"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold transition-transform duration-300 group-hover:scale-110">
-                        <Briefcase className="w-4 h-4" />
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-slate-900">
-                          Curated Packages
-                        </p>
-                        <p className="text-[11px] text-slate-500">
-                          Explore wedding & corporate sets
-                        </p>
-                      </div>
-                    </div>
-                    <ArrowUpRight className="w-4 h-4 text-slate-400 transition-all duration-200 group-hover:text-slate-900 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                  </Link>
-                </>
-              )}
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-br from-purple-800 via-indigo-800 to-blue-800 rounded-2xl p-6 text-white shadow-sm hover:shadow-xl hover:shadow-indigo-900/30 transition-shadow duration-500">
-            <h3 className="font-extrabold text-sm mb-1">
-              {role === "vendor"
-                ? "Need assistance with a dispatch?"
-                : role === "admin"
-                ? "Zone pricing management"
-                : "Need custom zone calculation?"}
-            </h3>
-            <p className="text-xs text-blue-100 mb-4 leading-relaxed">
-              {role === "vendor"
-                ? "Contact the EVENTO Dispatch Desk directly from your Task Board or Messaging Hub."
-                : role === "admin"
-                ? "Adjust pricing multipliers and margin rules across Dhaka, Chattogram, Sylhet, and other BD zones."
-                : "Use our interactive 4-step Smart Event Calculator to estimate any celebration in Dhaka, Chattogram, Sylhet, and beyond."}
-            </p>
-            <Link
-              href={role === "vendor" ? "/dashboard/tasks" : role === "admin" ? "/dashboard/settings" : "/calculator"}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white text-slate-900 rounded-xl font-bold text-xs hover:bg-blue-100 transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-purple-600" />{" "}
-              {role === "vendor" ? "Open Task Board" : role === "admin" ? "Manage Settings" : "Open Calculator"}
-            </Link>
           </div>
         </div>
+
+        {/* Job requests panel */}
+        <div
+          className={`xl:w-80 xl:shrink-0 xl:static xl:border-l xl:border-slate-100 xl:bg-white xl:block
+          fixed inset-y-0 right-0 z-50 w-80 max-w-full bg-white shadow-2xl transition-transform duration-300
+          ${requestsOpen ? "translate-x-0" : "translate-x-full xl:translate-x-0"}`}
+        >
+          <div className="p-5 sm:p-6 h-full overflow-y-auto">
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-xs text-slate-400 font-medium">Review and respond to incoming job requests</p>
+              <button className="xl:hidden text-slate-400" onClick={() => setRequestsOpen(false)}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between mt-2 mb-5">
+              <h2 className="font-extrabold text-slate-900 text-sm">{requests.length} pending requests</h2>
+              <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-red-50 text-red-600">
+                Action Required
+              </span>
+            </div>
+
+            <div className="space-y-4">
+              {requests.length === 0 && <p className="text-sm text-slate-400 text-center py-10">No pending requests</p>}
+              {requests.map((r) => (
+                <div key={r.id} className="border border-slate-100 rounded-2xl p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-[10px]">
+                        {r.client.split(" ").map((s) => s[0]).slice(0, 2).join("")}
+                      </div>
+                      <p className="font-bold text-slate-900 text-xs">{r.client}</p>
+                    </div>
+                    <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">New Request</span>
+                  </div>
+
+                  <p className="font-bold text-slate-900 text-sm">{r.title}</p>
+                  <p className="text-xs text-slate-400 mt-1 leading-relaxed">{r.description}</p>
+
+                  <div className="grid grid-cols-2 gap-y-2 mt-3 text-[11px] text-slate-500 font-medium">
+                    <span className="flex items-center gap-1"><MapPin className="w-3 h-3 text-slate-400" /> {r.location}</span>
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-3 h-3 text-slate-400" />
+                      {new Date(r.date).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+                    </span>
+                    <span className="flex items-center gap-1"><Briefcase className="w-3 h-3 text-slate-400" /> {r.service}</span>
+                    <span className="flex items-center gap-1 font-bold text-slate-900"><DollarSign className="w-3 h-3 text-slate-400" /> ${r.budget.toLocaleString()}</span>
+                  </div>
+
+                  <div className="flex gap-2 mt-4">
+                    <button onClick={() => handleRespond(r.id, false)} className="flex-1 py-2 rounded-xl border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50 transition-colors">
+                      Reject
+                    </button>
+                    <button onClick={() => handleRespond(r.id, true)} className="flex-1 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition-colors flex items-center justify-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Accept
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        {requestsOpen && (
+          <div className="fixed inset-0 bg-slate-900/40 z-40 xl:hidden" onClick={() => setRequestsOpen(false)} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function VendorStatCard({
+  label,
+  value,
+  delta,
+  color,
+  icon,
+}: {
+  label: string;
+  value: string;
+  delta: string;
+  color: "emerald" | "blue" | "amber" | "purple";
+  icon: React.ReactNode;
+}) {
+  const colorMap = {
+    emerald: "bg-emerald-50 text-emerald-600",
+    blue: "bg-blue-50 text-blue-600",
+    amber: "bg-amber-50 text-amber-600",
+    purple: "bg-purple-50 text-purple-600",
+  };
+  return (
+    <div className="bg-white border border-slate-100 rounded-2xl p-4 sm:p-5 shadow-sm">
+      <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-3 ${colorMap[color]}`}>{icon}</div>
+      <p className="text-[11px] text-slate-400 font-semibold">{label}</p>
+      <p className="text-xl sm:text-2xl font-extrabold text-slate-900 mt-1">{value}</p>
+      <p className="text-[10px] text-emerald-600 font-bold mt-1">{delta}</p>
+    </div>
+  );
+}
+
+function PerfBar({ label, value, color }: { label: string; value: number; color: string }) {
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1.5">
+        <span className="text-[11px] text-slate-400 font-semibold">{label}</span>
+        <span className="text-[11px] text-white font-bold">{value}%</span>
+      </div>
+      <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+        <div className={`h-full rounded-full ${color}`} style={{ width: `${value}%` }} />
       </div>
     </div>
   );
