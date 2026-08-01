@@ -146,11 +146,11 @@ const DEFAULT_PACKAGES: EventPackage[] = [
 function CardSkeleton() {
   return (
     <div className="animate-pulse overflow-hidden rounded-2xl border border-slate-200 bg-white">
-      <div className="h-44 w-full bg-slate-100" />
-      <div className="space-y-3 p-6">
-        <div className="h-5 w-2/3 rounded bg-slate-100" />
-        <div className="h-4 w-1/3 rounded bg-slate-100" />
-        <div className="h-9 w-full rounded bg-slate-100" />
+      <div className="aspect-[16/9] w-full bg-slate-100" />
+      <div className="space-y-2.5 p-4">
+        <div className="h-4 w-2/3 rounded bg-slate-100" />
+        <div className="h-3.5 w-1/2 rounded bg-slate-100" />
+        <div className="h-8 w-full rounded bg-slate-100" />
       </div>
     </div>
   );
@@ -167,11 +167,12 @@ function PackageCard({ pkg }: { pkg: EventPackage }) {
     <div
       className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg ${
         isPopular
-          ? "border-transparent shadow-md ring-2 ring-violet-400/60 bg-gradient-to-b from-violet-50/40 to-white"
-          : "border-slate-200 shadow-sm"
+          ? "border-transparent shadow-md ring-2 ring-violet-400/60"
+          : "border-slate-200 shadow-sm hover:border-violet-200"
       }`}
     >
-      <div className="relative h-44 w-full bg-slate-100">
+      {/* Shorter, fixed-ratio image so the card never stretches tall */}
+      <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
         {pkg.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -181,47 +182,65 @@ function PackageCard({ pkg }: { pkg: EventPackage }) {
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-slate-300">
-            <ImageOff className="h-8 w-8" />
+            <ImageOff className="h-7 w-7" />
           </div>
         )}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
         {isPopular && (
-          <span className="absolute right-3 top-3 rounded-full bg-gradient-to-r from-violet-600 to-blue-600 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white shadow-sm">
+          <span className="absolute right-2.5 top-2.5 rounded-full bg-gradient-to-r from-violet-600 to-blue-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-sm">
             Most Popular
+          </span>
+        )}
+        {pkg.tier && (
+          <span className="absolute left-2.5 top-2.5 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-700 backdrop-blur-sm">
+            {pkg.tier}
           </span>
         )}
       </div>
 
-      <div className="flex flex-1 flex-col p-6">
-        <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
+      <div className="flex flex-1 flex-col p-4">
+        <h3 className="text-[15px] font-semibold leading-snug text-slate-900">
+          {title}
+        </h3>
         {pkg.subtitle && (
-          <p className="mt-1 text-sm text-violet-700">{pkg.subtitle}</p>
+          <p className="mt-0.5 line-clamp-1 text-xs text-slate-500">
+            {pkg.subtitle}
+          </p>
         )}
 
-        <p className="mt-3 flex items-baseline gap-1.5">
-          <span className="bg-gradient-to-r from-violet-700 to-blue-700 bg-clip-text text-2xl font-bold text-transparent">
-            {price.toLocaleString("en-BD")}
-          </span>
-          <span className="text-sm font-medium text-slate-400">{currency}</span>
-        </p>
+        <div className="mt-2.5 flex items-end justify-between">
+          <p className="flex items-baseline gap-1">
+            <span className="bg-gradient-to-r from-violet-700 to-blue-700 bg-clip-text text-xl font-bold text-transparent">
+              {price.toLocaleString("en-BD")}
+            </span>
+            <span className="text-[11px] font-medium text-slate-400">
+              {currency}
+            </span>
+          </p>
+          {pkg.maxGuests && (
+            <span className="text-[11px] font-medium text-slate-400">
+              Up to {pkg.maxGuests} guests
+            </span>
+          )}
+        </div>
 
-        <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-slate-400">
-          What&apos;s Included
-        </p>
-        <ul className="mt-2 space-y-1.5">
-          {included.slice(0, 4).map((item, index) => (
-            <li
-              key={`${pkg.id}-${item}-${index}`}
-              className="flex items-start gap-2 text-sm text-slate-600"
-            >
-              <BadgeCheck className="mt-0.5 h-4 w-4 shrink-0 text-violet-600" />
-              {item}
-            </li>
-          ))}
-        </ul>
+        {included.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {included.slice(0, 3).map((item, index) => (
+              <span
+                key={`${pkg.id}-${item}-${index}`}
+                className="inline-flex items-center gap-1 rounded-full border border-violet-100 bg-violet-50/70 px-2 py-0.5 text-[10.5px] font-medium text-violet-700"
+              >
+                <BadgeCheck className="h-3 w-3 shrink-0" />
+                <span className="max-w-[9rem] truncate">{item}</span>
+              </span>
+            ))}
+          </div>
+        )}
 
         <Link
           href={`/packages/${pkg.id}`}
-          className={`mt-6 inline-flex w-full items-center justify-center rounded-md px-4 py-2.5 text-sm font-semibold transition-all ${
+          className={`mt-3.5 inline-flex w-full items-center justify-center rounded-lg px-4 py-2 text-xs font-semibold transition-all ${
             isPopular
               ? "bg-gradient-to-r from-violet-600 to-blue-600 text-white shadow-sm hover:from-violet-700 hover:to-blue-700"
               : "border border-slate-300 text-slate-800 hover:border-violet-400 hover:text-violet-800"
