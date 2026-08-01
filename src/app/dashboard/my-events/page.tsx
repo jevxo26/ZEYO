@@ -177,7 +177,7 @@ export default function MyEventsPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header */}
-      <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">
             {role === "admin" ? "All Platform Events" : "My Events"}
@@ -203,7 +203,7 @@ export default function MyEventsPage() {
         <div className="flex gap-3 shrink-0">
           <button
             onClick={handleOpenNewEvent}
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-sm font-semibold shadow-sm transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white rounded-lg text-sm font-semibold shadow-sm hover:shadow-md hover:shadow-purple-500/20 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 flex items-center gap-2"
           >
             <Plus className="w-4 h-4" /> Create New Event
           </button>
@@ -211,16 +211,16 @@ export default function MyEventsPage() {
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-wrap gap-3 items-center justify-between">
+      <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-wrap gap-3 items-center justify-between">
         <div className="flex gap-2 flex-wrap">
           {["All Events", "Active", "Pending", "Completed"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
                 activeTab === tab
-                  ? "bg-slate-900 text-white"
-                  : "bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100"
+                  ? "bg-gradient-to-r from-purple-600 to-blue-500 text-white shadow-sm"
+                  : "bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 hover:border-slate-300"
               }`}
             >
               {tab}
@@ -235,7 +235,7 @@ export default function MyEventsPage() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search events..."
-            className="w-full sm:w-64 pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-slate-50 outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white text-slate-900 transition-all"
+            className="w-full sm:w-64 pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-slate-50 outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-purple-300 focus:bg-white text-slate-900 transition-all duration-200"
           />
         </div>
       </div>
@@ -256,7 +256,7 @@ export default function MyEventsPage() {
             return (
               <div
                 key={evt.id ? `${evt.id}-${idx}` : idx}
-                className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-6 flex flex-col justify-between"
+                className="group bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-lg hover:shadow-purple-900/5 hover:-translate-y-1 hover:border-purple-200 transition-all duration-300 space-y-6 flex flex-col justify-between"
               >
                 <div className="space-y-4">
                   {/* Top Row */}
@@ -303,7 +303,7 @@ export default function MyEventsPage() {
                   </div>
 
                   {/* Progress Timeline */}
-                  <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 space-y-3">
+                  <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 space-y-3 transition-colors duration-300 group-hover:bg-purple-50/40 group-hover:border-purple-100">
                     <p className="text-xs font-semibold text-slate-700">Progression Stage</p>
                     <div className="grid grid-cols-4 gap-2 text-center">
                       {steps.map((step, i) => (
@@ -330,7 +330,7 @@ export default function MyEventsPage() {
                         setReviewEventName(evt.eventTitle || evt.eventName || "Your Celebrated Event");
                         setReviewModalOpen(true);
                       }}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-bold shadow-sm hover:bg-slate-800 transition-colors"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-bold shadow-sm hover:bg-slate-800 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
                     >
                       <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
                       Rate EVENTO Platform
@@ -341,7 +341,7 @@ export default function MyEventsPage() {
 
                   <Link
                     href={`/dashboard/bookings/${evt.bookingNumber ? evt.bookingNumber.replace("#", "") : evt.id}`}
-                    className="px-4 py-2 rounded-lg text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-white shadow-sm transition-colors"
+                    className="px-4 py-2 rounded-lg text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-white shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
                   >
                     View Event Details
                   </Link>
