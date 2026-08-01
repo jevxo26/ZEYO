@@ -17,7 +17,6 @@ import {
   Calendar,
   ShoppingBag,
   Users,
-  Zap,
   X,
 } from "lucide-react";
 
@@ -109,7 +108,13 @@ export default function Sidebar() {
           <div>
             <div className="flex items-center gap-2">
               <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 to-blue-500">
-                <Zap size={14} className="text-white" />
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <rect x="5" y="4" width="3.4" height="16" rx="1.7" fill="white" />
+                  <rect x="5" y="4" width="14" height="3.4" rx="1.7" fill="white" />
+                  <rect x="5" y="10.3" width="10" height="3.4" rx="1.7" fill="white" />
+                  <rect x="5" y="16.6" width="14" height="3.4" rx="1.7" fill="white" />
+                  <circle cx="20.4" cy="3.6" r="1.7" fill="#FBBF24" />
+                </svg>
               </div>
               <h2 className="bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-lg font-black tracking-tight text-transparent">
                 EVENTO
@@ -204,8 +209,8 @@ export default function Sidebar() {
         />
       )}
 
-      {/* Desktop sidebar - always visible, static in layout */}
-      <aside className="hidden w-[230px] shrink-0 min-h-screen flex-col justify-between border-r border-slate-200 bg-white p-4 lg:flex">
+      {/* Desktop sidebar - sticky so it stays in view while page content scrolls */}
+      <aside className="hidden w-[230px] shrink-0 sticky top-0 h-screen overflow-y-auto flex-col justify-between border-r border-slate-200 bg-white p-4 lg:flex">
         {sidebarContent}
       </aside>
 
