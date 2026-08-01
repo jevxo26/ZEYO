@@ -188,20 +188,20 @@ export default function DashboardOverviewPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* ── Role Banner & Header ──────────────────────────────────────────────── */}
-      <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-950 via-slate-900 to-indigo-950 text-white border border-purple-800/40 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-800 via-indigo-800 to-blue-700 text-white border border-indigo-500/40 shadow-md hover:shadow-indigo-900/30 hover:shadow-xl transition-shadow duration-500 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-purple-600/30 border border-purple-400/40 flex items-center justify-center shrink-0">
-            <ShieldCheck className="w-5 h-5 text-purple-300" />
+          <div className="w-10 h-10 rounded-xl bg-white/15 border border-white/30 flex items-center justify-center shrink-0 transition-all duration-300 hover:bg-white/25 hover:border-white/50 hover:scale-110">
+            <ShieldCheck className="w-5 h-5 text-white" />
           </div>
           <div>
-            <span className="text-xs font-bold text-purple-300 uppercase tracking-wider">
+            <span className="text-xs font-bold text-blue-100 uppercase tracking-wider">
               {role === "vendor"
                 ? "Vendor Partner Operations Portal"
                 : role === "admin"
                 ? "Admin Operations Center — Managed Event OS"
                 : "Customer Celebration Portal"}
             </span>
-            <p className="text-sm text-slate-300">
+            <p className="text-sm text-white/80">
               {role === "vendor"
                 ? "Dispatched technical tasks, venue specifications, and protected escrow payouts."
                 : role === "admin"
@@ -213,13 +213,13 @@ export default function DashboardOverviewPage() {
         <div className="flex items-center gap-2 shrink-0">
           <Link
             href="/calculator"
-            className="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-all shadow-sm"
+            className="px-3 py-1.5 rounded-xl bg-white text-purple-700 hover:bg-blue-50 text-xs font-bold transition-all duration-200 shadow-sm hover:shadow-lg hover:shadow-black/10 hover:-translate-y-0.5 active:translate-y-0"
           >
             + Smart Calculator
           </Link>
           <Link
             href="/packages"
-            className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all"
+            className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
           >
             Browse Packages
           </Link>
@@ -227,7 +227,7 @@ export default function DashboardOverviewPage() {
       </div>
 
       {/* ── Welcome Header per Role ───────────────────────────────────────────── */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
           <div className="flex items-center gap-2">
             <span className="text-xs font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-700">
@@ -255,21 +255,21 @@ export default function DashboardOverviewPage() {
             <>
               <button
                 onClick={handleNewBooking}
-                className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white px-4 py-2.5 rounded-xl font-bold shadow-sm transition-colors text-xs cursor-pointer"
+                className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white px-4 py-2.5 rounded-xl font-bold shadow-sm hover:shadow-lg hover:shadow-purple-600/30 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 text-xs cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 Create Event
               </button>
               <button
                 onClick={handleAddVendor}
-                className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl font-bold shadow-sm transition-colors text-xs cursor-pointer"
+                className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-4 py-2.5 rounded-xl font-bold shadow-sm hover:shadow-lg hover:shadow-slate-900/20 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 text-xs cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 Onboard Vendor
               </button>
               <button
                 onClick={handleAddZone}
-                className="flex items-center gap-2 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 px-4 py-2.5 rounded-xl font-bold transition-colors text-xs cursor-pointer"
+                className="flex items-center gap-2 bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 hover:border-purple-300 px-4 py-2.5 rounded-xl font-bold transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 text-xs cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 Add Zone
@@ -279,14 +279,14 @@ export default function DashboardOverviewPage() {
             <>
               <Link
                 href="/dashboard/tasks"
-                className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-bold shadow-sm transition-colors text-xs"
+                className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-bold shadow-sm hover:shadow-lg hover:shadow-slate-900/20 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 text-xs"
               >
                 <ClipboardList className="w-4 h-4" />
                 My Task Board
               </Link>
               <Link
                 href="/dashboard/earnings"
-                className="flex items-center gap-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 px-4 py-2.5 rounded-xl font-bold transition-colors text-xs"
+                className="flex items-center gap-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 hover:border-emerald-300 px-4 py-2.5 rounded-xl font-bold transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 text-xs"
               >
                 <Wallet className="w-4 h-4" />
                 Earnings
@@ -295,7 +295,7 @@ export default function DashboardOverviewPage() {
           ) : (
             <button
               onClick={handleNewBooking}
-              className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-bold shadow-sm transition-colors text-xs cursor-pointer"
+              className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-bold shadow-sm hover:shadow-lg hover:shadow-slate-900/20 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 text-xs cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               Add Custom Booking
@@ -308,9 +308,9 @@ export default function DashboardOverviewPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {role === "vendor" ? (
           <>
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <div className="group bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:shadow-emerald-900/5 hover:-translate-y-1 hover:border-emerald-200 transition-all duration-300">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
+                <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 transition-transform duration-300 group-hover:scale-110">
                   <span className="text-lg font-black">৳</span>
                 </div>
                 <h3 className="font-semibold text-slate-700 text-sm">
@@ -325,9 +325,9 @@ export default function DashboardOverviewPage() {
               </p>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <div className="group bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:shadow-purple-900/5 hover:-translate-y-1 hover:border-purple-200 transition-all duration-300">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600">
+                <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600 transition-transform duration-300 group-hover:scale-110">
                   <ClipboardList className="w-5 h-5" />
                 </div>
                 <h3 className="font-semibold text-slate-700 text-sm">
@@ -342,9 +342,9 @@ export default function DashboardOverviewPage() {
               </p>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <div className="group bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:shadow-amber-900/5 hover:-translate-y-1 hover:border-amber-200 transition-all duration-300">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center text-amber-600">
+                <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 transition-transform duration-300 group-hover:scale-110">
                   <CheckCircle className="w-5 h-5" />
                 </div>
                 <h3 className="font-semibold text-slate-700 text-sm">
@@ -361,9 +361,9 @@ export default function DashboardOverviewPage() {
           </>
         ) : role === "admin" ? (
           <>
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <div className="group bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:shadow-indigo-900/5 hover:-translate-y-1 hover:border-indigo-200 transition-all duration-300">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
+                <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 transition-transform duration-300 group-hover:scale-110">
                   <span className="text-lg font-black">৳</span>
                 </div>
                 <h3 className="font-semibold text-slate-700 text-sm">
@@ -378,9 +378,9 @@ export default function DashboardOverviewPage() {
               </p>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <div className="group bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:shadow-emerald-900/5 hover:-translate-y-1 hover:border-emerald-200 transition-all duration-300">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
+                <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 transition-transform duration-300 group-hover:scale-110">
                   <Users className="w-5 h-5" />
                 </div>
                 <h3 className="font-semibold text-slate-700 text-sm">
@@ -395,9 +395,9 @@ export default function DashboardOverviewPage() {
               </p>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <div className="group bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:shadow-purple-900/5 hover:-translate-y-1 hover:border-purple-200 transition-all duration-300">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600">
+                <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600 transition-transform duration-300 group-hover:scale-110">
                   <Sliders className="w-5 h-5" />
                 </div>
                 <h3 className="font-semibold text-slate-700 text-sm">
@@ -414,9 +414,9 @@ export default function DashboardOverviewPage() {
           </>
         ) : (
           <>
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <div className="group bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:shadow-purple-900/5 hover:-translate-y-1 hover:border-purple-200 transition-all duration-300">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600">
+                <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600 transition-transform duration-300 group-hover:scale-110">
                   <span className="text-lg font-black">৳</span>
                 </div>
                 <h3 className="font-semibold text-slate-700 text-sm">
@@ -431,9 +431,9 @@ export default function DashboardOverviewPage() {
               </p>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <div className="group bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:shadow-indigo-900/5 hover:-translate-y-1 hover:border-indigo-200 transition-all duration-300">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
+                <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 transition-transform duration-300 group-hover:scale-110">
                   <Briefcase className="w-5 h-5" />
                 </div>
                 <h3 className="font-semibold text-slate-700 text-sm">
@@ -448,9 +448,9 @@ export default function DashboardOverviewPage() {
               </p>
             </div>
 
-            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+            <div className="group bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-lg hover:shadow-emerald-900/5 hover:-translate-y-1 hover:border-emerald-200 transition-all duration-300">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
+                <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 transition-transform duration-300 group-hover:scale-110">
                   <CheckCircle className="w-5 h-5" />
                 </div>
                 <h3 className="font-semibold text-slate-700 text-sm">
@@ -470,13 +470,13 @@ export default function DashboardOverviewPage() {
 
       {/* ── Countdown Banner for Customer ──────────────────────────────────── */}
       {role === "customer" && (countdown.days > 0 || countdown.hours > 0) && (
-        <div className="bg-gradient-to-r from-slate-900 via-purple-950 to-indigo-950 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-purple-800/30">
+        <div className="bg-gradient-to-r from-purple-900 via-indigo-900 to-blue-800 rounded-2xl p-5 shadow-sm hover:shadow-lg hover:shadow-indigo-900/25 transition-shadow duration-500 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-indigo-500/30">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-purple-600/20 border border-purple-500/30">
-              <Clock className="w-5 h-5 text-purple-300" />
+            <div className="p-2 rounded-xl bg-white/15 border border-white/30 transition-all duration-300 hover:bg-white/25 hover:scale-110">
+              <Clock className="w-5 h-5 text-white" />
             </div>
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-purple-400">Next Event Countdown</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-blue-100">Next Event Countdown</p>
               <p className="text-sm font-bold text-white mt-0.5">Live time until your next celebration</p>
             </div>
           </div>
@@ -487,11 +487,14 @@ export default function DashboardOverviewPage() {
               { value: countdown.minutes, label: "Min" },
               { value: countdown.seconds, label: "Sec" },
             ].map((unit) => (
-              <div key={unit.label} className="flex flex-col items-center">
+              <div
+                key={unit.label}
+                className="flex flex-col items-center rounded-xl px-1.5 py-1 transition-colors duration-200 hover:bg-white/5"
+              >
                 <span className="text-2xl font-black text-white tabular-nums w-12 text-center">
                   {String(unit.value).padStart(2, "0")}
                 </span>
-                <span className="text-[9px] font-bold uppercase tracking-widest text-purple-400 mt-0.5">
+                <span className="text-[9px] font-bold uppercase tracking-widest text-blue-100 mt-0.5">
                   {unit.label}
                 </span>
               </div>
@@ -503,7 +506,7 @@ export default function DashboardOverviewPage() {
       {/* ── Main Content Grid per Role ───────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Cols: Feed based on Role */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
           {role === "vendor" ? (
             <div>
               <div className="p-6 border-b border-slate-200 flex justify-between items-center">
@@ -517,7 +520,7 @@ export default function DashboardOverviewPage() {
                 </div>
                 <Link
                   href="/dashboard/tasks"
-                  className="text-xs font-bold text-purple-600 hover:text-purple-700"
+                  className="text-xs font-bold text-purple-600 hover:text-purple-700 transition-colors duration-200 hover:underline underline-offset-4"
                 >
                   Open Task Board →
                 </Link>
@@ -528,10 +531,10 @@ export default function DashboardOverviewPage() {
                   <Link
                     key={task.id ? `dispatch-${task.id}-${idx}` : `dsp-idx-${idx}`}
                     href="/dashboard/tasks"
-                    className="p-6 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center hover:bg-slate-50 transition-colors block"
+                    className="group p-6 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center hover:bg-slate-50 transition-colors duration-200 block"
                   >
                     <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center shrink-0 font-bold text-indigo-700 text-xs">
+                      <div className="w-12 h-12 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-center shrink-0 font-bold text-indigo-700 text-xs transition-transform duration-300 group-hover:scale-105 group-hover:border-indigo-300">
                         {task.id}
                       </div>
                       <div>
@@ -560,7 +563,7 @@ export default function DashboardOverviewPage() {
                           {task.status}
                         </span>
                       </div>
-                      <div className="p-2 text-slate-400 hover:text-slate-900 rounded-lg hover:bg-slate-200 transition-colors">
+                      <div className="p-2 text-slate-400 group-hover:text-slate-900 rounded-lg group-hover:bg-slate-200 transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
                         <ArrowUpRight className="w-5 h-5" />
                       </div>
                     </div>
@@ -583,7 +586,7 @@ export default function DashboardOverviewPage() {
                 </div>
                 <Link
                   href="/dashboard/bookings"
-                  className="text-xs font-bold text-purple-600 hover:text-purple-700"
+                  className="text-xs font-bold text-purple-600 hover:text-purple-700 transition-colors duration-200 hover:underline underline-offset-4"
                 >
                   View All Bookings →
                 </Link>
@@ -611,10 +614,10 @@ export default function DashboardOverviewPage() {
                     <Link
                       key={booking.id ? `booking-${booking.id}-${idx}` : `idx-${idx}`}
                       href={`/dashboard/bookings/${booking.bookingNumber ? booking.bookingNumber.replace("#", "") : booking.id}`}
-                      className="p-6 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center hover:bg-slate-50 transition-colors block"
+                      className="group p-6 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center hover:bg-slate-50 transition-colors duration-200 block"
                     >
                       <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center shrink-0 font-bold text-purple-700 text-xs">
+                        <div className="w-12 h-12 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center shrink-0 font-bold text-purple-700 text-xs transition-transform duration-300 group-hover:scale-105 group-hover:border-purple-300">
                           {booking.id ? String(booking.id).slice(-3) : "BKG"}
                         </div>
                         <div>
@@ -652,7 +655,7 @@ export default function DashboardOverviewPage() {
                               "CONFIRMED"}
                           </span>
                         </div>
-                        <div className="p-2 text-slate-400 hover:text-slate-900 rounded-lg hover:bg-slate-200 transition-colors">
+                        <div className="p-2 text-slate-400 group-hover:text-slate-900 rounded-lg group-hover:bg-slate-200 transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
                           <ArrowUpRight className="w-5 h-5" />
                         </div>
                       </div>
@@ -666,7 +669,7 @@ export default function DashboardOverviewPage() {
 
         {/* Right Sidebar: Role Shortcuts & Tools */}
         <div className="space-y-6">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden">
             <div className="p-6 border-b border-slate-200">
               <h2 className="text-base font-bold text-slate-900">
                 {role === "vendor"
@@ -681,10 +684,10 @@ export default function DashboardOverviewPage() {
                 <>
                   <Link
                     href="/dashboard/tasks"
-                    className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 border border-slate-100 transition-colors"
+                    className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 border border-slate-100 hover:border-emerald-200 transition-all duration-200"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold transition-transform duration-300 group-hover:scale-110">
                         <ClipboardList className="w-4 h-4" />
                       </div>
                       <div>
@@ -696,15 +699,15 @@ export default function DashboardOverviewPage() {
                         </p>
                       </div>
                     </div>
-                    <ArrowUpRight className="w-4 h-4 text-slate-400" />
+                    <ArrowUpRight className="w-4 h-4 text-slate-400 transition-all duration-200 group-hover:text-slate-900 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </Link>
 
                   <Link
                     href="/dashboard/earnings"
-                    className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 border border-slate-100 transition-colors"
+                    className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 border border-slate-100 hover:border-purple-200 transition-all duration-200"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
+                      <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold transition-transform duration-300 group-hover:scale-110">
                         <Wallet className="w-4 h-4" />
                       </div>
                       <div>
@@ -716,15 +719,15 @@ export default function DashboardOverviewPage() {
                         </p>
                       </div>
                     </div>
-                    <ArrowUpRight className="w-4 h-4 text-slate-400" />
+                    <ArrowUpRight className="w-4 h-4 text-slate-400 transition-all duration-200 group-hover:text-slate-900 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </Link>
 
                   <Link
                     href="/dashboard/messages"
-                    className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 border border-slate-100 transition-colors"
+                    className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 border border-slate-100 hover:border-indigo-200 transition-all duration-200"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold">
+                      <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold transition-transform duration-300 group-hover:scale-110">
                         <Briefcase className="w-4 h-4" />
                       </div>
                       <div>
@@ -736,17 +739,17 @@ export default function DashboardOverviewPage() {
                         </p>
                       </div>
                     </div>
-                    <ArrowUpRight className="w-4 h-4 text-slate-400" />
+                    <ArrowUpRight className="w-4 h-4 text-slate-400 transition-all duration-200 group-hover:text-slate-900 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </Link>
                 </>
               ) : role === "admin" ? (
                 <>
                   <Link
                     href="/dashboard/vendors"
-                    className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 border border-slate-100 transition-colors"
+                    className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 border border-slate-100 hover:border-indigo-200 transition-all duration-200"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold">
+                      <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold transition-transform duration-300 group-hover:scale-110">
                         <Users className="w-4 h-4" />
                       </div>
                       <div>
@@ -758,15 +761,15 @@ export default function DashboardOverviewPage() {
                         </p>
                       </div>
                     </div>
-                    <ArrowUpRight className="w-4 h-4 text-slate-400" />
+                    <ArrowUpRight className="w-4 h-4 text-slate-400 transition-all duration-200 group-hover:text-slate-900 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </Link>
 
                   <Link
                     href="/dashboard/settings"
-                    className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 border border-slate-100 transition-colors"
+                    className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 border border-slate-100 hover:border-purple-200 transition-all duration-200"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
+                      <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold transition-transform duration-300 group-hover:scale-110">
                         <Sliders className="w-4 h-4" />
                       </div>
                       <div>
@@ -778,15 +781,15 @@ export default function DashboardOverviewPage() {
                         </p>
                       </div>
                     </div>
-                    <ArrowUpRight className="w-4 h-4 text-slate-400" />
+                    <ArrowUpRight className="w-4 h-4 text-slate-400 transition-all duration-200 group-hover:text-slate-900 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </Link>
 
                   <Link
                     href="/dashboard/tasks"
-                    className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 border border-slate-100 transition-colors"
+                    className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 border border-slate-100 hover:border-emerald-200 transition-all duration-200"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold transition-transform duration-300 group-hover:scale-110">
                         <ClipboardList className="w-4 h-4" />
                       </div>
                       <div>
@@ -798,17 +801,17 @@ export default function DashboardOverviewPage() {
                         </p>
                       </div>
                     </div>
-                    <ArrowUpRight className="w-4 h-4 text-slate-400" />
+                    <ArrowUpRight className="w-4 h-4 text-slate-400 transition-all duration-200 group-hover:text-slate-900 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </Link>
                 </>
               ) : (
                 <>
                   <Link
                     href="/dashboard/bookings"
-                    className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 border border-slate-100 transition-colors"
+                    className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 border border-slate-100 hover:border-purple-200 transition-all duration-200"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
+                      <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold transition-transform duration-300 group-hover:scale-110">
                         <UserIcon className="w-4 h-4" />
                       </div>
                       <div>
@@ -820,15 +823,15 @@ export default function DashboardOverviewPage() {
                         </p>
                       </div>
                     </div>
-                    <ArrowUpRight className="w-4 h-4 text-slate-400" />
+                    <ArrowUpRight className="w-4 h-4 text-slate-400 transition-all duration-200 group-hover:text-slate-900 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </Link>
 
                   <Link
                     href="/calculator"
-                    className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 border border-slate-100 transition-colors"
+                    className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 border border-slate-100 hover:border-indigo-200 transition-all duration-200"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold">
+                      <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold transition-transform duration-300 group-hover:scale-110">
                         <Sparkles className="w-4 h-4" />
                       </div>
                       <div>
@@ -840,15 +843,15 @@ export default function DashboardOverviewPage() {
                         </p>
                       </div>
                     </div>
-                    <ArrowUpRight className="w-4 h-4 text-slate-400" />
+                    <ArrowUpRight className="w-4 h-4 text-slate-400 transition-all duration-200 group-hover:text-slate-900 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </Link>
 
                   <Link
                     href="/packages"
-                    className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 border border-slate-100 transition-colors"
+                    className="group flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 border border-slate-100 hover:border-emerald-200 transition-all duration-200"
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold transition-transform duration-300 group-hover:scale-110">
                         <Briefcase className="w-4 h-4" />
                       </div>
                       <div>
@@ -860,14 +863,14 @@ export default function DashboardOverviewPage() {
                         </p>
                       </div>
                     </div>
-                    <ArrowUpRight className="w-4 h-4 text-slate-400" />
+                    <ArrowUpRight className="w-4 h-4 text-slate-400 transition-all duration-200 group-hover:text-slate-900 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </Link>
                 </>
               )}
             </div>
           </div>
 
-          <div className="bg-gradient-to-br from-purple-900 to-indigo-900 rounded-2xl p-6 text-white shadow-sm">
+          <div className="bg-gradient-to-br from-purple-800 via-indigo-800 to-blue-800 rounded-2xl p-6 text-white shadow-sm hover:shadow-xl hover:shadow-indigo-900/30 transition-shadow duration-500">
             <h3 className="font-extrabold text-sm mb-1">
               {role === "vendor"
                 ? "Need assistance with a dispatch?"
@@ -875,7 +878,7 @@ export default function DashboardOverviewPage() {
                 ? "Zone pricing management"
                 : "Need custom zone calculation?"}
             </h3>
-            <p className="text-xs text-purple-200 mb-4 leading-relaxed">
+            <p className="text-xs text-blue-100 mb-4 leading-relaxed">
               {role === "vendor"
                 ? "Contact the EVENTO Dispatch Desk directly from your Task Board or Messaging Hub."
                 : role === "admin"
@@ -884,7 +887,7 @@ export default function DashboardOverviewPage() {
             </p>
             <Link
               href={role === "vendor" ? "/dashboard/tasks" : role === "admin" ? "/dashboard/settings" : "/calculator"}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white text-slate-900 rounded-xl font-bold text-xs hover:bg-purple-100 transition-colors shadow-sm"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white text-slate-900 rounded-xl font-bold text-xs hover:bg-blue-100 transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0"
             >
               <Sparkles className="w-3.5 h-3.5 text-purple-600" />{" "}
               {role === "vendor" ? "Open Task Board" : role === "admin" ? "Manage Settings" : "Open Calculator"}
