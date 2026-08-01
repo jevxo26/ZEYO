@@ -148,7 +148,7 @@ export default function BookingsPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Header Banner */}
-      <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">Booking Management</h1>
           <div className="flex items-center gap-2 mt-1.5">
@@ -166,25 +166,25 @@ export default function BookingsPage() {
           <p className="text-sm text-slate-500 mt-1">Review, track, and manage all your event bookings in one place.</p>
         </div>
         <div className="flex flex-wrap items-center gap-3 shrink-0">
-          <div className="px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold flex items-center gap-2">
+          <div className="px-3 py-2 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold flex items-center gap-2 transition-colors duration-200 hover:bg-amber-100">
             <Clock className="w-3.5 h-3.5 text-amber-600" />
             <span>{pendingCount} Pending</span>
           </div>
           <Link
             href="/calculator"
-            className="px-3.5 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-xs font-semibold shadow-sm transition-colors"
+            className="px-3.5 py-2 bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white rounded-lg text-xs font-semibold shadow-sm hover:shadow-md hover:shadow-purple-500/20 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
           >
             Smart Calculator
           </Link>
           <Link
             href="/packages"
-            className="px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-semibold transition-colors"
+            className="px-3.5 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 hover:border-indigo-300 rounded-lg text-xs font-semibold transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
           >
             Browse Packages
           </Link>
           <button
             onClick={handleOpenNewBooking}
-            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-sm font-semibold shadow-sm transition-colors flex items-center gap-2"
+            className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-sm font-semibold shadow-sm hover:shadow-md hover:shadow-slate-900/20 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 flex items-center gap-2"
           >
             <Plus className="w-4 h-4" /> New Booking
           </button>
@@ -192,16 +192,16 @@ export default function BookingsPage() {
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-wrap gap-3 items-center justify-between">
+      <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-wrap gap-3 items-center justify-between">
         <div className="flex gap-2 flex-wrap">
           {["All Bookings", "Pending", "Confirmed", "Completed", "Cancelled"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
                 activeTab === tab
-                  ? "bg-slate-900 text-white"
-                  : "bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100"
+                  ? "bg-gradient-to-r from-purple-600 to-blue-500 text-white shadow-sm"
+                  : "bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 hover:border-slate-300"
               }`}
             >
               {tab}
@@ -217,25 +217,25 @@ export default function BookingsPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search bookings..."
-              className="w-full sm:w-64 pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-slate-50 outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white text-slate-900 transition-all"
+              className="w-full sm:w-64 pl-9 pr-3 py-1.5 text-xs rounded-lg border border-slate-200 bg-slate-50 outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-purple-300 focus:bg-white text-slate-900 transition-all duration-200"
             />
           </div>
         </div>
       </div>
 
       {/* Bookings List */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden divide-y divide-slate-100">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden divide-y divide-slate-100">
         {isLoading ? (
           <div className="p-12 text-center text-slate-400 font-medium">Loading bookings...</div>
         ) : filteredBookings.length > 0 ? (
           filteredBookings.map((b, idx) => (
             <div
               key={b.id ? `${b.id}-${idx}` : idx}
-              className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-slate-50 transition-colors"
+              className="group p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-slate-50 transition-colors duration-200"
             >
               {/* Left: Event Info */}
               <div className="flex items-start gap-4 flex-1 min-w-0">
-                <div className="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 text-slate-600">
+                <div className="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 text-slate-600 transition-all duration-300 group-hover:scale-105 group-hover:border-purple-200 group-hover:bg-purple-50 group-hover:text-purple-600">
                   <ShoppingBag className="w-5 h-5" />
                 </div>
                 <div className="min-w-0">
@@ -279,7 +279,7 @@ export default function BookingsPage() {
 
                 <Link
                   href={`/dashboard/bookings/${b.bookingNumber ? b.bookingNumber.replace("#", "") : b.id}`}
-                  className="px-4 py-2 rounded-lg text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-white shadow-sm transition-colors"
+                  className="px-4 py-2 rounded-lg text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-white shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
                 >
                   View Details
                 </Link>
