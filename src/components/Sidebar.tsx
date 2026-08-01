@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAppSelector, useAppDispatch } from "@/store/store";
@@ -16,7 +17,7 @@ import {
   Calendar,
   ShoppingBag,
   Users,
-  Zap,
+  X,
 } from "lucide-react";
 
 export default function Sidebar() {
@@ -25,6 +26,32 @@ export default function Sidebar() {
   const dispatch = useAppDispatch();
   const { user } = useAppSelector((state) => state.auth);
   const role = user?.role || "customer";
+
+  // Mobile off-canvas state - opened externally via "toggle-mobile-sidebar" event
+  const [isOpen, setIsOpen] = useState(false);
+
+  useEffect(() => {
+    const handleToggle = () => setIsOpen((prev) => !prev);
+    window.addEventListener("toggle-mobile-sidebar", handleToggle);
+    return () => window.removeEventListener("toggle-mobile-sidebar", handleToggle);
+  }, []);
+
+  // Close drawer whenever the route changes (link tap on mobile)
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
+
+  // Prevent background scroll while the mobile drawer is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -74,16 +101,22 @@ export default function Sidebar() {
     return "Customer Portal";
   };
 
-  return (
-    <aside className="w-[230px] flex min-h-screen shrink-0 flex-col justify-between border-r border-slate-200 bg-white p-4">
+  const sidebarContent = (
+    <>
       <div className="space-y-5">
         <div className="flex items-center justify-between px-2 py-2">
           <div>
             <div className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-900">
-                <Zap size={14} className="text-white" />
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 to-blue-500">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <rect x="5" y="4" width="3.4" height="16" rx="1.7" fill="white" />
+                  <rect x="5" y="4" width="14" height="3.4" rx="1.7" fill="white" />
+                  <rect x="5" y="10.3" width="10" height="3.4" rx="1.7" fill="white" />
+                  <rect x="5" y="16.6" width="14" height="3.4" rx="1.7" fill="white" />
+                  <circle cx="20.4" cy="3.6" r="1.7" fill="#FBBF24" />
+                </svg>
               </div>
-              <h2 className="text-lg font-black tracking-tight text-slate-900">
+              <h2 className="bg-gradient-to-r from-purple-600 to-blue-500 bg-clip-text text-lg font-black tracking-tight text-transparent">
                 EVENTO
               </h2>
             </div>
@@ -91,6 +124,15 @@ export default function Sidebar() {
               {getPortalTitle()}
             </p>
           </div>
+
+          {/* Close button - mobile only */}
+          <button
+            onClick={() => setIsOpen(false)}
+            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700 lg:hidden"
+            aria-label="Close menu"
+          >
+            <X size={18} />
+          </button>
         </div>
 
         {role !== "vendor" && (
@@ -100,7 +142,7 @@ export default function Sidebar() {
                 new CustomEvent("open-dashboard-modal", { detail: "new-booking" })
               )
             }
-            className="w-full cursor-pointer rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-bold text-white transition hover:bg-slate-800"
+            className="w-full cursor-pointer rounded-xl bg-gradient-to-r from-purple-600 to-blue-500 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:from-purple-700 hover:to-blue-600"
           >
             <span className="flex items-center justify-center gap-2">
               <Plus size={13} /> {role === "admin" ? "Create Event" : "New Booking"}
@@ -121,7 +163,7 @@ export default function Sidebar() {
                 href={route.href}
                 className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-semibold tracking-wide transition ${
                   isActive
-                    ? "bg-slate-900 text-white shadow-sm"
+                    ? "bg-gradient-to-r from-purple-600 to-blue-500 text-white shadow-sm"
                     : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                 }`}
               >
@@ -153,6 +195,33 @@ export default function Sidebar() {
           <LogOut size={15} /> Logout
         </button>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Backdrop overlay - mobile only, shown when drawer is open. Fixed = no flex layout impact. */}
+      {isOpen && (
+        <div
+          onClick={() => setIsOpen(false)}
+          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-[1px] lg:hidden"
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Desktop sidebar - sticky so it stays in view while page content scrolls */}
+      <aside className="hidden w-[230px] shrink-0 sticky top-0 h-screen overflow-y-auto flex-col justify-between border-r border-slate-200 bg-white p-4 lg:flex">
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile sidebar - off-canvas drawer, fixed positioned so it never affects flex layout */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex w-[260px] max-w-[80vw] flex-col justify-between border-r border-slate-200 bg-white p-4 shadow-xl transition-transform duration-300 ease-in-out lg:hidden ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {sidebarContent}
+      </aside>
+    </>
   );
 }

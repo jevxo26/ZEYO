@@ -10,6 +10,7 @@ import {
   Briefcase,
   User as UserIcon,
   MessageSquare,
+  PanelLeft,
 } from "lucide-react";
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import { toast } from "sonner";
@@ -381,6 +382,14 @@ export default function DashboardLayout({
           {/* ── Sub-header bar ─────────────────────────────────────────────── */}
           <header className="sticky top-0 z-30 px-6 py-3 flex justify-between items-center gap-4 shrink-0 border-b border-slate-200 bg-white/90 backdrop-blur-md">
 
+            {/* Mobile sidebar toggle - distinct from Navbar's hamburger; dispatches an event Sidebar listens for */}
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent("toggle-mobile-sidebar"))}
+              className="rounded-xl bg-slate-100 p-2 text-slate-600 transition hover:bg-slate-200 lg:hidden"
+              aria-label="Toggle sidebar"
+            >
+              <PanelLeft size={18} />
+            </button>
 
             {/* Search */}
             <div className="relative hidden sm:block" ref={searchRef} style={{ width: 340 }}>

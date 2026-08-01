@@ -15,6 +15,7 @@ import {
   User as UserIcon,
   ShieldCheck,
   Briefcase,
+  Zap,
 } from "lucide-react";
 import { useAppSelector, useAppDispatch } from "@/store/store";
 import { logout } from "@/store/slices/authSlice";
@@ -125,12 +126,17 @@ export default function Navbar() {
     <header className="relative z-50 bg-white border-b border-slate-100 shadow-sm">
       <div className="h-16 flex items-center justify-between px-6 md:px-10 max-w-7xl mx-auto">
         {/* Brand */}
-        <Link href="/" className="flex items-baseline gap-2">
-          <span className="text-[16px] font-extrabold tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-500">
-            EVENTO
-          </span>
-          <span className="hidden lg:inline text-[11px] font-semibold text-slate-400 tracking-wide">
-            — Managed Event OS
+        <Link href="/" className="flex items-center gap-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 to-blue-500 shadow-sm shrink-0">
+            <Zap size={16} className="text-white" />
+          </div>
+          <span className="flex items-baseline gap-2">
+            <span className="text-[16px] font-extrabold tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-500">
+              EVENTO
+            </span>
+            <span className="hidden lg:inline text-[11px] font-semibold text-slate-400 tracking-wide">
+              — Managed Event OS
+            </span>
           </span>
         </Link>
 

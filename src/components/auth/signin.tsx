@@ -16,10 +16,7 @@ import apiClient from "@/lib/apiClient";
 import { ShieldCheck, User, Briefcase, Lock } from "lucide-react";
 
 const schema = yup.object().shape({
-  email: yup
-    .string()
-    .email("Invalid email format")
-    .required("Email is required"),
+  email: yup.string().email("Invalid email format").required("Email is required"),
   password: yup.string().required("Password is required"),
 });
 
@@ -47,7 +44,6 @@ export function SignInForm() {
     setValue("email", email);
     setValue("password", "password123");
 
-    // Simulate instant demo role login with fallback resilience
     const demoUser = {
       id: `demo-${role}-101`,
       name:
@@ -86,7 +82,6 @@ export function SignInForm() {
       const response = await apiClient.post("/auth/login", data);
       const result = response.data;
       if (!result || result.success === false) {
-        // Fallback resilience for demo accounts if backend auth is not seeded
         const emailLower = data.email.toLowerCase();
         if (
           emailLower.endsWith("@evento.bd") ||
@@ -102,10 +97,10 @@ export function SignInForm() {
             : "customer";
           const path =
             role === "admin"
-            ? "/dashboard/vendors"
-            : role === "vendor"
-            ? "/dashboard/tasks"
-            : "/dashboard/bookings";
+              ? "/dashboard/vendors"
+              : role === "vendor"
+              ? "/dashboard/tasks"
+              : "/dashboard/bookings";
           handleDemoQuickLogin(role, data.email, path);
           return;
         }
@@ -119,7 +114,6 @@ export function SignInForm() {
       toast.success("Signed in successfully!", { duration: 4000, closeButton: true });
       router.push("/dashboard");
     } catch (error: any) {
-      // Fallback resilience for demo accounts if backend auth is offline
       const emailLower = data.email.toLowerCase();
       if (
         emailLower.endsWith("@evento.bd") ||
@@ -151,85 +145,59 @@ export function SignInForm() {
   };
 
   return (
-    <div className="space-y-6 w-full">
-      {/* Managed Event OS — 1-Click Demo Quick Login */}
-      <div className="p-4 rounded-2xl bg-slate-900 text-white border border-slate-800 shadow-md space-y-3">
+    <div className="space-y-3 w-full relative">
+      {/* Demo Access — ticket stub */}
+      <div className="rounded-xl bg-[#1F1B44] border border-[#7C6FE8]/20 p-2.5 space-y-1.5">
         <div className="flex items-center justify-between">
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-purple-300">
-            <ShieldCheck className="w-4 h-4 text-purple-400" /> Managed Event OS Demo Access
+          <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#C7BEFA]">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#9B8CF0]" /> Demo Access
           </span>
-          <span className="text-[10px] text-slate-400 font-mono">1-Click Test</span>
+          <span className="text-[9px] text-[#7E7AA6] font-mono">1-Click Test</span>
         </div>
-        <p className="text-xs text-slate-300 leading-relaxed">
-          Test any of the 3 role-segregated portals instantly without typing:
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-1.5">
           <button
             type="button"
             onClick={() =>
-              handleDemoQuickLogin(
-                "customer",
-                "customer@evento.bd",
-                "/dashboard/bookings"
-              )
+              handleDemoQuickLogin("customer", "customer@evento.bd", "/dashboard/bookings")
             }
-            className="px-3 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold transition-all shadow-sm flex flex-col items-center justify-center text-center"
+            className="px-2 py-1.5 rounded-lg bg-[#2A2560] hover:bg-[#352E75] text-[#F1F0FA] text-[11px] font-bold transition-all flex items-center justify-center gap-1 border border-[#7C6FE8]/15"
           >
-            <span className="flex items-center gap-1">
-              <User className="w-3.5 h-3.5" /> Customer
-            </span>
-            <span className="text-[10px] text-purple-200 font-normal">
-              Booking Portal
-            </span>
+            <User className="w-3 h-3 text-[#9B8CF0]" /> Customer
           </button>
 
           <button
             type="button"
             onClick={() =>
-              handleDemoQuickLogin(
-                "admin",
-                "admin@evento.bd",
-                "/dashboard/vendors"
-              )
+              handleDemoQuickLogin("admin", "admin@evento.bd", "/dashboard/vendors")
             }
-            className="px-3 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-sm flex flex-col items-center justify-center text-center"
+            className="px-2 py-1.5 rounded-lg bg-[#2A2560] hover:bg-[#352E75] text-[#F1F0FA] text-[11px] font-bold transition-all flex items-center justify-center gap-1 border border-[#7C6FE8]/15"
           >
-            <span className="flex items-center gap-1">
-              <Lock className="w-3.5 h-3.5" /> Admin
-            </span>
-            <span className="text-[10px] text-indigo-200 font-normal">
-              Operations Hub
-            </span>
+            <Lock className="w-3 h-3 text-[#9B8CF0]" /> Admin
           </button>
 
           <button
             type="button"
             onClick={() =>
-              handleDemoQuickLogin(
-                "vendor",
-                "partner@evento.bd",
-                "/dashboard/tasks"
-              )
+              handleDemoQuickLogin("vendor", "partner@evento.bd", "/dashboard/tasks")
             }
-            className="px-3 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold transition-all shadow-sm flex flex-col items-center justify-center text-center"
+            className="px-2 py-1.5 rounded-lg bg-[#2A2560] hover:bg-[#352E75] text-[#F1F0FA] text-[11px] font-bold transition-all flex items-center justify-center gap-1 border border-[#7C6FE8]/15"
           >
-            <span className="flex items-center gap-1">
-              <Briefcase className="w-3.5 h-3.5" /> Vendor
-            </span>
-            <span className="text-[10px] text-emerald-200 font-normal">
-              Task Workspace
-            </span>
+            <Briefcase className="w-3 h-3 text-[#9B8CF0]" /> Vendor
           </button>
         </div>
       </div>
 
+      {/* Perforated tear line */}
+      <div className="relative h-3 flex items-center">
+        <div className="w-full border-t border-dashed border-[#7C6FE8]/25" />
+        <div className="absolute left-1 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-[#F4F5FC]" />
+        <div className="absolute right-1 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-[#F4F5FC]" />
+      </div>
+
       {/* Main Sign In Form */}
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 w-full">
-        <div className="space-y-2 text-left">
-          <Label
-            htmlFor="email"
-            className="text-slate-700 font-semibold text-sm"
-          >
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-2.5 w-full">
+        <div className="space-y-1 text-left">
+          <Label htmlFor="email" className="text-[#D6D2EF] font-semibold text-xs">
             Email Address
           </Label>
           <Input
@@ -238,27 +206,21 @@ export function SignInForm() {
             placeholder="name@company.com"
             {...register("email")}
             aria-invalid={!!errors.email}
-            className="w-full bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-slate-900 focus:border-slate-900 rounded-lg h-11 transition-all"
+            className="w-full bg-[#F1F0FA] border-transparent text-[#171334] placeholder-[#8A85B0] focus:ring-2 focus:ring-[#7C6FE8] focus:border-transparent rounded-lg h-9 text-sm transition-all"
           />
           {errors.email && (
-            <p className="text-xs text-rose-500 font-semibold mt-1">
+            <p className="text-[11px] text-rose-400 font-semibold mt-0.5">
               {errors.email.message}
             </p>
           )}
         </div>
 
-        <div className="space-y-2 text-left">
+        <div className="space-y-1 text-left">
           <div className="flex justify-between items-center">
-            <Label
-              htmlFor="password"
-              className="text-slate-700 font-semibold text-sm"
-            >
+            <Label htmlFor="password" className="text-[#D6D2EF] font-semibold text-xs">
               Password
             </Label>
-            <a
-              href="#"
-              className="text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors"
-            >
+            <a href="#" className="text-[11px] font-semibold text-[#9B8CF0] hover:text-[#C7BEFA] transition-colors">
               Forgot password?
             </a>
           </div>
@@ -268,10 +230,10 @@ export function SignInForm() {
             placeholder="••••••••"
             {...register("password")}
             aria-invalid={!!errors.password}
-            className="w-full bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-slate-900 focus:border-slate-900 rounded-lg h-11 transition-all"
+            className="w-full bg-[#F1F0FA] border-transparent text-[#171334] placeholder-[#8A85B0] focus:ring-2 focus:ring-[#7C6FE8] focus:border-transparent rounded-lg h-9 text-sm transition-all"
           />
           {errors.password && (
-            <p className="text-xs text-rose-500 font-semibold mt-1">
+            <p className="text-[11px] text-rose-400 font-semibold mt-0.5">
               {errors.password.message}
             </p>
           )}
@@ -279,24 +241,14 @@ export function SignInForm() {
 
         <Button
           type="submit"
-          className="w-full h-11 mt-2 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg transition-all shadow-sm"
+          className="w-full h-9 mt-1 text-white font-bold text-sm rounded-lg transition-all shadow-sm border-0"
+          style={{ background: "linear-gradient(135deg, #4F7DF3, #9B5DE5)" }}
           disabled={isLoading}
         >
           {isLoading ? (
             <span className="flex items-center gap-2">
-              <svg
-                className="animate-spin h-4 w-4 text-white"
-                viewBox="0 0 24 24"
-                fill="none"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                />
+              <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path
                   className="opacity-75"
                   fill="currentColor"
@@ -310,14 +262,12 @@ export function SignInForm() {
           )}
         </Button>
 
-        <div className="relative my-6">
+        <div className="relative my-2">
           <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-slate-200" />
+            <span className="w-full border-t border-[#7C6FE8]/15" />
           </div>
-          <div className="relative flex justify-center text-xs uppercase tracking-wider">
-            <span className="bg-white px-3 text-slate-400 font-semibold">
-              Or continue with
-            </span>
+          <div className="relative flex justify-center text-[10px] uppercase tracking-wider">
+            <span className="bg-[#171334] px-3 text-[#7E7AA6] font-semibold">Or continue with</span>
           </div>
         </div>
 
@@ -325,12 +275,12 @@ export function SignInForm() {
           <SocialLogin />
         </div>
 
-        <div className="text-center text-sm text-slate-500 mt-6 font-medium">
+        <div className="text-center text-xs text-[#A8A3C9] mt-2 font-medium">
           Don&apos;t have an account?{" "}
           <button
             type="button"
             onClick={() => router.push("/register")}
-            className="text-slate-900 font-bold hover:underline"
+            className="text-[#C7BEFA] font-bold hover:underline"
           >
             Sign up
           </button>

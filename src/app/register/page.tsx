@@ -1,68 +1,149 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { SignUpForm } from "@/components/auth/signup";
 import Link from "next/link";
 import { ShieldCheck, ArrowLeft } from "lucide-react";
+import { Fraunces, Manrope } from "next/font/google";
+
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  weight: ["500", "600"],
+  style: ["normal", "italic"],
+  variable: "--font-display",
+});
+const manrope = Manrope({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-body",
+});
 
 export default function RegisterPage() {
   return (
-    <div className="min-h-screen flex font-sans bg-white">
-      {/* Left Column: Form */}
-      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center py-12 px-8 lg:px-24 relative z-10 overflow-y-auto">
-        <div className="w-full max-w-xl">
-          {/* Header */}
-          <Link href="/" className="inline-flex items-center gap-2 mb-8 text-slate-500 hover:text-slate-900 transition-colors">
-            <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm font-semibold">Back to home</span>
+    <div
+      className={`${fraunces.variable} ${manrope.variable} h-screen flex overflow-hidden bg-[#F4F5FC]`}
+      style={{
+        fontFamily: "var(--font-body)",
+        backgroundImage:
+          "radial-gradient(circle, rgba(79,125,243,0.08) 1px, transparent 1px)",
+        backgroundSize: "18px 18px",
+      }}
+    >
+      {/* Left Column: Pass Card */}
+      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 relative z-10 overflow-hidden">
+        <div className="w-full max-w-xl h-full flex flex-col justify-center">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 mb-3 text-[#6B6795] hover:text-[#171334] transition-colors shrink-0"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span className="text-xs font-semibold">Back to home</span>
           </Link>
-          
-          <div className="mb-8">
-            <div className="inline-flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 rounded-xl bg-slate-900 flex items-center justify-center shadow-md">
-                <ShieldCheck className="w-7 h-7 text-white" />
+
+          {/* The Pass */}
+          <div className="relative rounded-[28px] bg-[#171334] border border-[#7C6FE8]/20 shadow-[0_25px_60px_-20px_rgba(23,19,52,0.55)] p-5 sm:p-6 overflow-hidden flex flex-col max-h-[88vh]">
+            <div
+              className="pointer-events-none absolute -top-16 -right-16 w-40 h-40 rounded-full blur-3xl"
+              style={{
+                background:
+                  "linear-gradient(135deg, rgba(79,125,243,0.35), rgba(155,93,229,0.35))",
+              }}
+            />
+
+            {/* Header */}
+            <div className="relative mb-3 shrink-0">
+              <div className="inline-flex items-center gap-2 mb-2">
+                <div
+                  className="w-7 h-7 rounded-lg flex items-center justify-center shadow-sm"
+                  style={{ background: "linear-gradient(135deg, #4F7DF3, #9B5DE5)" }}
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-white" />
+                </div>
+                <span
+                  className="text-base tracking-tight text-[#F1F0FA]"
+                  style={{ fontFamily: "var(--font-display)", fontWeight: 600 }}
+                >
+                  EVENTO
+                </span>
+                <span
+                  className="ml-auto text-[9px] font-bold tracking-[0.15em] uppercase rounded-full px-2 py-0.5 border"
+                  style={{ color: "#B7ACF5", borderColor: "rgba(124,111,232,0.35)" }}
+                >
+                  New Pass
+                </span>
               </div>
-              <span className="text-3xl font-black tracking-tight text-slate-900">
-                EVENTO
-              </span>
+              <h1
+                className="text-xl text-[#F1F0FA] tracking-tight mb-1"
+                style={{ fontFamily: "var(--font-display)", fontWeight: 500 }}
+              >
+                Create your account
+              </h1>
+              <p className="text-[#A8A3C9] text-[11px] leading-relaxed">
+                Join event professionals managing bookings, vendors, and venues in one place.
+              </p>
             </div>
-            <h1 className="text-4xl font-bold text-slate-900 tracking-tight mb-3">
-              Create your account
-            </h1>
-            <p className="text-slate-500 text-base">
-              Join thousands of professionals managing events effortlessly.
-            </p>
-          </div>
 
-          {/* Form Component */}
-          <SignUpForm />
+            {/* Scrollable form area */}
+            <div className="relative overflow-y-auto pr-1 -mr-1">
+              <SignUpForm />
+            </div>
 
-          {/* Footer info */}
-          <div className="mt-12 text-center text-xs font-medium text-slate-400">
-            Secure, encrypted connection &bull; © 2026 Evento
+            <div className="relative mt-3 text-center text-[10px] font-medium text-[#7E7AA6] shrink-0">
+              🔒 Secure, encrypted connection &bull; © 2026 EVENTO
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Right Column: Image */}
-      <div className="hidden lg:flex w-1/2 relative bg-slate-50 fixed right-0 top-0 bottom-0 h-screen">
+      {/* Right Column: Image & Testimonial */}
+      <div className="hidden lg:flex w-1/2 relative">
         <img
           src="https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&q=80&w=1600"
           alt="Event Management"
           className="absolute inset-0 w-full h-full object-cover"
+          style={{ filter: "saturate(0.9) contrast(1.05)" }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent" />
-        <div className="absolute bottom-16 left-16 right-16">
-          <blockquote className="text-3xl font-medium text-white leading-snug">
-            "The best platform for organizing complex corporate events and weddings in one place."
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(23,19,52,0.15) 0%, rgba(23,19,52,0.6) 55%, rgba(23,19,52,0.95) 100%)",
+          }}
+        />
+        <div
+          className="absolute inset-0 mix-blend-color"
+          style={{ background: "linear-gradient(135deg, #4F7DF3, #9B5DE5)", opacity: 0.3 }}
+        />
+        <div className="absolute bottom-8 left-8 right-8 space-y-2">
+          <div
+            className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-wider"
+            style={{
+              backgroundColor: "rgba(124,111,232,0.15)",
+              borderColor: "rgba(124,111,232,0.4)",
+              color: "#C7BEFA",
+            }}
+          >
+            ★ Trusted by Event Professionals
+          </div>
+          <blockquote
+            className="text-lg text-[#F1F0FA] leading-snug"
+            style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 500 }}
+          >
+            &ldquo;The best platform for organizing complex corporate events and weddings in one place.&rdquo;
           </blockquote>
-          <div className="mt-6 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/20 bg-white">
-              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150" alt="Michael T." className="w-full h-full object-cover" />
+          <div className="mt-3 flex items-center gap-3">
+            <div
+              className="w-9 h-9 rounded-full overflow-hidden border-2 flex items-center justify-center"
+              style={{ borderColor: "rgba(124,111,232,0.4)" }}
+            >
+              <img
+                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150"
+                alt="Michael T."
+                className="w-full h-full object-cover"
+              />
             </div>
             <div>
-              <p className="text-white font-semibold">Michael Torres</p>
-              <p className="text-white/70 text-sm">Lead Coordinator</p>
+              <p className="text-[#F1F0FA] font-semibold text-sm">Michael Torres</p>
+              <p className="text-[#A8A3C9] text-xs">Lead Coordinator</p>
             </div>
           </div>
         </div>
