@@ -202,6 +202,30 @@ export default function BookingDetailsPage() {
     toast.success("Booking details updated");
   };
 
+  const handleApproveBooking = () => {
+    const approvedBooking = {
+      ...booking,
+      bookingStatus: "confirmed",
+      status: "CONFIRMED",
+    };
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("customBookings");
+        let list = stored ? JSON.parse(stored) : [];
+        const index = list.findIndex(
+          (b: any) => String(b.id) === String(booking.id) || String(b.bookingNumber) === String(booking.id)
+        );
+        if (index >= 0) {
+          list[index] = approvedBooking;
+          localStorage.setItem("customBookings", JSON.stringify(list));
+          window.dispatchEvent(new CustomEvent("dashboard-data-update"));
+        }
+      } catch (e) {}
+    }
+    setBooking(approvedBooking);
+    toast.success("✓ Booking Approved & Confirmed!");
+  };
+
   const handleCancelBooking = async () => {
     if (!confirm("Are you sure you want to cancel this booking?")) return;
 
@@ -304,6 +328,15 @@ export default function BookingDetailsPage() {
           {(booking.bookingStatus || booking.status)?.toLowerCase() !== "cancelled" &&
             (booking.bookingStatus || booking.status)?.toLowerCase() !== "completed" && (
               <>
+                {(booking.bookingStatus || booking.status)?.toLowerCase() === "pending" && (
+                  <button
+                    onClick={handleApproveBooking}
+                    className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition-colors shadow-sm flex items-center gap-1.5"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    Approve Booking
+                  </button>
+                )}
                 <button
                   onClick={handleCancelBooking}
                   className="px-3.5 py-1.5 bg-white border border-slate-200 hover:bg-rose-50 text-rose-600 rounded-lg text-xs font-medium transition-colors shadow-sm"

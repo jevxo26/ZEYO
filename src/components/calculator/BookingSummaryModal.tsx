@@ -27,6 +27,7 @@ interface BookingSummaryModalProps {
   zoneName: string;
   eventTypeName: string;
   eventDate: string;
+  onDateChange?: (date: string) => void;
   globalGuestCount: number;
   configurations: Record<string, ConfiguredServiceState>;
   onSuccess: (bookingId?: string) => void;
@@ -38,6 +39,7 @@ export default function BookingSummaryModal({
   zoneName,
   eventTypeName,
   eventDate,
+  onDateChange,
   globalGuestCount,
   configurations,
   onSuccess,
@@ -196,11 +198,21 @@ export default function BookingSummaryModal({
 
             <div className="flex items-center gap-2.5">
               <Calendar className="w-5 h-5 text-blue-500 shrink-0" />
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <span className="block text-xs text-slate-400">Event Date</span>
-                <span className="font-bold text-sm text-slate-900 dark:text-white truncate">
-                  {eventDate || "Tentative"}
-                </span>
+                {onDateChange ? (
+                  <input
+                    type="date"
+                    required
+                    value={eventDate}
+                    onChange={(e) => onDateChange(e.target.value)}
+                    className="w-full mt-0.5 px-2 py-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-xs font-bold text-slate-900 dark:text-white"
+                  />
+                ) : (
+                  <span className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                    {eventDate || "Tentative"}
+                  </span>
+                )}
               </div>
             </div>
 

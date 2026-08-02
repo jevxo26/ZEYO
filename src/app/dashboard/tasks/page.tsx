@@ -23,6 +23,7 @@ import {
   Download,
   Eye,
   FileCheck,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -454,11 +455,30 @@ export default function TaskDetailsPage() {
   };
 
   const steps = [
-    { label: "TASK ACCEPTED", note: "Accepted by Vendor Team" },
-    { label: "TEAM AT VENUE", note: "Arrival verified by Coordinator" },
-    { label: "SERVICE EXECUTION", note: "Live event coverage underway" },
-    { label: "WORK COMPLETED", note: "Awaiting final clearance & payout" },
+    { label: "Vendor Accepted", note: "Accepted by Vendor Team" },
+    { label: "On The Way", note: "Vendor team en route to venue" },
+    { label: "Reached Venue", note: "Arrival verified at venue" },
+    { label: "Setup Started", note: "Equipment & stage setup underway" },
+    { label: "Service Started", note: "Live event execution in progress" },
+    { label: "Completed", note: "Work completed & deliverables ready" },
   ];
+
+  const handleAcceptTask = () => {
+    handleStatusChange("Vendor Accepted");
+    setProgressStep(0);
+    toast.success("✓ Task Accepted! Status updated to 'Vendor Accepted'.");
+  };
+
+  const handleRejectTask = () => {
+    if (!confirm("Are you sure you want to reject this assigned task? Admin will be notified to reassign.")) return;
+    handleStatusChange("Rejected");
+    createNotification(
+      "Vendor Task Rejected",
+      `Vendor rejected task for ${currentTask.bookingRef}. Admin notification sent for immediate reassignment.`,
+      "🚨"
+    );
+    toast.error("Task Rejected. Admin notified for reassignment.");
+  };
 
   const handleStatusChange = (newStatus: string) => {
     const updated = tasksList.map((t) =>
@@ -607,16 +627,31 @@ export default function TaskDetailsPage() {
             <MessageSquare className="w-3.5 h-3.5 text-slate-500" /> Dispatch Desk
           </button>
 
+          {currentTask.status !== "Vendor Accepted" &&
+            currentTask.status !== "Completed" &&
+            currentTask.status !== "Rejected" && (
+              <>
+                <button
+                  onClick={handleAcceptTask}
+                  className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition-colors shadow-sm flex items-center gap-1"
+                >
+                  <Check className="w-3.5 h-3.5" /> Accept
+                </button>
+                <button
+                  onClick={handleRejectTask}
+                  className="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-semibold transition-colors shadow-sm flex items-center gap-1"
+                >
+                  <X className="w-3.5 h-3.5" /> Reject
+                </button>
+              </>
+            )}
+
           <button
             onClick={() => {
               if (progressStep < steps.length - 1) {
                 const nextStep = progressStep + 1;
                 setProgressStep(nextStep);
-                if (nextStep === steps.length - 1) {
-                  handleStatusChange("Completed");
-                } else {
-                  handleStatusChange("In Progress");
-                }
+                handleStatusChange(steps[nextStep].label);
               }
             }}
             className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-semibold hover:bg-slate-800 transition-colors shadow-sm"

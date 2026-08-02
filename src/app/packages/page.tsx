@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   BadgeCheck,
@@ -157,6 +158,11 @@ function CardSkeleton() {
 }
 
 function PackageCard({ pkg }: { pkg: EventPackage }) {
+  const searchParams = useSearchParams();
+  const zoneParam = searchParams.get("zone");
+  const eventParam = searchParams.get("event");
+  const querySuffix = zoneParam || eventParam ? `?${zoneParam ? `zone=${zoneParam}` : ""}${zoneParam && eventParam ? "&" : ""}${eventParam ? `event=${eventParam}` : ""}` : "";
+
   const isPopular = !!pkg.popular;
   const title = pkg.title ?? "Package";
   const price = pkg.price ?? 0;
@@ -239,7 +245,7 @@ function PackageCard({ pkg }: { pkg: EventPackage }) {
         )}
 
         <Link
-          href={`/packages/${pkg.id}`}
+          href={`/packages/${pkg.id}${querySuffix}`}
           className={`mt-3.5 inline-flex w-full items-center justify-center rounded-lg px-4 py-2 text-xs font-semibold transition-all ${
             isPopular
               ? "bg-gradient-to-r from-violet-600 to-blue-600 text-white shadow-sm hover:from-violet-700 hover:to-blue-700"
@@ -461,4 +467,10 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default function PackagesPageWrapper() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="animate-spin h-10 w-10 border-4 border-violet-600 border-t-transparent rounded-full" /></div>}>
+      <Page />
+    </Suspense>
+  );
+}

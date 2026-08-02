@@ -33,7 +33,8 @@ function SmartCalculatorContent() {
   const router = useRouter();
 
   // Step state: 1 -> Zone & Event, 2 -> Select Services, 3 -> Configure Services
-  const [step, setStep] = useState<number>(1);
+  const hasInitialParams = Boolean(searchParams.get("zone") && searchParams.get("event"));
+  const [step, setStep] = useState<number>(hasInitialParams ? 2 : 1);
 
   // 1. Zone & Event State
   const initialZone = searchParams.get("zone") || "dhaka";
@@ -425,6 +426,7 @@ function SmartCalculatorContent() {
         zoneName={activeZone.name}
         eventTypeName={activeEvent.name}
         eventDate={eventDate}
+        onDateChange={(date) => setEventDate(date)}
         globalGuestCount={globalGuestCount}
         configurations={configurations}
         onSuccess={(id) => {
