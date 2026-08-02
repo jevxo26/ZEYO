@@ -167,8 +167,8 @@ function PackageCard({ pkg }: { pkg: EventPackage }) {
     <div
       className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg ${
         isPopular
-          ? "border-transparent shadow-md ring-2 ring-violet-400/60"
-          : "border-slate-200 shadow-sm hover:border-violet-200"
+          ? "border-transparent shadow-md ring-2 ring-amber-400/60"
+          : "border-slate-200 shadow-sm hover:border-amber-200"
       }`}
     >
       {/* Shorter, fixed-ratio image so the card never stretches tall */}
@@ -187,7 +187,7 @@ function PackageCard({ pkg }: { pkg: EventPackage }) {
         )}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
         {isPopular && (
-          <span className="absolute right-2.5 top-2.5 rounded-full bg-gradient-to-r from-violet-600 to-blue-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-sm">
+          <span className="absolute right-2.5 top-2.5 rounded-full bg-black px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-amber-400 shadow-sm">
             Most Popular
           </span>
         )}
@@ -210,10 +210,10 @@ function PackageCard({ pkg }: { pkg: EventPackage }) {
 
         <div className="mt-2.5 flex items-end justify-between">
           <p className="flex items-baseline gap-1">
-            <span className="bg-gradient-to-r from-violet-700 to-blue-700 bg-clip-text text-xl font-bold text-transparent">
+            <span className="text-xl font-bold text-slate-900">
               {price.toLocaleString("en-BD")}
             </span>
-            <span className="text-[11px] font-medium text-slate-400">
+            <span className="text-[11px] font-medium text-amber-600">
               {currency}
             </span>
           </p>
@@ -229,7 +229,7 @@ function PackageCard({ pkg }: { pkg: EventPackage }) {
             {included.slice(0, 3).map((item, index) => (
               <span
                 key={`${pkg.id}-${item}-${index}`}
-                className="inline-flex items-center gap-1 rounded-full border border-violet-100 bg-violet-50/70 px-2 py-0.5 text-[10.5px] font-medium text-violet-700"
+                className="inline-flex items-center gap-1 rounded-full border border-amber-100 bg-amber-50/70 px-2 py-0.5 text-[10.5px] font-medium text-amber-700"
               >
                 <BadgeCheck className="h-3 w-3 shrink-0" />
                 <span className="max-w-[9rem] truncate">{item}</span>
@@ -242,8 +242,8 @@ function PackageCard({ pkg }: { pkg: EventPackage }) {
           href={`/packages/${pkg.id}`}
           className={`mt-3.5 inline-flex w-full items-center justify-center rounded-lg px-4 py-2 text-xs font-semibold transition-all ${
             isPopular
-              ? "bg-gradient-to-r from-violet-600 to-blue-600 text-white shadow-sm hover:from-violet-700 hover:to-blue-700"
-              : "border border-slate-300 text-slate-800 hover:border-violet-400 hover:text-violet-800"
+              ? "bg-black text-amber-400 shadow-sm hover:bg-slate-800"
+              : "border border-slate-300 text-slate-800 hover:border-amber-400 hover:text-amber-800"
           }`}
         >
           {isPopular ? "View Details & Customize" : "View Details"}
@@ -325,13 +325,13 @@ const Page = () => {
 
       <section className="relative overflow-hidden bg-slate-50/60 px-6 py-16 sm:px-10">
         <div className="pointer-events-none absolute inset-0 -z-10">
-          <div className="absolute -top-24 left-0 h-72 w-72 rounded-full bg-violet-200/40 blur-3xl" />
-          <div className="absolute -top-10 right-0 h-72 w-72 rounded-full bg-blue-200/40 blur-3xl" />
+          <div className="absolute -top-24 left-0 h-72 w-72 rounded-full bg-amber-200/40 blur-3xl" />
+          <div className="absolute -top-10 right-0 h-72 w-72 rounded-full bg-orange-200/30 blur-3xl" />
         </div>
 
         <div className="mx-auto max-w-6xl">
           {/* Header */}
-          <h1 className="bg-gradient-to-r from-violet-700 via-indigo-700 to-blue-700 bg-clip-text text-3xl font-bold text-transparent sm:text-4xl">
+          <h1 className="text-3xl font-bold text-slate-900 sm:text-4xl">
             Available Packages for Your Event
           </h1>
           <p className="mt-2 text-slate-500">
@@ -339,11 +339,11 @@ const Page = () => {
           </p>
 
           <div className="mt-4 flex flex-wrap gap-3">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-white px-3 py-1.5 text-sm font-medium text-violet-800">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-white px-3 py-1.5 text-sm font-medium text-amber-800">
               <ShieldCheck className="h-4 w-4" />
               Pre-vetted Vendors
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-white px-3 py-1.5 text-sm font-medium text-violet-800">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-white px-3 py-1.5 text-sm font-medium text-amber-800">
               <Receipt className="h-4 w-4" />
               Transparent Pricing
             </span>
@@ -371,7 +371,7 @@ const Page = () => {
                         type="checkbox"
                         checked={selectedTiers.includes(tier)}
                         onChange={() => toggleTier(tier)}
-                        className="h-4 w-4 rounded border-slate-300 text-violet-700 focus:ring-violet-600"
+                        className="h-4 w-4 rounded border-slate-300 accent-amber-600 text-amber-600 focus:ring-amber-500"
                       />
                       {tier}
                     </label>
@@ -394,9 +394,9 @@ const Page = () => {
                   step={50}
                   value={guestCount}
                   onChange={(e) => setGuestCount(Number(e.target.value))}
-                  className="mt-1 w-full accent-violet-700"
+                  className="mt-1 w-full accent-amber-600"
                 />
-                <div className="mt-3 rounded-md bg-gradient-to-r from-violet-50 to-blue-50 px-3 py-2 text-center text-sm font-medium text-violet-800">
+                <div className="mt-3 rounded-md bg-amber-50 px-3 py-2 text-center text-sm font-medium text-amber-800">
                   Selected: ~{guestCount} Guests
                 </div>
               </div>
@@ -404,7 +404,7 @@ const Page = () => {
               <button
                 type="button"
                 onClick={resetFilters}
-                className="mt-6 w-full rounded-md border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-violet-300 hover:bg-violet-50 hover:text-violet-800"
+                className="mt-6 w-full rounded-md border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-amber-300 hover:bg-amber-50 hover:text-amber-800"
               >
                 Reset Filters
               </button>
