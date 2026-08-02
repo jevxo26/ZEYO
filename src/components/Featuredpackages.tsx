@@ -110,7 +110,7 @@ function FeaturedCard({ pkg }: { pkg: EventPackage }) {
           </div>
         )}
         {pkg.popular && (
-          <span className="absolute right-3 top-3 rounded-full bg-gradient-to-r from-violet-600 to-blue-600 px-3 py-1 text-xs font-semibold text-white">
+          <span className="absolute right-3 top-3 rounded-full bg-black px-3 py-1 text-xs font-semibold text-amber-400">
             Popular
           </span>
         )}
@@ -131,7 +131,7 @@ function FeaturedCard({ pkg }: { pkg: EventPackage }) {
               key={`${pkg.id}-${item}-${index}`}
               className="flex items-start gap-2 text-sm text-slate-600"
             >
-              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gradient-to-r from-violet-500 to-blue-500" />
+              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" />
               {item}
             </li>
           ))}
@@ -139,7 +139,7 @@ function FeaturedCard({ pkg }: { pkg: EventPackage }) {
 
         <Link
           href={`/packages/${pkg.id}`}
-          className="mt-6 inline-flex w-full items-center justify-center rounded-md border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-800 transition-colors hover:border-violet-300 hover:text-violet-700"
+          className="mt-6 inline-flex w-full items-center justify-center rounded-md border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-800 transition-colors hover:border-amber-300 hover:text-amber-700"
         >
           View Details
         </Link>
@@ -204,7 +204,7 @@ export function FeaturedPackages() {
 
           <Link
             href="/packages"
-            className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-violet-700 hover:text-violet-800"
+            className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-amber-700 hover:text-amber-800"
           >
             View All Packages
             <ArrowRight className="h-4 w-4" />
