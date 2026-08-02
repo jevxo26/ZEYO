@@ -6,6 +6,8 @@ import InputField from "../../../components/ui/InputField";
 import Toggle from "../../../components/ui/Toggle";
 import { toast } from "sonner";
 import { createNotification } from "@/lib/notifications";
+import { useAppSelector } from "@/store/store";
+import Link from "next/link";
 
 interface ZonePricingItem {
   name: string;
@@ -24,6 +26,7 @@ const DEFAULT_BD_ZONES: ZonePricingItem[] = [
 ];
 
 export default function SettingsPage() {
+  const { user } = useAppSelector((state) => state.auth);
   const [zonesList, setZonesList] = useState<ZonePricingItem[]>(DEFAULT_BD_ZONES);
   const [osControls, setOsControls] = useState({
     smartCalculator: true,
@@ -110,6 +113,32 @@ export default function SettingsPage() {
     (top, z) => (parseMult(z.mult) > parseMult(top.mult) ? z : top),
     zonesList[0] || { name: "—", mult: "0.00x", active: false }
   );
+
+  if (user && user.role !== "admin") {
+    return (
+      <div className="max-w-xl mx-auto my-20 p-8 rounded-3xl bg-white border border-slate-200 shadow-xl text-center space-y-6">
+        <div className="w-16 h-16 rounded-2xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center mx-auto shadow-sm">
+          <ShieldAlert className="w-8 h-8" />
+        </div>
+        <div>
+          <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+            Admin Access Required
+          </h2>
+          <p className="mt-2 text-sm text-slate-500 leading-relaxed">
+            System Settings, Bangladesh Zone Pricing Multipliers, and Managed Event OS Control Flags are restricted to <strong>EVENTO Admin Coordinators</strong> only.
+          </p>
+        </div>
+        <div className="pt-2">
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-md transition-colors"
+          >
+            Return to Dashboard Overview
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto font-sans-evento text-[#211E3D]">

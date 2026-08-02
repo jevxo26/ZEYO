@@ -146,9 +146,13 @@ export default function DashboardLayout({
 
   const searchResults = searchQuery.trim().length > 0
     ? SEARCH_DATA.filter(
-        (item) =>
-          item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.sub.toLowerCase().includes(searchQuery.toLowerCase())
+        (item) => {
+          if (item.label === "Settings" && user?.role !== "admin") return false;
+          return (
+            item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            item.sub.toLowerCase().includes(searchQuery.toLowerCase())
+          );
+        }
       ).slice(0, 6)
     : [];
 

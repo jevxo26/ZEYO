@@ -68,14 +68,12 @@ export default function Sidebar() {
     { name: "My Bookings", href: "/dashboard/bookings", icon: ShoppingBag },
     { name: "Event Calendar", href: "/dashboard/my-events", icon: Calendar },
     { name: "Messages", href: "/dashboard/messages", icon: MessageSquare },
-    { name: "Settings", href: "/dashboard/settings", icon: Settings },
   ];
 
   const vendorRoutes = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
     { name: "My Tasks", href: "/dashboard/tasks", icon: ClipboardList },
     { name: "Earnings", href: "/dashboard/earnings", icon: Wallet },
-    { name: "Settings", href: "/dashboard/settings", icon: Settings },
   ];
 
   const adminRoutes = [
@@ -183,7 +181,7 @@ export default function Sidebar() {
 
       <div className="space-y-0.5 border-t border-slate-200 pt-4">
         <Link
-          href="/dashboard/settings"
+          href="/contact"
           className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-xs font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
         >
           <HelpCircle size={15} /> Help Center
