@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { createNotification } from "@/lib/notifications";
 import { useAppSelector } from "@/store/store";
 import Link from "next/link";
+import EventTypeCatalogManager from "@/components/dashboard/EventTypeCatalogManager";
 
 interface ZonePricingItem {
   name: string;
@@ -27,6 +28,7 @@ const DEFAULT_BD_ZONES: ZonePricingItem[] = [
 
 export default function SettingsPage() {
   const { user } = useAppSelector((state) => state.auth);
+  const [activeTab, setActiveTab] = useState<"catalog" | "zones">("catalog");
   const [zonesList, setZonesList] = useState<ZonePricingItem[]>(DEFAULT_BD_ZONES);
   const [osControls, setOsControls] = useState({
     smartCalculator: true,
@@ -198,8 +200,38 @@ export default function SettingsPage() {
         </button>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      {/* Top Tab Bar */}
+      <div className="flex items-center gap-3 border-b border-slate-200 pb-3">
+        <button
+          onClick={() => setActiveTab("catalog")}
+          className={`px-5 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center gap-2 ${
+            activeTab === "catalog"
+              ? "bg-[#6D28D9] text-white shadow-md shadow-[#6D28D9]/20"
+              : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+          }`}
+        >
+          <Sliders className="w-4 h-4" />
+          Event Types &amp; Platform Catalog
+        </button>
+        <button
+          onClick={() => setActiveTab("zones")}
+          className={`px-5 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center gap-2 ${
+            activeTab === "zones"
+              ? "bg-[#6D28D9] text-white shadow-md shadow-[#6D28D9]/20"
+              : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+          }`}
+        >
+          <MapPin className="w-4 h-4" />
+          7 Bangladesh Zones &amp; Financial Rules
+        </button>
+      </div>
+
+      {activeTab === "catalog" ? (
+        <EventTypeCatalogManager />
+      ) : (
+        <div className="space-y-6">
+          {/* Quick Stats */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="group lift-card bg-white rounded-2xl border border-[#EDEAF9] shadow-[0_1px_3px_rgba(109,40,217,0.06)] p-4 cursor-default">
           <div className="flex items-center justify-between">
             <p className="text-[10px] font-bold uppercase tracking-wider text-[#9691B8]">Total Zones</p>
@@ -411,6 +443,8 @@ export default function SettingsPage() {
           </div>
         </div>
       </div>
+      </div>
+      )}
     </div>
   );
 }
