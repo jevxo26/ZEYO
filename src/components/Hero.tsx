@@ -65,8 +65,8 @@ export function Hero() {
             </div>
           </div>
 
-          {/* Right Hero Interactive Selector Card */}
-          <div className="lg:col-span-5">
+          {/* Right Hero Interactive Selector Card — desktop/tablet only, mobile uses the inline calculator in CustomBudgetBanner */}
+          <div className="hidden lg:block lg:col-span-5">
             <div className="bg-white/10 dark:bg-black/40 backdrop-blur-xl border border-white/20 rounded-3xl p-6 sm:p-7 shadow-2xl text-white">
               <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-amber-200 mb-4">
                 <Sparkles className="w-4 h-4 text-amber-400" />
