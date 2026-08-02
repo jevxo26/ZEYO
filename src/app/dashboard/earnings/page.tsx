@@ -59,6 +59,7 @@ export default function EarningsPage() {
   const [payoutsList, setPayoutsList] = useState<any[]>(DEFAULT_VENDOR_PAYOUTS);
   const [isLoading, setIsLoading] = useState(true);
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
+  const [role, setRole] = useState("admin");
 
   // Payout withdrawal modal state
   const [showPayoutModal, setShowPayoutModal] = useState(false);
@@ -66,6 +67,35 @@ export default function EarningsPage() {
   const [accountNumber, setAccountNumber] = useState("01712345678");
   const [bankName, setBankName] = useState("BRAC Bank");
   const [isSubmittingPayout, setIsSubmittingPayout] = useState(false);
+
+  const handleReleaseSettlement = (payoutId: string) => {
+    const target = payoutsList.find((p) => p.id === payoutId);
+    if (!target) return;
+
+    const bookingAmt = Number(target.payoutAmount || 35000);
+    const commissionAmt = Math.round(bookingAmt * 0.15); // 15% platform commission
+    const vendorNet = bookingAmt - commissionAmt;
+
+    if (!confirm(
+      `Vendor Settlement Breakdown:\n\n• Booking Amount: ৳${bookingAmt.toLocaleString()}\n• Platform Commission (15%): -৳${commissionAmt.toLocaleString()}\n• Vendor Net Payout: ৳${vendorNet.toLocaleString()}\n\nRelease payment from protected escrow now?`
+    )) {
+      return;
+    }
+
+    const updated = payoutsList.map((p) =>
+      p.id === payoutId ? { ...p, status: "paid_out", clearedAt: new Date().toLocaleDateString() } : p
+    );
+    setPayoutsList(updated);
+
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("custom_payouts_override", JSON.stringify(updated));
+        window.dispatchEvent(new CustomEvent("dashboard-data-update"));
+      } catch (e) {}
+    }
+
+    toast.success(`✓ Settlement released! Net payout of ৳${vendorNet.toLocaleString()} transferred to vendor.`);
+  };
 
   const fetchFinancials = async () => {
     let localCustomBookings: any[] = [];
@@ -144,6 +174,16 @@ export default function EarningsPage() {
   };
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const uStr = localStorage.getItem("user");
+        if (uStr) {
+          const u = JSON.parse(uStr);
+          if (u?.role) setRole(u.role.toLowerCase());
+        }
+      } catch (e) {}
+    }
+
     fetchFinancials();
 
     const handleUpdate = () => fetchFinancials();
@@ -354,17 +394,27 @@ export default function EarningsPage() {
                       ).toLocaleString()}
                     </td>
                     <td className="p-4 pr-6 text-right">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                          b.status === "paid_out" || b.status === "confirmed"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : "bg-amber-100 text-amber-800"
-                        }`}
-                      >
-                        {b.status === "paid_out"
-                          ? "Paid Out ✓"
-                          : "Pending Escrow"}
-                      </span>
+                      <div className="flex items-center justify-end gap-2">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                            b.status === "paid_out" || b.status === "confirmed"
+                              ? "bg-emerald-100 text-emerald-800"
+                              : "bg-amber-100 text-amber-800"
+                          }`}
+                        >
+                          {b.status === "paid_out"
+                            ? "Paid Out ✓"
+                            : "Pending Escrow"}
+                        </span>
+                        {role === "admin" && b.status !== "paid_out" && (
+                          <button
+                            onClick={() => handleReleaseSettlement(b.id)}
+                            className="px-2.5 py-1 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-[11px] font-semibold transition-colors shadow-sm"
+                          >
+                            Release Settlement
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))

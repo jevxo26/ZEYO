@@ -157,42 +157,11 @@ export function NewBookingModal({
           </button>
         </div>
 
-        {/* Quick Route Shortcuts to Calculator & Packages */}
-        <div className="p-5 bg-slate-50 border-b border-slate-200 grid grid-cols-2 gap-3">
-          <Link
-            href="/calculator"
-            onClick={close}
-            className="flex flex-col items-start p-3.5 rounded-2xl bg-gradient-to-br from-purple-900 to-indigo-900 text-white hover:shadow-md transition-all group"
-          >
-            <div className="flex items-center gap-2 text-xs font-bold mb-1">
-              <Sparkles className="w-4 h-4 text-purple-300 group-hover:scale-110 transition-transform" />
-              Smart Calculator
-            </div>
-            <span className="text-[10px] text-purple-200">
-              4-step wizard with 7 BD zones
-            </span>
-          </Link>
-
-          <Link
-            href="/packages"
-            onClick={close}
-            className="flex flex-col items-start p-3.5 rounded-2xl bg-white border border-slate-200 hover:border-purple-300 text-slate-900 hover:shadow-md transition-all group"
-          >
-            <div className="flex items-center gap-2 text-xs font-bold mb-1 text-purple-700">
-              <Package className="w-4 h-4 group-hover:scale-110 transition-transform" />
-              Browse Packages
-            </div>
-            <span className="text-[10px] text-slate-500">
-              Curated wedding & corporate sets
-            </span>
-          </Link>
-        </div>
-
         {/* Direct Booking Form in BDT */}
         <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-4">
           <div className="flex items-center gap-2 text-xs font-bold text-slate-900 pb-1 border-b border-slate-100">
             <ShieldCheck className="w-4 h-4 text-purple-600" />
-            Or Submit Quick Custom Event Request (BDT ৳)
+            Submit Custom Celebration Booking (BDT ৳)
           </div>
 
           <div className="space-y-1">

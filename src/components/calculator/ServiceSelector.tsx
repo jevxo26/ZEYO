@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { CALCULATOR_SERVICES } from "@/lib/calculatorData";
+import React, { useMemo } from "react";
+import { useDynamicServices } from "@/hooks/useDynamicServices";
 import {
   Camera,
   Video,
@@ -25,6 +25,7 @@ import {
 
 interface ServiceSelectorProps {
   selectedKeys: string[];
+  activeZoneId: string;
   onToggleService: (serviceKey: string) => void;
   onSelectAll: () => void;
   onClearAll: () => void;
@@ -50,11 +51,22 @@ const serviceIcons: Record<string, React.ReactNode> = {
 
 export default function ServiceSelector({
   selectedKeys,
+  activeZoneId,
   onToggleService,
   onSelectAll,
   onClearAll,
 }: ServiceSelectorProps) {
-  const isAllSelected = selectedKeys.length === CALCULATOR_SERVICES.length;
+  const dynamicServices = useDynamicServices();
+
+  const availableServices = useMemo(() => {
+    return dynamicServices.filter((srv) => {
+      if (!srv.availableZones || srv.availableZones === "all") return true;
+      if (Array.isArray(srv.availableZones) && srv.availableZones.includes(activeZoneId)) return true;
+      return false;
+    });
+  }, [dynamicServices, activeZoneId]);
+
+  const isAllSelected = selectedKeys.length === availableServices.length && availableServices.length > 0;
 
   return (
     <div className="space-y-6 animate-fadeIn">
@@ -91,7 +103,7 @@ export default function ServiceSelector({
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
-          {CALCULATOR_SERVICES.map((srv) => {
+          {availableServices.map((srv) => {
             const isChecked = selectedKeys.includes(srv.key);
             return (
               <button

@@ -147,7 +147,7 @@ export default function DashboardLayout({
   const searchResults = searchQuery.trim().length > 0
     ? SEARCH_DATA.filter(
         (item) => {
-          if (item.label === "Settings" && user?.role !== "admin") return false;
+          if (item.label === "Settings" && user?.role === "customer") return false;
           return (
             item.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
             item.sub.toLowerCase().includes(searchQuery.toLowerCase())
@@ -355,7 +355,7 @@ export default function DashboardLayout({
     if (r === "admin") {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-          <ShieldCheck className="w-3.5 h-3.5" /> Admin Operations Center
+          <ShieldCheck className="w-3.5 h-3.5" /> Admin Dashboard
         </span>
       );
     }

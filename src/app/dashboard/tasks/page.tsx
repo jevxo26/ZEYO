@@ -23,6 +23,7 @@ import {
   Download,
   Eye,
   FileCheck,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -141,6 +142,8 @@ export default function TaskDetailsPage() {
   const [newNote, setNewNote] = useState("");
   const [progressStep, setProgressStep] = useState(1); // 0: Accepted, 1: At Venue, 2: Started, 3: Completed
   const [isUploading, setIsUploading] = useState(false);
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [completionNotes, setCompletionNotes] = useState("");
 
   interface DeliverableItem {
     id: string;
@@ -454,11 +457,30 @@ export default function TaskDetailsPage() {
   };
 
   const steps = [
-    { label: "TASK ACCEPTED", note: "Accepted by Vendor Team" },
-    { label: "TEAM AT VENUE", note: "Arrival verified by Coordinator" },
-    { label: "SERVICE EXECUTION", note: "Live event coverage underway" },
-    { label: "WORK COMPLETED", note: "Awaiting final clearance & payout" },
+    { label: "Vendor Accepted", note: "Accepted by Vendor Team" },
+    { label: "On The Way", note: "Vendor team en route to venue" },
+    { label: "Reached Venue", note: "Arrival verified at venue" },
+    { label: "Setup Started", note: "Equipment & stage setup underway" },
+    { label: "Service Started", note: "Live event execution in progress" },
+    { label: "Completed", note: "Work completed & deliverables ready" },
   ];
+
+  const handleAcceptTask = () => {
+    handleStatusChange("Vendor Accepted");
+    setProgressStep(0);
+    toast.success("✓ Task Accepted! Status updated to 'Vendor Accepted'.");
+  };
+
+  const handleRejectTask = () => {
+    if (!confirm("Are you sure you want to reject this assigned task? Admin will be notified to reassign.")) return;
+    handleStatusChange("Rejected");
+    createNotification(
+      "Vendor Task Rejected",
+      `Vendor rejected task for ${currentTask.bookingRef}. Admin notification sent for immediate reassignment.`,
+      "🚨"
+    );
+    toast.error("Task Rejected. Admin notified for reassignment.");
+  };
 
   const handleStatusChange = (newStatus: string) => {
     const updated = tasksList.map((t) =>
@@ -483,6 +505,11 @@ export default function TaskDetailsPage() {
     const nextStep = i + 1;
     if (nextStep >= steps.length) return;
 
+    if (steps[nextStep].label === "Completed") {
+      setShowCompletionModal(true);
+      return; // Do not advance directly, wait for completion report
+    }
+
     setProgressStep(nextStep);
 
     if (typeof window !== "undefined" && currentTask?.id) {
@@ -504,6 +531,34 @@ export default function TaskDetailsPage() {
 
     const stepLabel = steps[nextStep].label;
     handleStatusChange(stepLabel);
+  };
+
+  const handleSubmitCompletion = (e: React.FormEvent) => {
+    e.preventDefault();
+    const nextStep = steps.findIndex(s => s.label === "Completed");
+    
+    setProgressStep(nextStep);
+    handleStatusChange("Completed");
+
+    if (typeof window !== "undefined" && currentTask?.id) {
+      try {
+        localStorage.setItem(`custom_task_step_${currentTask.id}`, String(nextStep));
+        // Save completion report data
+        localStorage.setItem(`custom_task_report_${currentTask.id}`, JSON.stringify({
+          notes: completionNotes,
+          submittedAt: new Date().toISOString()
+        }));
+      } catch (e) {}
+    }
+    
+    createNotification(
+      "Completion Report Submitted",
+      `Vendor has submitted the completion report for ${currentTask.bookingRef}. QA ready.`,
+      "✅"
+    );
+
+    setShowCompletionModal(false);
+    toast.success("Completion report submitted and task marked as completed!");
   };
 
   const filteredTasks = tasksList.filter((t) => {
@@ -607,16 +662,31 @@ export default function TaskDetailsPage() {
             <MessageSquare className="w-3.5 h-3.5 text-slate-500" /> Dispatch Desk
           </button>
 
+          {currentTask.status !== "Vendor Accepted" &&
+            currentTask.status !== "Completed" &&
+            currentTask.status !== "Rejected" && (
+              <>
+                <button
+                  onClick={handleAcceptTask}
+                  className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold transition-colors shadow-sm flex items-center gap-1"
+                >
+                  <Check className="w-3.5 h-3.5" /> Accept
+                </button>
+                <button
+                  onClick={handleRejectTask}
+                  className="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-semibold transition-colors shadow-sm flex items-center gap-1"
+                >
+                  <X className="w-3.5 h-3.5" /> Reject
+                </button>
+              </>
+            )}
+
           <button
             onClick={() => {
               if (progressStep < steps.length - 1) {
                 const nextStep = progressStep + 1;
                 setProgressStep(nextStep);
-                if (nextStep === steps.length - 1) {
-                  handleStatusChange("Completed");
-                } else {
-                  handleStatusChange("In Progress");
-                }
+                handleStatusChange(steps[nextStep].label);
               }
             }}
             className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-semibold hover:bg-slate-800 transition-colors shadow-sm"
@@ -909,6 +979,62 @@ export default function TaskDetailsPage() {
           </div>
         </div>
       </div>
+
+      {/* Completion Report Modal */}
+      {showCompletionModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-hidden border border-slate-200">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Submit Completion Report</h3>
+                <p className="text-xs text-slate-500 mt-0.5">Finalize task execution for QA</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowCompletionModal(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleSubmitCompletion} className="p-6 space-y-4">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-700">Completion Summary & Final Notes</label>
+                <textarea
+                  required
+                  rows={4}
+                  value={completionNotes}
+                  onChange={(e) => setCompletionNotes(e.target.value)}
+                  placeholder="Detail what was accomplished, any deviations, or notes for the EVENTO QA team..."
+                  className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-xs text-slate-900 outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 leading-relaxed"
+                />
+              </div>
+              {deliverables.length === 0 && (
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg flex gap-2 items-start text-xs text-amber-800">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <p>Warning: You haven't uploaded any deliverables yet. Ensure that no files are required for this service before submitting.</p>
+                </div>
+              )}
+              <div className="pt-4 border-t border-slate-100 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowCompletionModal(false)}
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1.5 transition-colors"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  Submit Report & Complete Task
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

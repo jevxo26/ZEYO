@@ -1,10 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  CALCULATOR_SERVICES,
-  calculateServicePrice,
-} from "@/lib/calculatorData";
+import { calculateServicePrice } from "@/lib/calculatorData";
+import { useDynamicServices } from "@/hooks/useDynamicServices";
 import {
   ConfiguredServiceState,
   CalculatorServiceDefinition,
@@ -38,12 +36,14 @@ export default function ServiceConfigurator({
   zoneMultiplier,
   globalGuestCount,
 }: ServiceConfiguratorProps) {
+  const dynamicServices = useDynamicServices();
+
   // By default, open the first selected service
   const [openServiceKey, setOpenServiceKey] = useState<string | null>(
     selectedKeys[0] || null
   );
 
-  const selectedServices = CALCULATOR_SERVICES.filter((srv) =>
+  const selectedServices = dynamicServices.filter((srv) =>
     selectedKeys.includes(srv.key)
   );
 

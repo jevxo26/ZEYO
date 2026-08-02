@@ -40,6 +40,9 @@ export interface CalculatorServiceDefinition {
   name: string;
   description: string;
   iconName: string;
+  category?: string;
+  serviceType?: string;
+  availableZones?: "all" | string[];
   isPerGuest?: boolean;
   defaultGuestPrice?: number;
   tiers: ServiceTierOption[];
