@@ -20,6 +20,7 @@ import {
   Check,
   Building2,
   ShieldCheck,
+  Star,
 } from "lucide-react";
 import apiClient from "@/lib/apiClient";
 import Link from "next/link";
@@ -487,6 +488,40 @@ export default function BookingDetailsPage() {
                 </div>
               </div>
             </div>
+
+            {/* Platform Review Display */}
+            {booking.hasReview && booking.reviewData && (
+              <div className="bg-indigo-50 border border-indigo-100 p-6 rounded-xl shadow-sm space-y-4">
+                <div className="flex items-center justify-between border-b border-indigo-100/50 pb-3">
+                  <h2 className="text-sm font-semibold text-indigo-900 uppercase tracking-wider flex items-center gap-1.5">
+                    <ShieldCheck className="w-4 h-4 text-indigo-500" />
+                    EVENTO Platform Review
+                  </h2>
+                  <div className="flex items-center gap-0.5">
+                    {[1, 2, 3, 4, 5].map(star => (
+                      <Star key={star} className={`w-3.5 h-3.5 ${star <= (booking.reviewData.overallRating || 5) ? 'fill-amber-400 text-amber-400' : 'text-indigo-200'}`} />
+                    ))}
+                  </div>
+                </div>
+                <div className="text-sm text-indigo-950 font-medium italic leading-relaxed">
+                  "{booking.reviewData.comment || "Great platform experience!"}"
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                   <div className="text-xs text-indigo-800 bg-indigo-100/50 p-2 rounded border border-indigo-100 text-center">
+                     <p className="text-[10px] uppercase font-bold text-indigo-500 mb-0.5">Booking Process</p>
+                     {booking.reviewData.bookingProcessRating}/5
+                   </div>
+                   <div className="text-xs text-indigo-800 bg-indigo-100/50 p-2 rounded border border-indigo-100 text-center">
+                     <p className="text-[10px] uppercase font-bold text-indigo-500 mb-0.5">Service Quality</p>
+                     {booking.reviewData.serviceQualityRating}/5
+                   </div>
+                   <div className="text-xs text-indigo-800 bg-indigo-100/50 p-2 rounded border border-indigo-100 text-center">
+                     <p className="text-[10px] uppercase font-bold text-indigo-500 mb-0.5">EVENTO Support</p>
+                     {booking.reviewData.supportTeamRating}/5
+                   </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Sidebar Summary */}
