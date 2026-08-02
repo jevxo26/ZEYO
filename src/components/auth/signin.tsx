@@ -50,7 +50,7 @@ export function SignInForm() {
         role === "customer"
           ? "Sarah Jenkins (Demo Customer)"
           : role === "admin"
-          ? "Arif Ahmed (EVENTO Admin Coordinator)"
+          ? "Arif Ahmed (ZEYO Admin Coordinator)"
           : "Dhaka Royal Photo Team (Vendor Partner)",
       email: email,
       role: role,
@@ -147,12 +147,12 @@ export function SignInForm() {
   return (
     <div className="space-y-3 w-full relative">
       {/* Demo Access — ticket stub */}
-      <div className="rounded-xl bg-[#1F1B44] border border-[#7C6FE8]/20 p-2.5 space-y-1.5">
+      <div className="rounded-xl bg-slate-900 border border-amber-500/20 p-2.5 space-y-1.5">
         <div className="flex items-center justify-between">
-          <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#C7BEFA]">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#9B8CF0]" /> Demo Access
+          <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-amber-300">
+            <ShieldCheck className="w-3.5 h-3.5 text-amber-400" /> Demo Access
           </span>
-          <span className="text-[9px] text-[#7E7AA6] font-mono">1-Click Test</span>
+          <span className="text-[9px] text-slate-500 font-mono">1-Click Test</span>
         </div>
         <div className="grid grid-cols-3 gap-1.5">
           <button
@@ -160,9 +160,9 @@ export function SignInForm() {
             onClick={() =>
               handleDemoQuickLogin("customer", "customer@evento.bd", "/dashboard/bookings")
             }
-            className="px-2 py-1.5 rounded-lg bg-[#2A2560] hover:bg-[#352E75] text-[#F1F0FA] text-[11px] font-bold transition-all flex items-center justify-center gap-1 border border-[#7C6FE8]/15"
+            className="px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-[11px] font-bold transition-all flex items-center justify-center gap-1 border border-amber-500/15"
           >
-            <User className="w-3 h-3 text-[#9B8CF0]" /> Customer
+            <User className="w-3 h-3 text-amber-400" /> Customer
           </button>
 
           <button
@@ -170,9 +170,9 @@ export function SignInForm() {
             onClick={() =>
               handleDemoQuickLogin("admin", "admin@evento.bd", "/dashboard/vendors")
             }
-            className="px-2 py-1.5 rounded-lg bg-[#2A2560] hover:bg-[#352E75] text-[#F1F0FA] text-[11px] font-bold transition-all flex items-center justify-center gap-1 border border-[#7C6FE8]/15"
+            className="px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-[11px] font-bold transition-all flex items-center justify-center gap-1 border border-amber-500/15"
           >
-            <Lock className="w-3 h-3 text-[#9B8CF0]" /> Admin
+            <Lock className="w-3 h-3 text-amber-400" /> Admin
           </button>
 
           <button
@@ -180,24 +180,24 @@ export function SignInForm() {
             onClick={() =>
               handleDemoQuickLogin("vendor", "partner@evento.bd", "/dashboard/tasks")
             }
-            className="px-2 py-1.5 rounded-lg bg-[#2A2560] hover:bg-[#352E75] text-[#F1F0FA] text-[11px] font-bold transition-all flex items-center justify-center gap-1 border border-[#7C6FE8]/15"
+            className="px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white text-[11px] font-bold transition-all flex items-center justify-center gap-1 border border-amber-500/15"
           >
-            <Briefcase className="w-3 h-3 text-[#9B8CF0]" /> Vendor
+            <Briefcase className="w-3 h-3 text-amber-400" /> Vendor
           </button>
         </div>
       </div>
 
       {/* Perforated tear line */}
       <div className="relative h-3 flex items-center">
-        <div className="w-full border-t border-dashed border-[#7C6FE8]/25" />
-        <div className="absolute left-1 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-[#F4F5FC]" />
-        <div className="absolute right-1 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-[#F4F5FC]" />
+        <div className="w-full border-t border-dashed border-amber-500/20" />
+        <div className="absolute left-1 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-[#F5F5F3]" />
+        <div className="absolute right-1 top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-[#F5F5F3]" />
       </div>
 
       {/* Main Sign In Form */}
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-2.5 w-full">
         <div className="space-y-1 text-left">
-          <Label htmlFor="email" className="text-[#D6D2EF] font-semibold text-xs">
+          <Label htmlFor="email" className="text-slate-300 font-semibold text-xs">
             Email Address
           </Label>
           <Input
@@ -206,7 +206,7 @@ export function SignInForm() {
             placeholder="name@company.com"
             {...register("email")}
             aria-invalid={!!errors.email}
-            className="w-full bg-[#F1F0FA] border-transparent text-[#171334] placeholder-[#8A85B0] focus:ring-2 focus:ring-[#7C6FE8] focus:border-transparent rounded-lg h-9 text-sm transition-all"
+            className="w-full bg-white border-transparent text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-amber-500 focus:border-transparent rounded-lg h-9 text-sm transition-all"
           />
           {errors.email && (
             <p className="text-[11px] text-rose-400 font-semibold mt-0.5">
@@ -217,10 +217,10 @@ export function SignInForm() {
 
         <div className="space-y-1 text-left">
           <div className="flex justify-between items-center">
-            <Label htmlFor="password" className="text-[#D6D2EF] font-semibold text-xs">
+            <Label htmlFor="password" className="text-slate-300 font-semibold text-xs">
               Password
             </Label>
-            <a href="#" className="text-[11px] font-semibold text-[#9B8CF0] hover:text-[#C7BEFA] transition-colors">
+            <a href="#" className="text-[11px] font-semibold text-amber-400 hover:text-amber-300 transition-colors">
               Forgot password?
             </a>
           </div>
@@ -230,7 +230,7 @@ export function SignInForm() {
             placeholder="••••••••"
             {...register("password")}
             aria-invalid={!!errors.password}
-            className="w-full bg-[#F1F0FA] border-transparent text-[#171334] placeholder-[#8A85B0] focus:ring-2 focus:ring-[#7C6FE8] focus:border-transparent rounded-lg h-9 text-sm transition-all"
+            className="w-full bg-white border-transparent text-slate-900 placeholder-slate-400 focus:ring-2 focus:ring-amber-500 focus:border-transparent rounded-lg h-9 text-sm transition-all"
           />
           {errors.password && (
             <p className="text-[11px] text-rose-400 font-semibold mt-0.5">
@@ -241,13 +241,12 @@ export function SignInForm() {
 
         <Button
           type="submit"
-          className="w-full h-9 mt-1 text-white font-bold text-sm rounded-lg transition-all shadow-sm border-0"
-          style={{ background: "linear-gradient(135deg, #4F7DF3, #9B5DE5)" }}
+          className="w-full h-9 mt-1 bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm rounded-lg transition-all shadow-sm border-0"
           disabled={isLoading}
         >
           {isLoading ? (
             <span className="flex items-center gap-2">
-              <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">
+              <svg className="animate-spin h-4 w-4 text-black" viewBox="0 0 24 24" fill="none">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                 <path
                   className="opacity-75"
@@ -264,10 +263,10 @@ export function SignInForm() {
 
         <div className="relative my-2">
           <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-[#7C6FE8]/15" />
+            <span className="w-full border-t border-amber-500/10" />
           </div>
           <div className="relative flex justify-center text-[10px] uppercase tracking-wider">
-            <span className="bg-[#171334] px-3 text-[#7E7AA6] font-semibold">Or continue with</span>
+            <span className="bg-black px-3 text-slate-500 font-semibold">Or continue with</span>
           </div>
         </div>
 
@@ -275,12 +274,12 @@ export function SignInForm() {
           <SocialLogin />
         </div>
 
-        <div className="text-center text-xs text-[#A8A3C9] mt-2 font-medium">
+        <div className="text-center text-xs text-slate-400 mt-2 font-medium">
           Don&apos;t have an account?{" "}
           <button
             type="button"
             onClick={() => router.push("/register")}
-            className="text-[#C7BEFA] font-bold hover:underline"
+            className="text-amber-400 font-bold hover:underline"
           >
             Sign up
           </button>
