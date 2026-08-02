@@ -26,6 +26,7 @@ import apiClient from "@/lib/apiClient";
 import Link from "next/link";
 import { toast } from "sonner";
 import PlatformReviewModal from "@/components/reviews/PlatformReviewModal";
+import { createNotification } from "@/lib/notifications";
 
 const DEFAULT_BOOKING_DETAIL = {
   id: "BKG-2026-001",
@@ -317,6 +318,7 @@ export default function BookingDetailsPage() {
       setIsProcessingPayment(false);
       setShowPaymentModal(false);
       setPaymentAmount("");
+      createNotification("Payment Successful", `Received ৳${amt.toLocaleString()} payment for booking ${booking.bookingNumber}.`, "💳");
       toast.success(`✓ Successfully paid ৳${amt.toLocaleString()} online!`);
     }, 1500);
   };

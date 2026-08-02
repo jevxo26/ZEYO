@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import apiClient from "@/lib/apiClient";
 import { toast } from "sonner";
+import { createNotification } from "@/lib/notifications";
 import { ConfiguredServiceState } from "@/types/calculator";
 import {
   CheckCircle2,
@@ -138,6 +139,7 @@ export default function BookingSummaryModal({
         list.unshift(newBookingObj);
         localStorage.setItem("customBookings", JSON.stringify(list));
         window.dispatchEvent(new CustomEvent("dashboard-data-update"));
+        createNotification("Booking Received", `Customer created new booking ${generatedId} for ${eventTypeName}.`, "📦");
       }
 
       onSuccess(generatedId);

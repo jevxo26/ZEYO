@@ -254,6 +254,7 @@ export default function VendorsPage() {
         
         // Trigger dashboard update
         window.dispatchEvent(new CustomEvent("dashboard-data-update"));
+        createNotification("Vendor Assigned", `Vendor ${selectedVendor.name} assigned to ${targetBooking.bookingNumber}.`, "✅");
       } catch (e) {
         console.warn("Failed to persist vendor dispatch locally", e);
       }
