@@ -31,7 +31,14 @@ import {
   Mail,
   User,
   FileText,
+  X,
+  Lock,
+  KeyRound,
+  ArrowUpRight,
 } from "lucide-react";
+import { toast } from "sonner";
+import { useAppSelector, useAppDispatch } from "@/store/store";
+import { setCredentials } from "@/store/slices/authSlice";
 
 const SAMPLE_PACKAGES: Record<
   string,
@@ -174,6 +181,26 @@ export default function PackageDetailsPage() {
   const [guestCount, setGuestCount] = useState(pkg.estimatedGuests);
   const [selectedAddonIds, setSelectedAddonIds] = useState<string[]>([]);
 
+  // Auth state
+  const dispatch = useAppDispatch();
+  const { user, token } = useAppSelector((state) => state.auth);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authTab, setAuthTab] = useState<"signin" | "signup">("signin");
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
+  const [authName, setAuthName] = useState("");
+  const [authPhone, setAuthPhone] = useState("");
+  const [authLoading, setAuthLoading] = useState(false);
+
+  const isUserLoggedIn = useMemo(() => {
+    if (user || token) return true;
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("user");
+      if (stored) return true;
+    }
+    return false;
+  }, [user, token]);
+
   // Booking modal form state
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [customerName, setCustomerName] = useState("");
@@ -183,6 +210,91 @@ export default function PackageDetailsPage() {
   const [eventDate, setEventDate] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [bookingSuccessId, setBookingSuccessId] = useState<string | null>(null);
+
+  const handleBookPackageClick = () => {
+    if (!isUserLoggedIn) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+    if (user) {
+      if (!customerName) setCustomerName(user.name || "");
+      if (!customerEmail) setCustomerEmail(user.email || "");
+    } else if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("user");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (!customerName) setCustomerName(parsed.name || "");
+          if (!customerEmail) setCustomerEmail(parsed.email || "");
+        }
+      } catch (e) {}
+    }
+    setIsBookingModalOpen(true);
+  };
+
+  const handleAuthSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    setTimeout(() => {
+      setAuthLoading(false);
+      if (authTab === "signin") {
+        const loggedInUser = {
+          id: "cust-" + Date.now(),
+          name: authEmail.split("@")[0] || "Customer",
+          email: authEmail || "customer@example.com",
+          role: "customer",
+        };
+        dispatch(
+          setCredentials({
+            user: loggedInUser,
+            token: "token-" + Date.now(),
+          })
+        );
+        toast.success("✓ Signed in successfully! You can now book this package.", {
+          duration: 4000,
+          closeButton: true,
+        });
+      } else {
+        const newAccountUser = {
+          id: "cust-" + Date.now(),
+          name: authName || "Customer",
+          email: authEmail || "customer@example.com",
+          role: "customer",
+        };
+        dispatch(
+          setCredentials({
+            user: newAccountUser,
+            token: "token-" + Date.now(),
+          })
+        );
+        toast.success("✓ Account created successfully! You can now book this package.", {
+          duration: 4000,
+          closeButton: true,
+        });
+      }
+      setIsAuthModalOpen(false);
+    }, 400);
+  };
+
+  const handleDemoCustomerLogin = () => {
+    const demoCustomer = {
+      id: "101",
+      name: "Ahmed Tanvir",
+      email: "tanvir.ahmed@gmail.com",
+      role: "customer",
+    };
+    dispatch(
+      setCredentials({
+        user: demoCustomer,
+        token: "demo-customer-jwt-token-778899",
+      })
+    );
+    toast.success("✓ Signed in as Ahmed Tanvir (Demo Customer)!", {
+      duration: 4000,
+      closeButton: true,
+    });
+    setIsAuthModalOpen(false);
+  };
 
   const handleToggleAddon = (addonId: string) => {
     setSelectedAddonIds((prev) =>
@@ -511,7 +623,7 @@ export default function PackageDetailsPage() {
 
                   <button
                     type="button"
-                    onClick={() => setIsBookingModalOpen(true)}
+                    onClick={handleBookPackageClick}
                     className="w-full inline-flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold text-sm shadow-lg shadow-indigo-500/25 transition-all"
                   >
                     Book This Package
@@ -647,6 +759,163 @@ export default function PackageDetailsPage() {
                       {isSubmitting ? "Confirming..." : "Confirm Booking"}
                     </button>
                   </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Auth Modal for Unauthenticated Users */}
+        {isAuthModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm animate-fadeIn">
+            <div className="relative w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-indigo-900 via-purple-900 to-blue-900 px-6 py-5 text-white flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-semibold text-indigo-200 uppercase tracking-wider">
+                    Authentication Required
+                  </span>
+                  <h3 className="text-lg font-extrabold mt-0.5">
+                    Sign In or Sign Up to Book
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsAuthModalOpen(false)}
+                  className="p-2 rounded-full hover:bg-white/10 text-white/80"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Tabs */}
+              <div className="flex border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                <button
+                  type="button"
+                  onClick={() => setAuthTab("signin")}
+                  className={`flex-1 py-3.5 text-xs font-extrabold transition-all border-b-2 ${
+                    authTab === "signin"
+                      ? "border-purple-600 text-purple-600 bg-white dark:bg-slate-900"
+                      : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                  }`}
+                >
+                  Log In
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAuthTab("signup")}
+                  className={`flex-1 py-3.5 text-xs font-extrabold transition-all border-b-2 ${
+                    authTab === "signup"
+                      ? "border-purple-600 text-purple-600 bg-white dark:bg-slate-900"
+                      : "border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white"
+                  }`}
+                >
+                  Create Account
+                </button>
+              </div>
+
+              {/* Form Content */}
+              <form onSubmit={handleAuthSubmit} className="p-6 space-y-4">
+                {authTab === "signup" && (
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                      Full Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={authName}
+                      onChange={(e) => setAuthName(e.target.value)}
+                      placeholder="Enter your full name"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                    Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={authEmail}
+                    onChange={(e) => setAuthEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:outline-none focus:border-purple-500"
+                  />
+                </div>
+
+                {authTab === "signup" && (
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                      Phone Number *
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      value={authPhone}
+                      onChange={(e) => setAuthPhone(e.target.value)}
+                      placeholder="+880 17XX XXXXXX"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:outline-none focus:border-purple-500"
+                    />
+                  </div>
+                )}
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                    Password *
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    value={authPassword}
+                    onChange={(e) => setAuthPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:outline-none focus:border-purple-500"
+                  />
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    type="submit"
+                    disabled={authLoading}
+                    className="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold text-sm shadow-md transition-all disabled:opacity-60"
+                  >
+                    {authLoading
+                      ? "Please wait..."
+                      : authTab === "signin"
+                      ? "Sign In & Continue"
+                      : "Create Account & Continue"}
+                  </button>
+                </div>
+
+                {authTab === "signin" && (
+                  <div className="pt-2 border-t border-slate-100 dark:border-slate-800 text-center">
+                    <p className="text-xs text-slate-500 mb-2">
+                      Need instant access to test booking?
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleDemoCustomerLogin}
+                      className="w-full py-2.5 px-4 rounded-xl border border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold text-xs transition-colors flex items-center justify-center gap-1.5"
+                    >
+                      <Sparkles className="w-3.5 h-3.5" />
+                      1-Click Demo Customer Login
+                    </button>
+                  </div>
+                )}
+
+                <div className="pt-2 text-center">
+                  <button
+                    type="button"
+                    onClick={() => setAuthTab(authTab === "signin" ? "signup" : "signin")}
+                    className="text-xs font-semibold text-purple-600 hover:underline"
+                  >
+                    {authTab === "signin"
+                      ? "Don't have an account? Sign up here"
+                      : "Already have an account? Log in here"}
+                  </button>
                 </div>
               </form>
             </div>
