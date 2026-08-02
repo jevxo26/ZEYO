@@ -215,6 +215,50 @@ export default function VendorsPage() {
       return;
     }
 
+    if (typeof window !== "undefined") {
+      try {
+        // 1. Update Booking to reflect assigned vendor
+        const storedBookings = localStorage.getItem("customBookings");
+        let bookingList = storedBookings ? JSON.parse(storedBookings) : [];
+        const bIdx = bookingList.findIndex((b: any) => String(b.id) === String(targetBookingId));
+        if (bIdx >= 0) {
+          bookingList[bIdx].assignedVendorId = selectedVendor.id;
+          bookingList[bIdx].assignedVendor = selectedVendor.name;
+          bookingList[bIdx].assignedService = targetService;
+          localStorage.setItem("customBookings", JSON.stringify(bookingList));
+        }
+
+        // 2. Create Explicit Task for the Vendor
+        const storedTasks = localStorage.getItem("customVendorTasks");
+        let taskList = storedTasks ? JSON.parse(storedTasks) : [];
+        const newTask = {
+          id: `TSK-${Date.now()}`,
+          bookingRef: targetBooking.bookingNumber || `#${targetBooking.id}`,
+          title: targetBooking.eventName || "Assigned Celebration Service",
+          category: targetService,
+          zone: targetBooking.location || zoneId,
+          venue: targetBooking.location || "Location TBD",
+          date: targetBooking.eventDate ? new Date(targetBooking.eventDate).toLocaleDateString() : "Upcoming",
+          duration: "Full Event",
+          payout: `৳${Number(targetBooking.grandTotal || targetBooking.budget || 35000).toLocaleString()} (Escrow)`,
+          status: "Pending Vendor Acceptance",
+          requirements: [
+            { title: "Service Delivery", desc: `Provide ${targetService} according to EVENTO standard.` },
+          ],
+          coordinatorNotes: "Coordinate with EVENTO Dispatch upon arrival.",
+          assignedVendorId: selectedVendor.id,
+          assignedVendorName: selectedVendor.name
+        };
+        taskList.unshift(newTask);
+        localStorage.setItem("customVendorTasks", JSON.stringify(taskList));
+        
+        // Trigger dashboard update
+        window.dispatchEvent(new CustomEvent("dashboard-data-update"));
+      } catch (e) {
+        console.warn("Failed to persist vendor dispatch locally", e);
+      }
+    }
+
     toast.success("Vendor dispatched successfully!");
     setSelectedVendor(null);
   };
