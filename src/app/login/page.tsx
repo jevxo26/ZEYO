@@ -1,6 +1,7 @@
 "use client";
 
 import { SignInForm } from "@/components/auth/signin";
+import Navbar from "@/components/Navbar";
 import Link from "next/link";
 import { ShieldCheck, ArrowLeft } from "lucide-react";
 import { Fraunces, Manrope } from "next/font/google";
@@ -20,7 +21,7 @@ const manrope = Manrope({
 export default function LoginPage() {
   return (
     <div
-      className={`${fraunces.variable} ${manrope.variable} h-screen flex overflow-hidden bg-[#F4F5FC]`}
+      className={`${fraunces.variable} ${manrope.variable} min-h-screen flex flex-col bg-[#F4F5FC]`}
       style={{
         fontFamily: "var(--font-body)",
         backgroundImage:
@@ -28,19 +29,13 @@ export default function LoginPage() {
         backgroundSize: "18px 18px",
       }}
     >
-      {/* Left Column: Pass Card */}
-      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 relative z-10 overflow-hidden">
-        <div className="w-full max-w-md">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 mb-3 text-[#6B6795] hover:text-[#171334] transition-colors"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span className="text-xs font-semibold">Back to home</span>
-          </Link>
-
-          {/* The Pass */}
-          <div className="relative rounded-[28px] bg-[#171334] border border-[#7C6FE8]/20 shadow-[0_25px_60px_-20px_rgba(23,19,52,0.55)] p-5 sm:p-6 overflow-hidden">
+      <Navbar />
+      <div className="flex-1 flex min-h-[calc(100vh-80px)]">
+        {/* Left Column: Pass Card */}
+        <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 relative z-10">
+          <div className="w-full max-w-md">
+            {/* The Pass */}
+            <div className="relative rounded-[28px] bg-[#171334] border border-[#7C6FE8]/20 shadow-[0_25px_60px_-20px_rgba(23,19,52,0.55)] p-5 sm:p-6 overflow-hidden">
             {/* Corner glow accent */}
             <div
               className="pointer-events-none absolute -top-16 -right-16 w-40 h-40 rounded-full blur-3xl"
@@ -148,6 +143,7 @@ export default function LoginPage() {
               <p className="text-[#F1F0FA] font-semibold text-sm">Sarah Jenkins</p>
               <p className="text-[#A8A3C9] text-xs">Event Director, Gulshan Convention</p>
             </div>
+          </div>
           </div>
         </div>
       </div>
