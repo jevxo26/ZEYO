@@ -203,13 +203,13 @@ export default function EarningsPage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Vendor Notice Banner */}
-      <div className="bg-slate-900 rounded-2xl p-6 text-white shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-slate-800">
+      <div className="bg-black rounded-2xl p-6 text-white shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-neutral-800">
         <div className="flex items-start gap-3.5">
           <div className="p-2.5 rounded-xl bg-white/10 shrink-0 border border-white/10">
-            <ShieldCheck className="w-6 h-6 text-purple-300" />
+            <ShieldCheck className="w-6 h-6 text-amber-400" />
           </div>
           <div>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-purple-500/20 text-purple-200 border border-purple-400/20">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-400/20">
               Vendor Escrow Ledger
             </span>
             <h1 className="text-xl sm:text-2xl font-bold mt-1">
@@ -222,95 +222,95 @@ export default function EarningsPage() {
               </span>
               <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Live</span>
               {lastRefreshed && (
-                <span className="text-[10px] text-slate-400 font-medium">
+                <span className="text-[10px] text-neutral-400 font-medium">
                   Updated {lastRefreshed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
               )}
             </div>
-            <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
+            <p className="text-xs text-neutral-300 mt-1 max-w-2xl leading-relaxed">
               Disbursed directly by EVENTO Operations via secure escrow after QA clearance. Customer transaction details remain protected.
             </p>
           </div>
         </div>
         <button
           onClick={() => setShowPayoutModal(true)}
-          className="px-4 py-2.5 bg-white text-slate-900 hover:bg-slate-100 text-xs font-bold rounded-xl shadow-sm transition-colors flex items-center gap-2 shrink-0"
+          className="px-4 py-2.5 bg-amber-500 text-black hover:bg-amber-400 text-xs font-bold rounded-xl shadow-sm transition-colors flex items-center gap-2 shrink-0"
         >
-          <Download className="w-4 h-4 text-purple-700" /> Request Escrow Payout
+          <Download className="w-4 h-4 text-black" /> Request Escrow Payout
         </button>
       </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <div className="bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-purple-600 font-bold">
+            <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center text-amber-400 font-bold">
               ৳
             </div>
-            <h3 className="font-semibold text-slate-700">
+            <h3 className="font-semibold text-neutral-700">
               Total Assigned Earnings
             </h3>
           </div>
-          <p className="text-3xl font-extrabold text-slate-900">
+          <p className="text-3xl font-extrabold text-neutral-900">
             ৳{totalEarnings.toLocaleString()}
           </p>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-neutral-500 mt-1">
             Total contracted BDT value
           </p>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <div className="bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
               <CheckCircle className="w-5 h-5" />
             </div>
-            <h3 className="font-semibold text-slate-700">Cleared Payouts</h3>
+            <h3 className="font-semibold text-neutral-700">Cleared Payouts</h3>
           </div>
           <p className="text-3xl font-extrabold text-emerald-700">
             ৳{clearedPayouts.toLocaleString()}
           </p>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-neutral-500 mt-1">
             Transferred to partner bank / mobile wallet
           </p>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+        <div className="bg-white p-6 rounded-2xl border border-neutral-200 shadow-sm">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center text-amber-600">
               <Clock className="w-5 h-5" />
             </div>
-            <h3 className="font-semibold text-slate-700">
+            <h3 className="font-semibold text-neutral-700">
               Pending Escrow Release
             </h3>
           </div>
           <p className="text-3xl font-extrabold text-amber-700">
             ৳{pendingEscrow.toLocaleString()}
           </p>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-neutral-500 mt-1">
             Awaiting EVENTO Operations QA sign-off
           </p>
         </div>
       </div>
 
       {/* Transactions Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-6 border-b border-slate-200 flex justify-between items-center">
+      <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-neutral-200 flex justify-between items-center">
           <div>
-            <h2 className="text-base font-bold text-slate-900">
+            <h2 className="text-base font-bold text-neutral-900">
               Assigned Job Payout Ledger
             </h2>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-neutral-500">
               Itemized EVENTO disbursement schedule
             </p>
           </div>
-          <span className="text-xs font-semibold text-slate-500">
+          <span className="text-xs font-semibold text-neutral-500">
             {payoutsList.length} Dispatched Records
           </span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm min-w-[700px]">
-            <thead className="bg-slate-50 text-slate-500 text-xs font-semibold uppercase tracking-wider border-b border-slate-200">
+            <thead className="bg-neutral-50 text-neutral-500 text-xs font-semibold uppercase tracking-wider border-b border-neutral-200">
               <tr>
                 <th className="p-4 pl-6">Booking Ref</th>
                 <th className="p-4">Assigned Service Job</th>
@@ -320,34 +320,34 @@ export default function EarningsPage() {
                 <th className="p-4 pr-6 text-right">Escrow Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+            <tbody className="divide-y divide-neutral-100 font-medium text-neutral-700">
               {isLoading ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-8 text-slate-400">
+                  <td colSpan={6} className="text-center py-8 text-neutral-400">
                     Loading transactions...
                   </td>
                 </tr>
               ) : payoutsList.length > 0 ? (
                 payoutsList.map((b, idx) => (
-                  <tr key={b.id ? `${b.id}-${idx}` : idx} className="hover:bg-slate-50 transition-colors">
-                    <td className="p-4 pl-6 font-mono font-bold text-slate-900">
+                  <tr key={b.id ? `${b.id}-${idx}` : idx} className="hover:bg-neutral-50 transition-colors">
+                    <td className="p-4 pl-6 font-mono font-bold text-neutral-900">
                       {b.bookingNumber || `#BKG-${b.id}`}
                     </td>
-                    <td className="p-4 font-bold text-slate-900">
+                    <td className="p-4 font-bold text-neutral-900">
                       {b.eventName || "Untitled Event"}
                     </td>
                     <td className="p-4">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-700">
-                        <Briefcase className="w-3.5 h-3.5 text-slate-400" />{" "}
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-xs font-semibold bg-neutral-100 text-neutral-700">
+                        <Briefcase className="w-3.5 h-3.5 text-neutral-400" />{" "}
                         {b.serviceCategory || "General"}
                       </span>
                     </td>
-                    <td className="p-4 text-slate-500 text-xs">
+                    <td className="p-4 text-neutral-500 text-xs">
                       {new Date(
                         b.eventDate || b.createdAt || "2026-11-15"
                       ).toLocaleDateString()}
                     </td>
-                    <td className="p-4 font-extrabold text-slate-900">
+                    <td className="p-4 font-extrabold text-neutral-900">
                       ৳
                       {Number(
                         b.payoutAmount || b.grandTotal || 0
@@ -370,7 +370,7 @@ export default function EarningsPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="text-center py-8 text-slate-500">
+                  <td colSpan={6} className="text-center py-8 text-neutral-500">
                     No transaction records found.
                   </td>
                 </tr>
@@ -382,22 +382,22 @@ export default function EarningsPage() {
 
       {/* Escrow Payout Request Modal */}
       {showPayoutModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden border border-slate-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-xl overflow-hidden border border-neutral-200">
             {/* Modal Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100">
               <div>
-                <h3 className="text-base font-bold text-slate-900">
+                <h3 className="text-base font-bold text-neutral-900">
                   Request Escrow Payout
                 </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-neutral-500 mt-0.5">
                   EVENTO Partner Disbursements
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setShowPayoutModal(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                className="p-1 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-100 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -405,23 +405,23 @@ export default function EarningsPage() {
 
             {/* Modal Form */}
             <form onSubmit={handleConfirmWithdrawal} className="p-6 space-y-4">
-              <div className="p-4 bg-slate-900 rounded-xl border border-slate-800 space-y-1 text-white">
-                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-300">
+              <div className="p-4 bg-black rounded-xl border border-neutral-800 space-y-1 text-white">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-neutral-300">
                   Available Payout Balance
                 </span>
-                <p className="text-2xl font-black text-white">
+                <p className="text-2xl font-black text-amber-400">
                   ৳{totalEarnings.toLocaleString()}
                 </p>
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">
+                <label className="text-xs font-semibold text-neutral-700">
                   Disbursement Method
                 </label>
                 <select
                   value={payoutMethod}
                   onChange={(e) => setPayoutMethod(e.target.value)}
-                  className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900"
+                  className="w-full px-3.5 py-2 bg-white border border-neutral-300 rounded-lg text-sm font-medium text-neutral-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
                 >
                   <option value="bKash">bKash Merchant / Personal</option>
                   <option value="Nagad">Nagad Wallet</option>
@@ -433,7 +433,7 @@ export default function EarningsPage() {
               {payoutMethod === "Bank Wire" ? (
                 <div className="space-y-3">
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-slate-700">
+                    <label className="text-xs font-semibold text-neutral-700">
                       Bank Name
                     </label>
                     <input
@@ -442,11 +442,11 @@ export default function EarningsPage() {
                       value={bankName}
                       onChange={(e) => setBankName(e.target.value)}
                       placeholder="e.g. BRAC Bank Limited"
-                      className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-lg text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900"
+                      className="w-full px-3.5 py-2 bg-white border border-neutral-300 rounded-lg text-sm font-medium text-neutral-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold text-slate-700">
+                    <label className="text-xs font-semibold text-neutral-700">
                       Account Number / IBAN
                     </label>
                     <input
@@ -455,13 +455,13 @@ export default function EarningsPage() {
                       value={accountNumber}
                       onChange={(e) => setAccountNumber(e.target.value)}
                       placeholder="150120xxxxxxxxx"
-                      className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-lg text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900"
+                      className="w-full px-3.5 py-2 bg-white border border-neutral-300 rounded-lg text-sm font-semibold text-neutral-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
                     />
                   </div>
                 </div>
               ) : (
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-slate-700">
+                  <label className="text-xs font-semibold text-neutral-700">
                     Mobile Number ({payoutMethod})
                   </label>
                   <input
@@ -470,24 +470,24 @@ export default function EarningsPage() {
                     value={accountNumber}
                     onChange={(e) => setAccountNumber(e.target.value)}
                     placeholder="01712345678"
-                    className="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-lg text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900"
+                    className="w-full px-3.5 py-2 bg-white border border-neutral-300 rounded-lg text-sm font-semibold text-neutral-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
                   />
                 </div>
               )}
 
               {/* Actions */}
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+              <div className="pt-3 border-t border-neutral-100 flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setShowPayoutModal(false)}
-                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+                  className="px-4 py-2 text-xs font-semibold text-neutral-600 hover:text-neutral-900 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmittingPayout}
-                  className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors flex items-center gap-1.5"
+                  className="px-5 py-2 bg-black hover:bg-neutral-800 text-amber-400 text-xs font-semibold rounded-lg shadow-sm transition-colors flex items-center gap-1.5"
                 >
                   {isSubmittingPayout ? "Processing..." : "Confirm Withdrawal"}
                 </button>

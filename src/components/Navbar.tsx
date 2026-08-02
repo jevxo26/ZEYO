@@ -103,7 +103,7 @@ export default function Navbar() {
     const r = (activeUser.role || "").toLowerCase();
     if (r === "admin") {
       return (
-        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-100 text-indigo-700 uppercase tracking-wider">
+        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-neutral-900 text-amber-400 uppercase tracking-wider">
           <ShieldCheck className="w-2.5 h-2.5" /> Admin Hub
         </span>
       );
@@ -116,29 +116,41 @@ export default function Navbar() {
       );
     }
     return (
-      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-purple-100 text-purple-700 uppercase tracking-wider">
+      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-800 uppercase tracking-wider">
         <UserIcon className="w-2.5 h-2.5" /> Customer
       </span>
     );
   };
 
   return (
-    <header className="relative z-50 bg-white border-b border-slate-100 shadow-sm">
-      <div className="h-16 flex items-center justify-between px-6 md:px-10 max-w-7xl mx-auto">
-        {/* Brand */}
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 to-blue-500 shadow-sm shrink-0">
-            <Zap size={16} className="text-white" />
-          </div>
-          <span className="flex items-baseline gap-2">
-            <span className="text-[16px] font-extrabold tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-500">
-              EVENTO
+    <header className="relative z-50 bg-white border-b border-neutral-200 shadow-sm">
+      <div className="h-16 flex items-center justify-between px-4 md:px-8 max-w-7xl mx-auto">
+        {/* Left group: mobile hamburger + brand */}
+        <div className="flex items-center gap-3">
+          {/* Mobile Hamburger - left side, matching compact mobile header */}
+          <button
+            onClick={() => setIsOpen((prev) => !prev)}
+            aria-label={isOpen ? "Close menu" : "Open menu"}
+            className="md:hidden relative w-8 h-8 flex items-center justify-center rounded-lg text-amber-600 hover:bg-amber-50 transition-colors"
+          >
+            {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+
+          {/* Brand */}
+          <Link href="/" className="flex items-center gap-2 md:gap-2.5">
+            <div className="hidden md:flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 shadow-sm shrink-0">
+              <Zap size={16} className="text-white" />
+            </div>
+            <span className="flex items-baseline gap-2">
+              <span className="text-[17px] md:text-[16px] font-extrabold tracking-widest text-amber-600">
+                ZEYO
+              </span>
+              <span className="hidden lg:inline text-[11px] font-semibold text-neutral-400 tracking-wide">
+                — Managed Event OS
+              </span>
             </span>
-            <span className="hidden lg:inline text-[11px] font-semibold text-slate-400 tracking-wide">
-              — Managed Event OS
-            </span>
-          </span>
-        </Link>
+          </Link>
+        </div>
 
         {/* Desktop Nav Links */}
         <nav className="hidden md:flex items-center gap-7">
@@ -150,13 +162,13 @@ export default function Navbar() {
                 href={link.href}
                 className={`relative text-[13px] font-bold py-2 transition-colors duration-200 group ${
                   active
-                    ? "text-purple-700"
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "text-amber-700"
+                    : "text-neutral-600 hover:text-neutral-900"
                 }`}
               >
                 {link.label}
                 <span
-                  className={`absolute left-1/2 -bottom-0.5 h-[2px] bg-gradient-to-r from-purple-600 to-blue-500 rounded-full transition-all duration-300 ease-out -translate-x-1/2 ${
+                  className={`absolute left-1/2 -bottom-0.5 h-[2px] bg-gradient-to-r from-amber-500 to-orange-600 rounded-full transition-all duration-300 ease-out -translate-x-1/2 ${
                     active ? "w-5" : "w-0 group-hover:w-5"
                   }`}
                 />
@@ -173,19 +185,19 @@ export default function Navbar() {
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOpen((prev) => !prev)}
-                className="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-full border border-slate-200 bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer"
+                className="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-full border border-neutral-200 bg-neutral-50 hover:bg-neutral-100 transition-colors cursor-pointer"
               >
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
                   {(activeUser.name || "U")[0].toUpperCase()}
                 </div>
                 <div className="text-left max-w-[130px] truncate">
-                  <p className="text-xs font-bold text-slate-900 truncate">
+                  <p className="text-xs font-bold text-neutral-900 truncate">
                     {activeUser.name}
                   </p>
                   {getRoleBadge()}
                 </div>
                 <ChevronDown
-                  className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${
+                  className={`w-4 h-4 text-neutral-400 transition-transform duration-200 ${
                     dropdownOpen ? "rotate-180" : ""
                   }`}
                 />
@@ -193,12 +205,12 @@ export default function Navbar() {
 
               {/* Dropdown Menu */}
               {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 z-50">
-                  <div className="px-4 py-3 border-b border-slate-100">
-                    <p className="text-xs font-bold text-slate-900 truncate">
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-neutral-200 py-2 z-50">
+                  <div className="px-4 py-3 border-b border-neutral-100">
+                    <p className="text-xs font-bold text-neutral-900 truncate">
                       {activeUser.name}
                     </p>
-                    <p className="text-[11px] text-slate-400 truncate">
+                    <p className="text-[11px] text-neutral-400 truncate">
                       {activeUser.email}
                     </p>
                   </div>
@@ -206,38 +218,38 @@ export default function Navbar() {
                   <div className="py-1">
                     <Link
                       href={getDashboardHref()}
-                      className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
+                      className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-neutral-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
                     >
-                      <LayoutDashboard className="w-4 h-4 text-purple-600" />
+                      <LayoutDashboard className="w-4 h-4 text-amber-600" />
                       Go to Dashboard
                     </Link>
 
                     <Link
                       href="/calculator"
-                      className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
+                      className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-neutral-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
                     >
-                      <Calculator className="w-4 h-4 text-purple-600" />
+                      <Calculator className="w-4 h-4 text-amber-600" />
                       Smart Calculator
                     </Link>
 
                     <Link
                       href="/packages"
-                      className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
+                      className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-neutral-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
                     >
-                      <Package className="w-4 h-4 text-purple-600" />
+                      <Package className="w-4 h-4 text-amber-600" />
                       Browse Packages
                     </Link>
 
                     <Link
                       href="/dashboard/settings"
-                      className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
+                      className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-neutral-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
                     >
-                      <Settings className="w-4 h-4 text-purple-600" />
+                      <Settings className="w-4 h-4 text-amber-600" />
                       System Settings
                     </Link>
                   </div>
 
-                  <div className="pt-1 mt-1 border-t border-slate-100">
+                  <div className="pt-1 mt-1 border-t border-neutral-100">
                     <button
                       onClick={handleLogout}
                       className="w-full flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors text-left"
@@ -253,13 +265,13 @@ export default function Navbar() {
             <>
               <Link
                 href="/login"
-                className="text-xs font-bold text-slate-600 hover:text-slate-900 transition-colors duration-200 px-3 py-2"
+                className="text-xs font-bold text-neutral-600 hover:text-neutral-900 transition-colors duration-200 px-3 py-2"
               >
                 Login
               </Link>
               <Link
                 href="/register"
-                className="text-xs font-bold text-white bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 px-5 py-2 rounded-full transition-all duration-200 shadow-sm hover:shadow-md"
+                className="text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 px-5 py-2 rounded-full transition-all duration-200 shadow-sm hover:shadow-md"
               >
                 Sign Up
               </Link>
@@ -267,19 +279,32 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Mobile Hamburger */}
-        <button
-          onClick={() => setIsOpen((prev) => !prev)}
-          aria-label={isOpen ? "Close menu" : "Open menu"}
-          className="md:hidden relative w-9 h-9 flex items-center justify-center rounded-full text-slate-700 hover:bg-slate-50 transition-colors"
-        >
-          {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
+        {/* Mobile right-side action: Sign Up pill (guest) or avatar (logged in) */}
+        <div className="md:hidden flex items-center">
+          {!isMounted ? (
+            <div className="w-16 h-8"></div>
+          ) : activeUser ? (
+            <button
+              onClick={() => setIsOpen((prev) => !prev)}
+              aria-label="Open account menu"
+              className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm"
+            >
+              {(activeUser.name || "U")[0].toUpperCase()}
+            </button>
+          ) : (
+            <Link
+              href="/register"
+              className="text-xs font-bold text-white bg-gradient-to-r from-amber-500 to-orange-600 px-5 py-2 rounded-full shadow-sm"
+            >
+              Sign Up
+            </Link>
+          )}
+        </div>
       </div>
 
       {/* Mobile Menu Panel */}
       {isOpen && (
-        <div className="md:hidden bg-white border-b border-slate-200 shadow-lg px-6 py-4 space-y-4">
+        <div className="md:hidden bg-white border-b border-neutral-200 shadow-lg px-6 py-4 space-y-4">
           <nav className="flex flex-col space-y-3">
             {NAV_LINKS.map((link) => {
               const active = pathname === link.href;
@@ -288,7 +313,7 @@ export default function Navbar() {
                   key={link.href}
                   href={link.href}
                   className={`text-sm font-bold py-1 ${
-                    active ? "text-purple-700" : "text-slate-600"
+                    active ? "text-amber-700" : "text-neutral-600"
                   }`}
                 >
                   {link.label}
@@ -297,25 +322,25 @@ export default function Navbar() {
             })}
           </nav>
 
-          <div className="pt-3 border-t border-slate-100">
+          <div className="pt-3 border-t border-neutral-100">
             {!isMounted ? null : activeUser ? (
               <div className="space-y-3">
-                <div className="flex items-center gap-3 p-2 bg-slate-50 rounded-xl">
-                  <div className="w-9 h-9 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-sm">
+                <div className="flex items-center gap-3 p-2 bg-neutral-50 rounded-xl">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-500 to-orange-600 text-white flex items-center justify-center font-bold text-sm">
                     {(activeUser.name || "U")[0].toUpperCase()}
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-slate-900">
+                    <p className="text-sm font-bold text-neutral-900">
                       {activeUser.name}
                     </p>
-                    <p className="text-xs text-slate-500">{activeUser.email}</p>
+                    <p className="text-xs text-neutral-500">{activeUser.email}</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2">
                   <Link
                     href={getDashboardHref()}
-                    className="px-3 py-2 bg-purple-50 text-purple-700 text-xs font-bold rounded-xl text-center"
+                    className="px-3 py-2 bg-amber-50 text-amber-700 text-xs font-bold rounded-xl text-center"
                   >
                     Go to Dashboard
                   </Link>
@@ -331,13 +356,13 @@ export default function Navbar() {
               <div className="flex flex-col gap-2">
                 <Link
                   href="/login"
-                  className="w-full text-center py-2.5 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-50"
+                  className="w-full text-center py-2.5 border border-neutral-200 text-neutral-700 text-xs font-bold rounded-xl hover:bg-neutral-50"
                 >
                   Login
                 </Link>
                 <Link
                   href="/register"
-                  className="w-full text-center py-2.5 bg-gradient-to-r from-purple-600 to-blue-500 text-white text-xs font-bold rounded-xl shadow-sm"
+                  className="w-full text-center py-2.5 bg-gradient-to-r from-amber-500 to-orange-600 text-white text-xs font-bold rounded-xl shadow-sm"
                 >
                   Sign Up
                 </Link>
