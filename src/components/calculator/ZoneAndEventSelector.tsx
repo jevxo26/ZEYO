@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { BANGLADESH_ZONES, EVENT_TYPES } from "@/lib/calculatorData";
+import { EVENT_TYPES } from "@/lib/calculatorData";
+import { useDynamicZones } from "@/hooks/useDynamicZones";
 import {
   MapPin,
   Calendar,
@@ -48,6 +49,8 @@ export default function ZoneAndEventSelector({
   guestCount,
   onChangeGuestCount,
 }: ZoneAndEventSelectorProps) {
+  const dynamicZones = useDynamicZones();
+
   return (
     <div className="space-y-8 animate-fadeIn">
       {/* 1. Zone Selection */}
@@ -67,7 +70,7 @@ export default function ZoneAndEventSelector({
         </div>
 
         <div className="flex flex-wrap gap-3 sm:gap-4 mt-4">
-          {BANGLADESH_ZONES.map((zone) => {
+          {dynamicZones.map((zone) => {
             const isSelected = selectedZoneId === zone.id;
             return (
               <button

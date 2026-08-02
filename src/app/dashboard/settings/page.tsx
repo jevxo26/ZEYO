@@ -96,6 +96,23 @@ export default function SettingsPage() {
     );
   };
 
+  const handleToggleZoneActive = (zoneName: string) => {
+    const updated = zonesList.map((z) => {
+      if (z.name === zoneName) {
+        return { ...z, active: !z.active };
+      }
+      return z;
+    });
+    setZonesList(updated);
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("customZones", JSON.stringify(updated));
+      } catch (e) {}
+    }
+    window.dispatchEvent(new CustomEvent("dashboard-data-update"));
+    toast.success(`✓ Zone '${zoneName}' status toggled!`);
+  };
+
   const handleSave = () => {
     if (typeof window !== "undefined") {
       try {
@@ -368,15 +385,17 @@ export default function SettingsPage() {
                           </div>
                         </td>
                         <td className="p-4">
-                          <span
+                          <button
+                            onClick={() => handleToggleZoneActive(z.name)}
+                            title="Click to toggle status"
                             className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider transition-colors ${
                               z.active
-                                ? "bg-[#E7F7EE] text-[#1F9D5C] group-hover/row:bg-[#DAF3E5]"
-                                : "bg-[#F3F1FA] text-[#9691B8]"
+                                ? "bg-[#E7F7EE] text-[#1F9D5C] hover:bg-[#DAF3E5]"
+                                : "bg-[#F3F1FA] text-[#9691B8] hover:bg-[#E5E2F2]"
                             }`}
                           >
                             {z.active ? "Active" : "Inactive"}
-                          </span>
+                          </button>
                         </td>
                         <td className="p-4 pr-6 text-right">
                           <button

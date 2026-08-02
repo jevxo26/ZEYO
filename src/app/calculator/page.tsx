@@ -10,11 +10,11 @@ import ServiceConfigurator from "@/components/calculator/ServiceConfigurator";
 import LiveBudgetSidebar from "@/components/calculator/LiveBudgetSidebar";
 import BookingSummaryModal from "@/components/calculator/BookingSummaryModal";
 import {
-  BANGLADESH_ZONES,
   EVENT_TYPES,
   CALCULATOR_SERVICES,
   calculateServicePrice,
 } from "@/lib/calculatorData";
+import { useDynamicZones } from "@/hooks/useDynamicZones";
 import { ConfiguredServiceState } from "@/types/calculator";
 import {
   MapPin,
@@ -62,9 +62,11 @@ function SmartCalculatorContent() {
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
   const [bookingSuccessId, setBookingSuccessId] = useState<string | null>(null);
 
+  const dynamicZones = useDynamicZones();
+  
   const activeZone =
-    BANGLADESH_ZONES.find((z) => z.id === selectedZoneId) ||
-    BANGLADESH_ZONES[0];
+    dynamicZones.find((z) => z.id === selectedZoneId) ||
+    dynamicZones[0];
   const activeEvent =
     EVENT_TYPES.find((e) => e.id === selectedEventTypeId) ||
     EVENT_TYPES[0];
