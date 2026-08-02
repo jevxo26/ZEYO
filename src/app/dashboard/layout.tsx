@@ -142,8 +142,11 @@ export default function DashboardLayout({
   const [searchQuery, setSearchQuery] = useState('');
   const [searchOpen, setSearchOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+  const mobileSearchRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const mobileSearchInputRef = useRef<HTMLInputElement>(null);
 
   const searchResults = searchQuery.trim().length > 0
     ? SEARCH_DATA.filter(
@@ -208,6 +211,11 @@ export default function DashboardLayout({
         setShowMail(false);
       }
       if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setSearchOpen(false);
+        setHighlightedIndex(-1);
+      }
+      if (mobileSearchRef.current && !mobileSearchRef.current.contains(e.target as Node)) {
+        setShowMobileSearch(false);
         setSearchOpen(false);
         setHighlightedIndex(-1);
       }
@@ -384,15 +392,133 @@ export default function DashboardLayout({
           <header className="sticky top-0 z-30 px-6 py-3 flex justify-between items-center gap-4 shrink-0 border-b border-neutral-200 bg-white/90 backdrop-blur-md">
 
             {/* Mobile sidebar toggle - distinct from Navbar's hamburger; dispatches an event Sidebar listens for */}
-            <button
-              onClick={() => window.dispatchEvent(new CustomEvent("toggle-mobile-sidebar"))}
-              className="rounded-xl bg-neutral-100 p-2 text-neutral-600 transition hover:bg-black hover:text-amber-400 lg:hidden"
-              aria-label="Toggle sidebar"
-            >
-              <PanelLeft size={18} />
-            </button>
+            {!showMobileSearch && (
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent("toggle-mobile-sidebar"))}
+                className="rounded-xl bg-neutral-100 p-2 text-neutral-600 transition hover:bg-black hover:text-amber-400 lg:hidden"
+                aria-label="Toggle sidebar"
+              >
+                <PanelLeft size={18} />
+              </button>
+            )}
 
-            {/* Search */}
+            {/* Mobile search toggle icon - opens full-width overlay bar below */}
+            {!showMobileSearch && (
+              <button
+                onClick={() => {
+                  setShowMobileSearch(true);
+                  setTimeout(() => mobileSearchInputRef.current?.focus(), 50);
+                }}
+                className="rounded-xl bg-neutral-100 p-2 text-neutral-600 transition hover:bg-black hover:text-amber-400 sm:hidden"
+                aria-label="Open search"
+              >
+                <Search size={18} />
+              </button>
+            )}
+
+            {/* Mobile full-width search overlay */}
+            {showMobileSearch && (
+              <div className="relative flex-1 sm:hidden" ref={mobileSearchRef}>
+                <div className="flex items-center gap-2 rounded-xl border border-amber-500 bg-white px-3.5 py-2 ring-2 ring-amber-100">
+                  <Search size={15} className="text-neutral-400 shrink-0" />
+                  <input
+                    ref={mobileSearchInputRef}
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setSearchOpen(e.target.value.trim().length > 0);
+                      setHighlightedIndex(-1);
+                    }}
+                    onKeyDown={handleSearchKeyDown}
+                    placeholder="Search bookings, events, tasks..."
+                    className="bg-transparent text-xs text-neutral-800 placeholder-neutral-400 outline-none w-full font-semibold"
+                  />
+                  <button
+                    onClick={() => {
+                      setShowMobileSearch(false);
+                      setSearchQuery('');
+                      setSearchOpen(false);
+                      setHighlightedIndex(-1);
+                    }}
+                    style={{ color: '#a3a3a3', fontSize: 14, lineHeight: 1, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                    aria-label="Close search"
+                  >✕</button>
+                </div>
+
+                {/* Mobile dropdown */}
+                {searchOpen && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      marginTop: 8,
+                      width: '100%',
+                      background: '#fff',
+                      borderRadius: 16,
+                      boxShadow: '0 20px 60px rgba(0,0,0,0.16)',
+                      border: '1px solid #e5e5e5',
+                      zIndex: 50,
+                      maxHeight: 320,
+                      overflowY: 'auto',
+                    }}
+                  >
+                    {searchResults.length === 0 ? (
+                      <div style={{ padding: '24px 20px', textAlign: 'center', color: '#a3a3a3', fontSize: 13 }}>
+                        <span style={{ fontSize: 22 }}>🔍</span>
+                        <p style={{ marginTop: 6, fontWeight: 600 }}>No results found</p>
+                        <p style={{ fontSize: 11, marginTop: 2 }}>Try a different keyword</p>
+                      </div>
+                    ) : (
+                      <>
+                        <div style={{ padding: '8px 14px 4px', fontSize: 10, fontWeight: 700, color: '#a3a3a3', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                          {searchResults.length} result{searchResults.length !== 1 ? 's' : ''}
+                        </div>
+                        {searchResults.map((item, idx) => (
+                          <button
+                            key={item.href}
+                            onMouseEnter={() => setHighlightedIndex(idx)}
+                            onClick={() => {
+                              handleSearchNavigate(item.href);
+                              setShowMobileSearch(false);
+                            }}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 10,
+                              width: '100%',
+                              textAlign: 'left',
+                              padding: '9px 14px',
+                              background: highlightedIndex === idx ? '#fffbeb' : 'transparent',
+                              border: 'none',
+                              cursor: 'pointer',
+                              borderBottom: idx < searchResults.length - 1 ? '1px solid #f5f5f5' : 'none',
+                              transition: 'background 0.12s',
+                            }}
+                          >
+                            <span style={{ fontSize: 18, lineHeight: 1, flexShrink: 0 }}>{item.icon}</span>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <p style={{ fontSize: 12, fontWeight: 700, color: '#171717', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {highlightMatch(item.label, searchQuery)}
+                              </p>
+                              <p style={{ fontSize: 10, color: '#a3a3a3', margin: '1px 0 0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {item.sub}
+                              </p>
+                            </div>
+                            <span style={typeBadgeStyle[item.type] ?? typeBadgeStyle.page}>
+                              {item.type}
+                            </span>
+                          </button>
+                        ))}
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Search (desktop / tablet) */}
             <div className="relative hidden sm:block" ref={searchRef} style={{ width: 340 }}>
 
               <div
