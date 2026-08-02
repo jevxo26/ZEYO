@@ -142,6 +142,8 @@ export default function TaskDetailsPage() {
   const [newNote, setNewNote] = useState("");
   const [progressStep, setProgressStep] = useState(1); // 0: Accepted, 1: At Venue, 2: Started, 3: Completed
   const [isUploading, setIsUploading] = useState(false);
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [completionNotes, setCompletionNotes] = useState("");
 
   interface DeliverableItem {
     id: string;
@@ -503,6 +505,11 @@ export default function TaskDetailsPage() {
     const nextStep = i + 1;
     if (nextStep >= steps.length) return;
 
+    if (steps[nextStep].label === "Completed") {
+      setShowCompletionModal(true);
+      return; // Do not advance directly, wait for completion report
+    }
+
     setProgressStep(nextStep);
 
     if (typeof window !== "undefined" && currentTask?.id) {
@@ -524,6 +531,34 @@ export default function TaskDetailsPage() {
 
     const stepLabel = steps[nextStep].label;
     handleStatusChange(stepLabel);
+  };
+
+  const handleSubmitCompletion = (e: React.FormEvent) => {
+    e.preventDefault();
+    const nextStep = steps.findIndex(s => s.label === "Completed");
+    
+    setProgressStep(nextStep);
+    handleStatusChange("Completed");
+
+    if (typeof window !== "undefined" && currentTask?.id) {
+      try {
+        localStorage.setItem(`custom_task_step_${currentTask.id}`, String(nextStep));
+        // Save completion report data
+        localStorage.setItem(`custom_task_report_${currentTask.id}`, JSON.stringify({
+          notes: completionNotes,
+          submittedAt: new Date().toISOString()
+        }));
+      } catch (e) {}
+    }
+    
+    createNotification(
+      "Completion Report Submitted",
+      `Vendor has submitted the completion report for ${currentTask.bookingRef}. QA ready.`,
+      "✅"
+    );
+
+    setShowCompletionModal(false);
+    toast.success("Completion report submitted and task marked as completed!");
   };
 
   const filteredTasks = tasksList.filter((t) => {
@@ -944,6 +979,62 @@ export default function TaskDetailsPage() {
           </div>
         </div>
       </div>
+
+      {/* Completion Report Modal */}
+      {showCompletionModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-2xl w-full max-w-lg shadow-xl overflow-hidden border border-slate-200">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
+              <div>
+                <h3 className="text-base font-bold text-slate-900">Submit Completion Report</h3>
+                <p className="text-xs text-slate-500 mt-0.5">Finalize task execution for QA</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowCompletionModal(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleSubmitCompletion} className="p-6 space-y-4">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-700">Completion Summary & Final Notes</label>
+                <textarea
+                  required
+                  rows={4}
+                  value={completionNotes}
+                  onChange={(e) => setCompletionNotes(e.target.value)}
+                  placeholder="Detail what was accomplished, any deviations, or notes for the EVENTO QA team..."
+                  className="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-xs text-slate-900 outline-none focus:ring-2 focus:ring-slate-900 focus:border-slate-900 leading-relaxed"
+                />
+              </div>
+              {deliverables.length === 0 && (
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg flex gap-2 items-start text-xs text-amber-800">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <p>Warning: You haven't uploaded any deliverables yet. Ensure that no files are required for this service before submitting.</p>
+                </div>
+              )}
+              <div className="pt-4 border-t border-slate-100 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowCompletionModal(false)}
+                  className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold rounded-lg shadow-sm flex items-center gap-1.5 transition-colors"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  Submit Report & Complete Task
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
