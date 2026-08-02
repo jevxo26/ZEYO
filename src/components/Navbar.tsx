@@ -103,7 +103,7 @@ export default function Navbar() {
     const r = (activeUser.role || "").toLowerCase();
     if (r === "admin") {
       return (
-        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-indigo-100 text-indigo-700 uppercase tracking-wider">
+        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-slate-900 text-white uppercase tracking-wider">
           <ShieldCheck className="w-2.5 h-2.5" /> Admin Hub
         </span>
       );
@@ -116,7 +116,7 @@ export default function Navbar() {
       );
     }
     return (
-      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-purple-100 text-purple-700 uppercase tracking-wider">
+      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-700 uppercase tracking-wider">
         <UserIcon className="w-2.5 h-2.5" /> Customer
       </span>
     );
@@ -127,12 +127,12 @@ export default function Navbar() {
       <div className="h-16 flex items-center justify-between px-6 md:px-10 max-w-7xl mx-auto">
         {/* Brand */}
         <Link href="/" className="flex items-center gap-2.5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 to-blue-500 shadow-sm shrink-0">
-            <Zap size={16} className="text-white" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-black shadow-sm shrink-0">
+            <Zap size={16} className="text-amber-400" />
           </div>
           <span className="flex items-baseline gap-2">
-            <span className="text-[16px] font-extrabold tracking-widest bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-blue-500">
-              EVENTO
+            <span className="text-[16px] font-extrabold tracking-widest text-slate-900">
+              ZEYO
             </span>
             <span className="hidden lg:inline text-[11px] font-semibold text-slate-400 tracking-wide">
               — Managed Event OS
@@ -150,13 +150,13 @@ export default function Navbar() {
                 href={link.href}
                 className={`relative text-[13px] font-bold py-2 transition-colors duration-200 group ${
                   active
-                    ? "text-purple-700"
+                    ? "text-amber-600"
                     : "text-slate-600 hover:text-slate-900"
                 }`}
               >
                 {link.label}
                 <span
-                  className={`absolute left-1/2 -bottom-0.5 h-[2px] bg-gradient-to-r from-purple-600 to-blue-500 rounded-full transition-all duration-300 ease-out -translate-x-1/2 ${
+                  className={`absolute left-1/2 -bottom-0.5 h-[2px] bg-amber-500 rounded-full transition-all duration-300 ease-out -translate-x-1/2 ${
                     active ? "w-5" : "w-0 group-hover:w-5"
                   }`}
                 />
@@ -175,7 +175,7 @@ export default function Navbar() {
                 onClick={() => setDropdownOpen((prev) => !prev)}
                 className="flex items-center gap-2.5 pl-2 pr-3 py-1.5 rounded-full border border-slate-200 bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer"
               >
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
+                <div className="w-8 h-8 rounded-full bg-black text-amber-400 flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
                   {(activeUser.name || "U")[0].toUpperCase()}
                 </div>
                 <div className="text-left max-w-[130px] truncate">
@@ -206,34 +206,34 @@ export default function Navbar() {
                   <div className="py-1">
                     <Link
                       href={getDashboardHref()}
-                      className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
+                      className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-amber-50 hover:text-amber-700 transition-colors"
                     >
-                      <LayoutDashboard className="w-4 h-4 text-purple-600" />
+                      <LayoutDashboard className="w-4 h-4 text-amber-600" />
                       Go to Dashboard
                     </Link>
 
                     <Link
                       href="/calculator"
-                      className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
+                      className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-amber-50 hover:text-amber-700 transition-colors"
                     >
-                      <Calculator className="w-4 h-4 text-purple-600" />
+                      <Calculator className="w-4 h-4 text-amber-600" />
                       Smart Calculator
                     </Link>
 
                     <Link
                       href="/packages"
-                      className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
+                      className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-amber-50 hover:text-amber-700 transition-colors"
                     >
-                      <Package className="w-4 h-4 text-purple-600" />
+                      <Package className="w-4 h-4 text-amber-600" />
                       Browse Packages
                     </Link>
 
                     {user?.role === "admin" && (
                       <Link
                         href="/dashboard/settings"
-                        className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
+                        className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-amber-50 hover:text-amber-700 transition-colors"
                       >
-                        <Settings className="w-4 h-4 text-purple-600" />
+                        <Settings className="w-4 h-4 text-amber-600" />
                         System Settings
                       </Link>
                     )}
@@ -261,7 +261,7 @@ export default function Navbar() {
               </Link>
               <Link
                 href="/register"
-                className="text-xs font-bold text-white bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 px-5 py-2 rounded-full transition-all duration-200 shadow-sm hover:shadow-md"
+                className="text-xs font-bold text-white bg-black hover:bg-slate-800 px-5 py-2 rounded-full transition-all duration-200 shadow-sm hover:shadow-md"
               >
                 Sign Up
               </Link>
@@ -290,7 +290,7 @@ export default function Navbar() {
                   key={link.href}
                   href={link.href}
                   className={`text-sm font-bold py-1 ${
-                    active ? "text-purple-700" : "text-slate-600"
+                    active ? "text-amber-600" : "text-slate-600"
                   }`}
                 >
                   {link.label}
@@ -303,7 +303,7 @@ export default function Navbar() {
             {!isMounted ? null : activeUser ? (
               <div className="space-y-3">
                 <div className="flex items-center gap-3 p-2 bg-slate-50 rounded-xl">
-                  <div className="w-9 h-9 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-sm">
+                  <div className="w-9 h-9 rounded-full bg-black text-amber-400 flex items-center justify-center font-bold text-sm">
                     {(activeUser.name || "U")[0].toUpperCase()}
                   </div>
                   <div>
@@ -317,7 +317,7 @@ export default function Navbar() {
                 <div className="grid grid-cols-2 gap-2">
                   <Link
                     href={getDashboardHref()}
-                    className="px-3 py-2 bg-purple-50 text-purple-700 text-xs font-bold rounded-xl text-center"
+                    className="px-3 py-2 bg-amber-50 text-amber-700 text-xs font-bold rounded-xl text-center"
                   >
                     Go to Dashboard
                   </Link>
@@ -339,7 +339,7 @@ export default function Navbar() {
                 </Link>
                 <Link
                   href="/register"
-                  className="w-full text-center py-2.5 bg-gradient-to-r from-purple-600 to-blue-500 text-white text-xs font-bold rounded-xl shadow-sm"
+                  className="w-full text-center py-2.5 bg-black text-white text-xs font-bold rounded-xl shadow-sm"
                 >
                   Sign Up
                 </Link>
