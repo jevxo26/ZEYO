@@ -52,31 +52,31 @@ export default function ServiceAreasSection() {
   const [activeCode, setActiveCode] = useState<string | null>(null);
 
   return (
-    <section className="relative w-full overflow-hidden bg-[#100a2c] py-24 px-6">
+    <section className="relative w-full overflow-hidden bg-black py-24 px-6">
       {/* ambient glow field */}
       <div
         aria-hidden
         className="pointer-events-none absolute -top-40 -left-20 h-[520px] w-[520px] rounded-full opacity-30 blur-3xl"
-        style={{ background: "radial-gradient(circle, #8B5CF6 0%, transparent 70%)" }}
+        style={{ background: "radial-gradient(circle, #F59E0B 0%, transparent 70%)" }}
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute -bottom-32 right-0 h-[420px] w-[420px] rounded-full opacity-25 blur-3xl"
-        style={{ background: "radial-gradient(circle, #4F7FFF 0%, transparent 70%)" }}
+        className="pointer-events-none absolute -bottom-32 right-0 h-[420px] w-[420px] rounded-full opacity-20 blur-3xl"
+        style={{ background: "radial-gradient(circle, #FB923C 0%, transparent 70%)" }}
       />
 
       <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-16 lg:grid-cols-2 lg:items-center">
         {/* ---- Left: copy + zone cards ---- */}
         <div>
           <p
-            className="text-xs font-semibold uppercase tracking-[0.25em] text-[#22D3EE]"
+            className="text-xs font-semibold uppercase tracking-[0.25em] text-amber-400"
             style={{ fontFamily: "'JetBrains Mono', monospace" }}
           >
             Service Areas
           </p>
 
           <h2
-            className="mt-3 text-4xl font-bold leading-tight text-[#EDE9FE] sm:text-5xl"
+            className="mt-3 text-4xl font-bold leading-tight text-white sm:text-5xl"
             style={{ fontFamily: "'Space Grotesk', sans-serif" }}
           >
             Zone-Based Planning
@@ -84,8 +84,8 @@ export default function ServiceAreasSection() {
             &amp; Pricing
           </h2>
 
-          <p className="mt-5 max-w-md text-[15px] leading-relaxed text-[#A79FC7]">
-            Event logistics vary significantly by region. EvenTo offers
+          <p className="mt-5 max-w-md text-[15px] leading-relaxed text-slate-400">
+            Event logistics vary significantly by region. ZEYO offers
             zone-specific pricing to ensure you get the best local vendor
             rates and avoid hidden transportation fees.
           </p>
@@ -103,19 +103,19 @@ export default function ServiceAreasSection() {
                   onBlur={() => setActiveCode(null)}
                   className={[
                     "group rounded-xl border px-5 py-4 text-left transition-all duration-300",
-                    "focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8B5CF6] focus-visible:ring-offset-2 focus-visible:ring-offset-[#100a2c]",
+                    "focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black",
                     isActive
-                      ? "border-[#8B5CF6]/60 bg-gradient-to-br from-[#2D1B69] to-[#1E1240] shadow-[0_0_30px_-8px_rgba(139,92,246,0.6)]"
+                      ? "border-amber-500/60 bg-gradient-to-br from-amber-950/60 to-black shadow-[0_0_30px_-8px_rgba(245,158,11,0.5)]"
                       : "border-white/10 bg-white/[0.03] hover:border-white/20 hover:bg-white/[0.05]",
                   ].join(" ")}
                 >
                   <span
-                    className="text-xs font-semibold tracking-widest text-[#A78BFA]"
+                    className="text-xs font-semibold tracking-widest text-amber-400"
                     style={{ fontFamily: "'JetBrains Mono', monospace" }}
                   >
                     ZONE {zone.code}
                   </span>
-                  <h3 className="mt-1 text-lg font-semibold text-[#EDE9FE]">
+                  <h3 className="mt-1 text-lg font-semibold text-white">
                     {zone.region}
                   </h3>
                 </button>
@@ -126,7 +126,7 @@ export default function ServiceAreasSection() {
 
         {/* ---- Right: interactive map panel ---- */}
         <div className="relative pb-10 pl-4">
-          <div className="overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-[#1b1450] to-[#100a2c] shadow-[0_30px_80px_-20px_rgba(79,127,255,0.35)]">
+          <div className="overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-slate-900 to-black shadow-[0_30px_80px_-20px_rgba(245,158,11,0.25)]">
             {/* top nav bar */}
             <div className="flex items-center justify-end gap-4 border-b border-white/5 bg-white/[0.04] px-5 py-3">
               {["home", "calendar", "chart", "user", "search"].map((k) => (
@@ -142,16 +142,16 @@ export default function ServiceAreasSection() {
               viewBox="0 0 400 360"
               className="h-[360px] w-full"
               role="img"
-              aria-label="Interactive map showing EvenTo's zone coverage with glowing markers over each region"
+              aria-label="Interactive map showing ZEYO's zone coverage with glowing markers over each region"
             >
               <defs>
                 <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stopColor="#8B5CF6" />
-                  <stop offset="100%" stopColor="#22D3EE" />
+                  <stop offset="0%" stopColor="#F59E0B" />
+                  <stop offset="100%" stopColor="#FB923C" />
                 </linearGradient>
                 <radialGradient id="nodeGlow">
-                  <stop offset="0%" stopColor="#22D3EE" stopOpacity="0.9" />
-                  <stop offset="100%" stopColor="#22D3EE" stopOpacity="0" />
+                  <stop offset="0%" stopColor="#F59E0B" stopOpacity="0.9" />
+                  <stop offset="100%" stopColor="#F59E0B" stopOpacity="0" />
                 </radialGradient>
               </defs>
 
@@ -180,7 +180,7 @@ export default function ServiceAreasSection() {
                         strokeOpacity={active ? 0.9 : 0.3}
                         style={{ transition: "all 300ms ease" }}
                       />
-                      <circle r="3" fill="#22D3EE" opacity={active ? 1 : 0.5}>
+                      <circle r="3" fill="#F59E0B" opacity={active ? 1 : 0.5}>
                         <animateMotion
                           dur={active ? "1.4s" : "3s"}
                           repeatCount="indefinite"
@@ -208,8 +208,8 @@ export default function ServiceAreasSection() {
                       cx={zone.cx}
                       cy={zone.cy}
                       r={active ? 7 : isHub ? 6 : 4.5}
-                      fill={active || isHub ? "#22D3EE" : "#8B5CF6"}
-                      stroke={isHub ? "#EDE9FE" : "none"}
+                      fill={active || isHub ? "#F59E0B" : "#FB923C"}
+                      stroke={isHub ? "#FDE68A" : "none"}
                       strokeWidth={isHub ? 2 : 0}
                       style={{ transition: "all 300ms ease" }}
                     />
@@ -217,7 +217,7 @@ export default function ServiceAreasSection() {
                       x={zone.cx}
                       y={zone.cy - 16}
                       textAnchor="middle"
-                      fill={active ? "#EDE9FE" : "#A79FC7"}
+                      fill={active ? "#FDE68A" : "#94A3B8"}
                       fontSize="11"
                       fontWeight={active ? 700 : 500}
                       style={{ transition: "all 300ms ease" }}
@@ -231,18 +231,18 @@ export default function ServiceAreasSection() {
           </div>
 
           {/* floating caption card, overlapping the panel like an annotation */}
-          <div className="absolute -bottom-2 -left-2 flex max-w-[280px] items-center gap-3 rounded-xl border border-white/10 bg-[#f5f3ff] px-5 py-4 shadow-[0_20px_45px_-15px_rgba(0,0,0,0.5)]">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#8B5CF6] to-[#4F7FFF]">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+          <div className="absolute -bottom-2 -left-2 flex max-w-[280px] items-center gap-3 rounded-xl border border-white/10 bg-white px-5 py-4 shadow-[0_20px_45px_-15px_rgba(0,0,0,0.5)]">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-black">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2">
                 <path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Z" />
                 <circle cx="12" cy="9" r="2.5" />
               </svg>
             </span>
             <div>
-              <p className="text-sm font-semibold text-[#1b1450]">
+              <p className="text-sm font-semibold text-slate-900">
                 Interactive Planning Map
               </p>
-              <p className="text-xs text-[#5b5480]">
+              <p className="text-xs text-slate-500">
                 Hover a zone to see package availability.
               </p>
             </div>
