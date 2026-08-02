@@ -301,19 +301,24 @@ export default function BookingDetailsPage() {
           >
             Feedback
           </button>
-          <button
-            onClick={handleCancelBooking}
-            className="px-3.5 py-1.5 bg-white border border-slate-200 hover:bg-rose-50 text-rose-600 rounded-lg text-xs font-medium transition-colors shadow-sm"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={openEditModal}
-            className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold transition-colors shadow-sm flex items-center gap-1.5"
-          >
-            <Edit3 className="w-3.5 h-3.5" />
-            Edit Details
-          </button>
+          {(booking.bookingStatus || booking.status)?.toLowerCase() !== "cancelled" &&
+            (booking.bookingStatus || booking.status)?.toLowerCase() !== "completed" && (
+              <>
+                <button
+                  onClick={handleCancelBooking}
+                  className="px-3.5 py-1.5 bg-white border border-slate-200 hover:bg-rose-50 text-rose-600 rounded-lg text-xs font-medium transition-colors shadow-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={openEditModal}
+                  className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold transition-colors shadow-sm flex items-center gap-1.5"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  Edit Details
+                </button>
+              </>
+            )}
         </div>
       </div>
 
@@ -397,26 +402,49 @@ export default function BookingDetailsPage() {
             {/* Customer Details */}
             <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
               <h2 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Client Details</h2>
-              {booking.customer?.user ? (
-                <div className="space-y-3 text-xs">
-                  <p className="font-semibold text-slate-900 text-sm">{booking.customer.user.name}</p>
-                  <p className="text-slate-600 flex items-center gap-2">
-                    <Mail className="w-3.5 h-3.5 text-slate-400" />
-                    {booking.customer.user.email}
-                  </p>
-                  {booking.customer.user.phone && (
+              {(() => {
+                let defaultUser: any = {};
+                if (typeof window !== "undefined") {
+                  try {
+                    const saved =
+                      localStorage.getItem("user") ||
+                      localStorage.getItem("current_user");
+                    if (saved) defaultUser = JSON.parse(saved);
+                  } catch (e) {}
+                }
+                const name =
+                  booking.customer?.user?.name ||
+                  booking.customerName ||
+                  booking.clientName ||
+                  defaultUser.name ||
+                  "Event Organizer";
+                const email =
+                  booking.customer?.user?.email ||
+                  booking.customerEmail ||
+                  booking.clientEmail ||
+                  defaultUser.email ||
+                  "organizer@evento.bd";
+                const phone =
+                  booking.customer?.user?.phone ||
+                  booking.customerPhone ||
+                  booking.clientPhone ||
+                  defaultUser.phone;
+                return (
+                  <div className="space-y-3 text-xs">
+                    <p className="font-semibold text-slate-900 text-sm">{name}</p>
                     <p className="text-slate-600 flex items-center gap-2">
-                      <Phone className="w-3.5 h-3.5 text-slate-400" />
-                      {booking.customer.user.phone}
+                      <Mail className="w-3.5 h-3.5 text-slate-400" />
+                      {email}
                     </p>
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-1 text-xs">
-                  <p className="font-semibold text-slate-900 text-sm">Sarah Jenkins</p>
-                  <p className="text-slate-500">customer@evento.bd</p>
-                </div>
-              )}
+                    {phone && (
+                      <p className="text-slate-600 flex items-center gap-2">
+                        <Phone className="w-3.5 h-3.5 text-slate-400" />
+                        {phone}
+                      </p>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
 
             {/* Financial Summary */}

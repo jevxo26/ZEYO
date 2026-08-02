@@ -321,6 +321,10 @@ export default function PackageDetailsPage() {
 
   const handleSubmitBooking = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!eventDate) {
+      toast.error("Please select a tentative event date to proceed.");
+      return;
+    }
     setIsSubmitting(true);
 
     const saveBookingToLocal = (bookingId: string) => {
@@ -329,9 +333,7 @@ export default function PackageDetailsPage() {
         bookingNumber: bookingId,
         eventName: `${pkg.title} (${activeZone.name})`,
         eventType: pkg.category || "Package",
-        eventDate: eventDate
-          ? new Date(eventDate).toISOString()
-          : new Date(Date.now() + 86400000 * 14).toISOString(),
+        eventDate: new Date(eventDate).toISOString(),
         location: activeZone.name,
         budget: zoneAdjustedPrice,
         grandTotal: zoneAdjustedPrice,
@@ -367,7 +369,7 @@ export default function PackageDetailsPage() {
         packageId: pkg.id,
         packageName: pkg.title,
         zoneName: activeZone.name,
-        eventDate: eventDate || new Date(Date.now() + 86400000 * 14).toISOString(),
+        eventDate: new Date(eventDate).toISOString(),
         guestCount,
         totalAmount: zoneAdjustedPrice,
         customerName,
@@ -780,10 +782,11 @@ export default function PackageDetailsPage() {
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                      Tentative Date
+                      Tentative Date <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="date"
+                      required
                       value={eventDate}
                       onChange={(e) => setEventDate(e.target.value)}
                       className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
