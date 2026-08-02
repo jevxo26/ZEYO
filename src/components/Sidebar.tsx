@@ -74,6 +74,7 @@ export default function Sidebar() {
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
     { name: "My Tasks", href: "/dashboard/tasks", icon: ClipboardList },
     { name: "Earnings", href: "/dashboard/earnings", icon: Wallet },
+    { name: "Settings", href: "/dashboard/settings", icon: Settings },
   ];
 
   const adminRoutes = [
