@@ -16,13 +16,13 @@ interface ZonePricingItem {
 }
 
 const DEFAULT_BD_ZONES: ZonePricingItem[] = [
-  { name: "Dhaka Metro (Core Zone)", mult: "1.00x Base", active: true },
+  { name: "Dhaka North", mult: "1.00x Base", active: true },
+  { name: "Dhaka South", mult: "1.00x Base", active: true },
   { name: "Chattogram Region", mult: "1.10x Base", active: true },
   { name: "Sylhet Region", mult: "1.15x Base", active: true },
   { name: "Rajshahi District", mult: "0.95x Base", active: true },
   { name: "Khulna Metro", mult: "0.95x Base", active: true },
-  { name: "Rangpur Division", mult: "0.90x Base", active: true },
-  { name: "Barishal Coastal Area", mult: "0.90x Base", active: true },
+  { name: "Dhaka Metro (Core Zone)", mult: "1.00x Base", active: true },
 ];
 
 export default function SettingsPage() {

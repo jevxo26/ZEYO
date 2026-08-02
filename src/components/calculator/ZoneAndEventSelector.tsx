@@ -177,12 +177,13 @@ export default function ZoneAndEventSelector({
               htmlFor="eventDate"
               className="font-semibold text-slate-900 dark:text-white text-sm sm:text-base"
             >
-              Tentative Event Date
+              Tentative Event Date <span className="text-red-500">*</span>
             </label>
           </div>
           <input
             id="eventDate"
             type="date"
+            required
             value={eventDate}
             onChange={(e) => onChangeDate(e.target.value)}
             className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"

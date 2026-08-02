@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import apiClient from "@/lib/apiClient";
+import { toast } from "sonner";
 import { ConfiguredServiceState } from "@/types/calculator";
 import {
   CheckCircle2,
@@ -64,12 +65,16 @@ export default function BookingSummaryModal({
     setIsSubmitting(true);
     setError(null);
 
+    if (!eventDate) {
+      toast.error("Please select a tentative event date to proceed.");
+      return;
+    }
+
     try {
       // Build payload for backend API
       const payload = {
-        title: `${eventTypeName} - ${zoneName} (${eventDate || "TBD"})`,
-        eventDate:
-          eventDate || new Date(Date.now() + 86400000 * 14).toISOString(),
+        title: `${eventTypeName} - ${zoneName} (${eventDate})`,
+        eventDate: new Date(eventDate).toISOString(),
         guestCount: globalGuestCount,
         zoneName,
         eventTypeName,
@@ -96,9 +101,7 @@ export default function BookingSummaryModal({
         bookingNumber: generatedId,
         eventName: `${eventTypeName} Celebration (${zoneName})`,
         eventType: eventTypeName,
-        eventDate: eventDate
-          ? new Date(eventDate).toISOString()
-          : new Date(Date.now() + 86400000 * 14).toISOString(),
+        eventDate: new Date(eventDate).toISOString(),
         location: zoneName + " Metro",
         budget: totalEstimatedCost,
         grandTotal: totalEstimatedCost,
