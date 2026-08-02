@@ -228,13 +228,15 @@ export default function Navbar() {
                       Browse Packages
                     </Link>
 
-                    <Link
-                      href="/dashboard/settings"
-                      className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
-                    >
-                      <Settings className="w-4 h-4 text-purple-600" />
-                      System Settings
-                    </Link>
+                    {user?.role === "admin" && (
+                      <Link
+                        href="/dashboard/settings"
+                        className="flex items-center gap-3 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-purple-50 hover:text-purple-700 transition-colors"
+                      >
+                        <Settings className="w-4 h-4 text-purple-600" />
+                        System Settings
+                      </Link>
+                    )}
                   </div>
 
                   <div className="pt-1 mt-1 border-t border-slate-100">
