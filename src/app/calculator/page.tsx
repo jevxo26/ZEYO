@@ -15,6 +15,7 @@ import {
   calculateServicePrice,
 } from "@/lib/calculatorData";
 import { useDynamicZones } from "@/hooks/useDynamicZones";
+import { useDynamicServices } from "@/hooks/useDynamicServices";
 import { ConfiguredServiceState } from "@/types/calculator";
 import {
   MapPin,
@@ -71,13 +72,15 @@ function SmartCalculatorContent() {
     EVENT_TYPES.find((e) => e.id === selectedEventTypeId) ||
     EVENT_TYPES[0];
 
+  const dynamicServices = useDynamicServices();
+
   // Initialize configurations whenever selectedServiceKeys or guestCount changes
   useEffect(() => {
     setConfigurations((prev) => {
       const next: Record<string, ConfiguredServiceState> = {};
 
       selectedServiceKeys.forEach((key) => {
-        const srv = CALCULATOR_SERVICES.find((s) => s.key === key);
+        const srv = dynamicServices.find((s) => s.key === key);
         if (!srv) return;
 
         if (prev[key]) {
@@ -97,8 +100,8 @@ function SmartCalculatorContent() {
           };
         } else {
           // Default fresh configuration
-          const defaultTier = srv.tiers[0];
-          const defaultCoverage = srv.coverages[0];
+          const defaultTier = srv.tiers[0] || { id: "", name: "", price: 0, description: "", features: [] };
+          const defaultCoverage = srv.coverages[0] || { id: "", name: "", multiplier: 1 };
           const initialPrice = calculateServicePrice(
             srv,
             defaultTier.id,
@@ -126,7 +129,7 @@ function SmartCalculatorContent() {
 
       return next;
     });
-  }, [selectedServiceKeys, activeZone.priceMultiplier, globalGuestCount]);
+  }, [selectedServiceKeys, activeZone.priceMultiplier, globalGuestCount, dynamicServices]);
 
   const handleToggleService = (key: string) => {
     setSelectedServiceKeys((prev) =>
@@ -135,7 +138,7 @@ function SmartCalculatorContent() {
   };
 
   const handleSelectAllServices = () => {
-    setSelectedServiceKeys(CALCULATOR_SERVICES.map((s) => s.key));
+    setSelectedServiceKeys(dynamicServices.map((s) => s.key));
   };
 
   const handleClearAllServices = () => {
@@ -337,6 +340,7 @@ function SmartCalculatorContent() {
               {step === 2 && (
                 <ServiceSelector
                   selectedKeys={selectedServiceKeys}
+                  activeZoneId={selectedZoneId}
                   onToggleService={handleToggleService}
                   onSelectAll={handleSelectAllServices}
                   onClearAll={handleClearAllServices}
