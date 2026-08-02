@@ -362,7 +362,7 @@ export default function VendorsPage() {
           </div>
           <div>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-purple-500/20 text-purple-200 border border-purple-400/20">
-              Admin Operations Center — Managed Event OS
+              Admin Dashboard
             </span>
             <h1 className="text-xl sm:text-2xl font-bold mt-1">
               Managed Vendor Pool &amp; Dispatch Hub

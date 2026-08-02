@@ -178,7 +178,7 @@ export default function SettingsPage() {
           </div>
           <div>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-white text-[#6D28D9] border border-[#E5E1F5] shadow-sm">
-              Admin Operations Center — Managed Event OS
+              Admin Dashboard
             </span>
             <h1 className="font-display-evento text-xl sm:text-2xl font-bold mt-2 text-[#211E3D]">
               System Configuration &amp; <span className="gradient-text-evento">Bangladesh Zone Pricing</span>

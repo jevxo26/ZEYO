@@ -355,7 +355,7 @@ export default function DashboardLayout({
     if (r === "admin") {
       return (
         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-          <ShieldCheck className="w-3.5 h-3.5" /> Admin Operations Center
+          <ShieldCheck className="w-3.5 h-3.5" /> Admin Dashboard
         </span>
       );
     }
