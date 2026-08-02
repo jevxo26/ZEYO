@@ -16,6 +16,7 @@ import {
 } from "@/lib/calculatorData";
 import { useDynamicZones } from "@/hooks/useDynamicZones";
 import { useDynamicServices } from "@/hooks/useDynamicServices";
+import { useDynamicPackages } from "@/hooks/useDynamicPackages";
 import { ConfiguredServiceState } from "@/types/calculator";
 import {
   MapPin,
@@ -73,6 +74,54 @@ function SmartCalculatorContent() {
     EVENT_TYPES[0];
 
   const dynamicServices = useDynamicServices();
+  const dynamicPackages = useDynamicPackages();
+
+  // Package Initialization
+  const [hasInitializedPackage, setHasInitializedPackage] = useState(false);
+
+  useEffect(() => {
+    const pkgId = searchParams.get("packageId");
+    if (pkgId && dynamicPackages.length > 0 && dynamicServices.length > 0 && !hasInitializedPackage) {
+      const pkg = dynamicPackages.find(p => p.id === pkgId);
+      if (pkg) {
+        setSelectedEventTypeId(pkg.eventTypeId);
+        setSelectedServiceKeys(pkg.configuredServices.map(cs => cs.serviceKey));
+        
+        // Seed configurations
+        const initialConfigs: Record<string, ConfiguredServiceState> = {};
+        pkg.configuredServices.forEach(cs => {
+          const srv = dynamicServices.find(s => s.key === cs.serviceKey);
+          if (!srv) return;
+          
+          const tier = srv.tiers.find(t => t.id === cs.tierId) || srv.tiers[0];
+          const cov = srv.coverages.find(c => c.id === cs.coverageId) || srv.coverages[0];
+          if (!tier || !cov) return;
+          
+          const initialPrice = calculateServicePrice(
+            srv, tier.id, cov.id, srv.isPerGuest ? 300 : 1, cs.addons, activeZone.priceMultiplier
+          );
+          
+          initialConfigs[srv.key] = {
+            serviceKey: srv.key,
+            serviceName: srv.name,
+            selectedTierId: tier.id,
+            tierName: tier.name,
+            tierPrice: tier.price,
+            selectedCoverageId: cov.id,
+            coverageName: cov.name,
+            coverageMultiplier: cov.multiplier,
+            guestCount: srv.isPerGuest ? 300 : 1,
+            selectedAddons: cs.addons.map(a => srv.addons.find(ad => ad.id === a)).filter(Boolean) as any,
+            calculatedPrice: initialPrice,
+          };
+        });
+        
+        setConfigurations(initialConfigs);
+        setStep(3); // Jump straight to configuration step
+      }
+      setHasInitializedPackage(true);
+    }
+  }, [searchParams, dynamicPackages, dynamicServices, hasInitializedPackage, activeZone.priceMultiplier]);
 
   // Initialize configurations whenever selectedServiceKeys or guestCount changes
   useEffect(() => {

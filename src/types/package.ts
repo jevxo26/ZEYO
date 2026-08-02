@@ -1,12 +1,18 @@
+export interface ConfiguredPackageService {
+  serviceKey: string;
+  tierId: string;
+  coverageId: string;
+  addons: string[];
+}
+
 export interface EventPackage {
-  id: string | number;
-  title?: string;
-  subtitle?: string;
-  price?: number;
-  currency?: string;
+  id: string;
+  title: string;
+  subtitle: string;
+  eventTypeId: string;
+  basePrice: number;
+  discountPercentage: number;
   imageUrl?: string;
-  included?: string[];
   popular?: boolean;
-  tier?: string;
-  maxGuests?: number;
+  configuredServices: ConfiguredPackageService[];
 }

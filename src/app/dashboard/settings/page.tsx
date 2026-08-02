@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Save, Sliders, Lock, Plus, Edit2, ShieldAlert, MapPin, PackagePlus } from "lucide-react";
+import { Save, Sliders, Lock, Plus, Edit2, ShieldAlert, MapPin, PackagePlus, Gift } from "lucide-react";
 import InputField from "../../../components/ui/InputField";
 import Toggle from "../../../components/ui/Toggle";
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ import { useAppSelector } from "@/store/store";
 import Link from "next/link";
 import EventTypeCatalogManager from "@/components/dashboard/EventTypeCatalogManager";
 import ServiceCatalogManager from "@/components/dashboard/ServiceCatalogManager";
+import PackageCatalogManager from "@/components/dashboard/PackageCatalogManager";
 
 interface ZonePricingItem {
   name: string;
@@ -29,7 +30,7 @@ const DEFAULT_BD_ZONES: ZonePricingItem[] = [
 
 export default function SettingsPage() {
   const { user } = useAppSelector((state) => state.auth);
-  const [activeTab, setActiveTab] = useState<"catalog" | "services" | "zones">("catalog");
+  const [activeTab, setActiveTab] = useState<"catalog" | "services" | "packages" | "zones">("catalog");
   const [zonesList, setZonesList] = useState<ZonePricingItem[]>(DEFAULT_BD_ZONES);
   const [osControls, setOsControls] = useState({
     smartCalculator: true,
@@ -243,6 +244,17 @@ export default function SettingsPage() {
           Service &amp; Resource Catalog
         </button>
         <button
+          onClick={() => setActiveTab("packages")}
+          className={`shrink-0 px-5 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center gap-2 ${
+            activeTab === "packages"
+              ? "bg-[#6D28D9] text-white shadow-md shadow-[#6D28D9]/20"
+              : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+          }`}
+        >
+          <Gift className="w-4 h-4" />
+          Preset Packages
+        </button>
+        <button
           onClick={() => setActiveTab("zones")}
           className={`shrink-0 px-5 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center gap-2 ${
             activeTab === "zones"
@@ -259,6 +271,8 @@ export default function SettingsPage() {
         <EventTypeCatalogManager />
       ) : activeTab === "services" ? (
         <ServiceCatalogManager />
+      ) : activeTab === "packages" ? (
+        <PackageCatalogManager />
       ) : (
         <div className="space-y-6">
           {/* Quick Stats */}

@@ -4,7 +4,7 @@ import { Footer } from "../components/Footer";
 import  Navbar  from "../components/Navbar";
 import { Hero } from "@/components/Hero";
 import { Process } from "@/components/Process";
-import { FeaturedPackages } from "@/components/Featuredpackages";
+import FeaturedPackages from "@/components/Featuredpackages";
 import ServiceAreasSection from "@/components/Serviceareassection";
 import CustomBudgetBanner from "@/components/CustomBudgetBanner";
 

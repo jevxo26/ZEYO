@@ -1,255 +1,130 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, ImageOff, PackageSearch } from "lucide-react";
-import type { EventPackage } from "@/types/package";
-
-// TODO: point this at your real endpoint if it differs, e.g.
-// `${process.env.NEXT_PUBLIC_API_URL}/api/packages?featured=true&limit=3`
-const FEATURED_PACKAGES_ENDPOINT = "/api/packages?featured=true&limit=3";
-
-function normalizePackageItem(raw: Record<string, unknown>): EventPackage {
-  const packageCategory = raw.packageCategory as { name?: unknown } | undefined;
-  const packageSubCategory = raw.packageSubCategory as
-    | { name?: unknown }
-    | undefined;
-  const event = raw.event as { name?: unknown } | undefined;
-  const pricings = raw.pricings as
-    | Array<{
-        finalPrice?: unknown;
-        currency?: unknown;
-      }>
-    | undefined;
-  const setting = raw.setting as { isFeatured?: unknown } | undefined;
-
-  const included = Array.from(
-    new Set(
-      Array.isArray(raw.included)
-        ? raw.included.filter(
-            (item): item is string => typeof item === "string",
-          )
-        : [
-            typeof packageCategory?.name === "string"
-              ? String(packageCategory.name)
-              : undefined,
-            typeof packageSubCategory?.name === "string"
-              ? String(packageSubCategory.name)
-              : undefined,
-            typeof event?.name === "string" ? String(event.name) : undefined,
-          ].filter((item): item is string => Boolean(item)),
-    ),
-  );
-
-  const price = Number(
-    raw.activePrice ??
-      raw.startingPrice ??
-      raw.price ??
-      pricings?.[0]?.finalPrice ??
-      0,
-  );
-
-  return {
-    id: Number(raw.id ?? 0),
-    title: String(raw.name ?? raw.title ?? `Package ${raw.id ?? ""}`),
-    subtitle: typeof raw.description === "string" ? raw.description : undefined,
-    price: Number.isFinite(price) ? price : 0,
-    currency:
-      typeof pricings?.[0]?.currency === "string"
-        ? String(pricings[0].currency)
-        : typeof raw.currency === "string"
-          ? raw.currency
-          : "BDT",
-    imageUrl:
-      typeof raw.thumbnail === "string"
-        ? raw.thumbnail
-        : typeof raw.banner === "string"
-          ? raw.banner
-          : typeof raw.imageUrl === "string"
-            ? raw.imageUrl
-            : undefined,
-    included,
-    popular: Boolean(setting?.isFeatured ?? raw.popular),
-    tier: typeof raw.tier === "string" ? raw.tier : undefined,
-    maxGuests: typeof raw.maxGuests === "number" ? raw.maxGuests : undefined,
-  };
-}
-
-function CardSkeleton() {
-  return (
-    <div className="animate-pulse overflow-hidden rounded-2xl border border-slate-200 bg-white">
-      <div className="h-48 w-full bg-slate-100" />
-      <div className="space-y-3 p-6">
-        <div className="h-5 w-2/3 rounded bg-slate-100" />
-        <div className="h-4 w-1/3 rounded bg-slate-100" />
-        <div className="h-9 w-full rounded bg-slate-100" />
-      </div>
-    </div>
-  );
-}
+import { useDynamicPackages } from "@/hooks/useDynamicPackages";
+import { EventPackage } from "@/types/package";
+import { EVENT_TYPES } from "@/lib/calculatorData";
 
 function FeaturedCard({ pkg }: { pkg: EventPackage }) {
-  const title = pkg.title ?? "Package";
-  const price = pkg.price ?? 0;
-  const currency = pkg.currency ?? "BDT";
-  const included = pkg.included ?? [];
-
+  const eventType = EVENT_TYPES.find(e => e.id === pkg.eventTypeId);
+  
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
-      <div className="relative h-48 w-full bg-slate-100">
+      <div className="relative h-48 w-full bg-slate-100 overflow-hidden">
         {pkg.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={pkg.imageUrl}
-            alt={title}
+            alt={pkg.title}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-slate-300">
-            <ImageOff className="h-8 w-8" />
+            <ImageOff className="h-10 w-10 opacity-50" />
           </div>
         )}
+        
         {pkg.popular && (
-          <span className="absolute right-3 top-3 rounded-full bg-gradient-to-r from-violet-600 to-blue-600 px-3 py-1 text-xs font-semibold text-white">
+          <div className="absolute left-4 top-4 rounded-full bg-indigo-600 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-sm">
             Popular
-          </span>
+          </div>
         )}
       </div>
 
-      <div className="flex flex-1 flex-col p-6">
-        <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
-        <p className="mt-1 text-sm text-slate-500">
-          {price.toLocaleString("en-BD")}{" "}
-          <span className="font-normal text-slate-400">
-            {currency} / Starting
-          </span>
-        </p>
+      <div className="flex flex-1 flex-col p-5 sm:p-6">
+        <div className="mb-4">
+          <p className="text-xs font-bold uppercase tracking-wider text-indigo-600 mb-1">
+            {eventType?.name || "Event Package"}
+          </p>
+          <h3 className="font-display-evento text-xl font-bold text-slate-900 line-clamp-1 group-hover:text-indigo-700 transition-colors">
+            {pkg.title}
+          </h3>
+          {pkg.subtitle && (
+            <p className="mt-2 line-clamp-2 text-sm text-slate-500 leading-relaxed">
+              {pkg.subtitle}
+            </p>
+          )}
+        </div>
 
-        <ul className="mt-4 space-y-1.5">
-          {included.slice(0, 4).map((item, index) => (
-            <li
-              key={`${pkg.id}-${item}-${index}`}
-              className="flex items-start gap-2 text-sm text-slate-600"
-            >
-              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gradient-to-r from-violet-500 to-blue-500" />
-              {item}
-            </li>
+        <div className="mb-6 flex-1 space-y-2">
+          {pkg.configuredServices.slice(0, 3).map((cs, i) => (
+            <div key={i} className="flex items-center gap-2 text-sm text-slate-600">
+              <div className="h-1.5 w-1.5 rounded-full bg-indigo-400 shrink-0" />
+              <span className="line-clamp-1">{cs.serviceKey.replace("-", " ")}</span>
+            </div>
           ))}
-        </ul>
+          {pkg.configuredServices.length > 3 && (
+            <div className="flex items-center gap-2 text-sm text-slate-400 italic">
+              <div className="h-1.5 w-1.5 rounded-full bg-slate-300 shrink-0" />
+              <span>+ {pkg.configuredServices.length - 3} more services</span>
+            </div>
+          )}
+        </div>
 
-        <Link
-          href={`/packages/${pkg.id}`}
-          className="mt-6 inline-flex w-full items-center justify-center rounded-md border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-800 transition-colors hover:border-violet-300 hover:text-violet-700"
-        >
-          View Details
-        </Link>
+        <div className="mt-auto border-t border-slate-100 pt-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                Starting From
+              </p>
+              <div className="flex items-end gap-1">
+                <span className="text-lg font-bold text-slate-900">
+                  BDT {pkg.basePrice.toLocaleString()}
+                </span>
+              </div>
+            </div>
+            
+            <Link
+              href={`/calculator?packageId=${pkg.id}`}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 transition-colors hover:bg-indigo-600 hover:text-white"
+            >
+              <ArrowRight className="h-5 w-5" />
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-export function FeaturedPackages() {
-  const [packages, setPackages] = useState<EventPackage[]>([]);
-  const [status, setStatus] = useState<"loading" | "error" | "ready">(
-    "loading",
-  );
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadFeatured() {
-      setStatus("loading");
-      try {
-        const res = await fetch(FEATURED_PACKAGES_ENDPOINT, {
-          credentials: "include",
-        });
-        if (!res.ok) throw new Error(`Request failed: ${res.status}`);
-        const payload = await res.json();
-        const rawList = Array.isArray(payload) ? payload : (payload.data ?? []);
-        const list: EventPackage[] = Array.isArray(rawList)
-          ? rawList.map((item) =>
-              normalizePackageItem(item as Record<string, unknown>),
-            )
-          : [];
-
-        if (!cancelled) {
-          setPackages(list);
-          setStatus("ready");
-        }
-      } catch (err) {
-        console.error("Failed to load featured packages", err);
-        if (!cancelled) setStatus("error");
-      }
-    }
-
-    loadFeatured();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+export default function FeaturedPackages() {
+  const allPackages = useDynamicPackages();
+  const featured = allPackages.filter(p => p.popular).slice(0, 3);
+  const packagesToDisplay = featured.length > 0 ? featured : allPackages.slice(0, 3);
 
   return (
-    <section className="bg-white px-6 py-24 sm:px-10">
-      <div className="mx-auto max-w-6xl">
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-          <div>
-            <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">
-              Featured Planning Packages
-            </h2>
-            <p className="mt-2 max-w-lg text-slate-500">
-              Pre-negotiated rates with top-tier vendors to provide you with the
-              best value without compromising on luxury.
-            </p>
+    <section className="relative overflow-hidden bg-slate-50 py-24 sm:py-32">
+      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-[0.03]" />
+      
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative">
+        <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
+          <div className="inline-flex items-center justify-center p-2 mb-6 rounded-2xl bg-indigo-100/50 text-indigo-600">
+            <PackageSearch className="w-6 h-6" />
           </div>
-
-          <Link
-            href="/packages"
-            className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-violet-700 hover:text-violet-800"
-          >
-            View All Packages
-            <ArrowRight className="h-4 w-4" />
-          </Link>
+          <h2 className="font-display-evento text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl mb-6">
+            Curated Event <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Packages</span>
+          </h2>
+          <p className="text-lg text-slate-600 leading-relaxed">
+            Choose from our expertly crafted, fully customizable event bundles. Everything you need, perfectly orchestrated by the EVENTO team.
+          </p>
         </div>
 
-        <div className="mt-12">
-          {status === "loading" && (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <CardSkeleton key={i} />
-              ))}
-            </div>
-          )}
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+          {packagesToDisplay.map((pkg) => (
+            <FeaturedCard key={pkg.id} pkg={pkg} />
+          ))}
+        </div>
 
-          {status === "error" && (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 py-16 text-center">
-              <PackageSearch className="mb-3 h-9 w-9 text-slate-300" />
-              <p className="font-semibold text-slate-900">
-                Couldn&apos;t load packages
-              </p>
-              <p className="mt-1 text-sm text-slate-500">
-                Please refresh or try again shortly.
-              </p>
-            </div>
-          )}
-
-          {status === "ready" && packages.length === 0 && (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 py-16 text-center">
-              <PackageSearch className="mb-3 h-9 w-9 text-slate-300" />
-              <p className="font-semibold text-slate-900">No packages yet</p>
-              <p className="mt-1 max-w-xs text-sm text-slate-500">
-                Featured packages will show up here as soon as they&apos;re
-                added.
-              </p>
-            </div>
-          )}
-
-          {status === "ready" && packages.length > 0 && (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {packages.map((pkg) => (
-                <FeaturedCard key={pkg.id} pkg={pkg} />
-              ))}
-            </div>
-          )}
+        <div className="mt-16 text-center">
+          <Link
+            href="/packages"
+            className="inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 text-sm font-bold text-slate-900 shadow-sm ring-1 ring-slate-200 transition-all hover:bg-slate-50 hover:shadow-md hover:ring-slate-300"
+          >
+            Explore All Packages
+            <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
       </div>
     </section>
