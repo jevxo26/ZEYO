@@ -323,6 +323,44 @@ export default function PackageDetailsPage() {
     e.preventDefault();
     setIsSubmitting(true);
 
+    const saveBookingToLocal = (bookingId: string) => {
+      const newBookingObj = {
+        id: bookingId,
+        bookingNumber: bookingId,
+        eventName: `${pkg.title} (${activeZone.name})`,
+        eventType: pkg.category || "Package",
+        eventDate: eventDate
+          ? new Date(eventDate).toISOString()
+          : new Date(Date.now() + 86400000 * 14).toISOString(),
+        location: activeZone.name,
+        budget: zoneAdjustedPrice,
+        grandTotal: zoneAdjustedPrice,
+        subtotal: zoneAdjustedPrice,
+        tax: 0,
+        discount: 0,
+        notes: customerNote || `${pkg.title} - ${activeZone.name} (${guestCount} Guests)`,
+        bookingStatus: "pending",
+        status: "PENDING",
+        createdAt: new Date().toISOString(),
+        customerName,
+        customerPhone,
+        customerEmail,
+      };
+
+      if (typeof window !== "undefined") {
+        try {
+          const stored =
+            localStorage.getItem("customBookings") ||
+            localStorage.getItem("custom_bookings");
+          const list = stored ? JSON.parse(stored) : [];
+          list.unshift(newBookingObj);
+          localStorage.setItem("customBookings", JSON.stringify(list));
+          localStorage.setItem("custom_bookings", JSON.stringify(list));
+          window.dispatchEvent(new CustomEvent("dashboard-data-update"));
+        } catch (e) {}
+      }
+    };
+
     try {
       const payload = {
         title: `${pkg.title} - ${activeZone.name}`,
@@ -354,11 +392,13 @@ export default function PackageDetailsPage() {
         result?.id ||
         "EVENTO-PKG-" + Math.floor(100000 + Math.random() * 900000);
 
+      saveBookingToLocal(generatedId);
       setBookingSuccessId(generatedId);
       setIsBookingModalOpen(false);
       toast.success("🎉 Package Booking Confirmed!");
     } catch (err) {
       const fallbackId = "EVENTO-PKG-" + Math.floor(100000 + Math.random() * 900000);
+      saveBookingToLocal(fallbackId);
       setBookingSuccessId(fallbackId);
       setIsBookingModalOpen(false);
       toast.success("🎉 Package Booking Confirmed!");
