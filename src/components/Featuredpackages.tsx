@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, ImageOff, PackageSearch } from "lucide-react";
 import type { EventPackage } from "@/types/package";
@@ -89,8 +89,6 @@ function CardSkeleton() {
 }
 
 function FeaturedCard({ pkg }: { pkg: EventPackage }) {
-  const eventType = EVENT_TYPES.find(e => e.id === pkg.eventTypeId);
-  
   return (
     <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
       <div className="relative h-48 w-full bg-slate-100">
@@ -109,21 +107,21 @@ function FeaturedCard({ pkg }: { pkg: EventPackage }) {
         {pkg.popular && (
           <span className="absolute right-3 top-3 rounded-full bg-gradient-to-r from-violet-600 to-blue-600 px-3 py-1 text-xs font-semibold text-white">
             Popular
-          </div>
+          </span>
         )}
       </div>
 
       <div className="flex flex-1 flex-col p-6">
-        <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
+        <h3 className="text-lg font-semibold text-slate-900">{pkg.title}</h3>
         <p className="mt-1 text-sm text-slate-500">
-          {price.toLocaleString("en-BD")}{" "}
+          {pkg.price.toLocaleString("en-BD")}{" "}
           <span className="font-normal text-slate-400">
-            {currency} / Starting
+            {pkg.currency} / Starting
           </span>
         </p>
 
         <ul className="mt-4 space-y-1.5">
-          {included.slice(0, 4).map((item, index) => (
+          {pkg.included.slice(0, 4).map((item, index) => (
             <li
               key={`${pkg.id}-${item}-${index}`}
               className="flex items-start gap-2 text-sm text-slate-600"
@@ -146,9 +144,45 @@ function FeaturedCard({ pkg }: { pkg: EventPackage }) {
 }
 
 export default function FeaturedPackages() {
-  const allPackages = useDynamicPackages();
-  const featured = allPackages.filter(p => p.popular).slice(0, 3);
-  const packagesToDisplay = featured.length > 0 ? featured : allPackages.slice(0, 3);
+  const [packages, setPackages] = useState<EventPackage[]>([]);
+  const [status, setStatus] = useState<"loading" | "ready" | "error">(
+    "loading",
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadPackages() {
+      try {
+        const res = await fetch(FEATURED_PACKAGES_ENDPOINT);
+        if (!res.ok) throw new Error(`Request failed with ${res.status}`);
+
+        const data = await res.json();
+        const rawItems: Record<string, unknown>[] = Array.isArray(data)
+          ? data
+          : Array.isArray((data as { items?: unknown })?.items)
+            ? (data as { items: Record<string, unknown>[] }).items
+            : Array.isArray((data as { data?: unknown })?.data)
+              ? (data as { data: Record<string, unknown>[] }).data
+              : [];
+
+        const normalized = rawItems.map(normalizePackageItem);
+
+        if (!cancelled) {
+          setPackages(normalized);
+          setStatus("ready");
+        }
+      } catch (error) {
+        console.error("Failed to load featured packages", error);
+        if (!cancelled) setStatus("error");
+      }
+    }
+
+    loadPackages();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <section className="bg-white px-6 py-24 sm:px-10">
@@ -164,13 +198,6 @@ export default function FeaturedPackages() {
             </p>
           </div>
 
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {packagesToDisplay.map((pkg) => (
-            <FeaturedCard key={pkg.id} pkg={pkg} />
-          ))}
-        </div>
-
-        <div className="mt-16 text-center">
           <Link
             href="/packages"
             className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-violet-700 hover:text-violet-800"
