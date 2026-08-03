@@ -219,22 +219,29 @@ function SmartCalculatorContent() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-slate-50/70 dark:bg-slate-950 font-sans">
+    <div className="flex flex-col min-h-screen bg-[#F5F5F3] dark:bg-black font-sans">
       <Navbar />
 
       {/* Hero Header */}
-      <header className="relative bg-gradient-to-r from-indigo-900 via-purple-900 to-slate-900 text-white py-12 px-4 sm:px-6 lg:px-8 border-b border-indigo-900/50">
-        <div className="max-w-6xl mx-auto">
+      <header className="relative bg-black text-white py-12 px-4 sm:px-6 lg:px-8 border-b border-white/10 overflow-hidden">
+        <div
+          className="pointer-events-none absolute -top-24 -right-24 w-72 h-72 rounded-full blur-3xl"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(245,158,11,0.3), rgba(251,146,60,0.3))",
+          }}
+        />
+        <div className="max-w-6xl mx-auto relative">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/10 backdrop-blur-md text-indigo-200 mb-3 border border-white/10">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-white/10 backdrop-blur-md text-amber-200 mb-3 border border-amber-500/20">
                 <Sparkles className="w-3.5 h-3.5" />
                 Smart Event Calculator
               </span>
               <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">
                 Design Your Event & Calculate Budget in Real-Time
               </h1>
-              <p className="mt-2 text-sm sm:text-base text-indigo-100/80 max-w-2xl">
+              <p className="mt-2 text-sm sm:text-base text-slate-300 max-w-2xl">
                 Choose your zone and required services. Customize each service
                 and watch your budget calculate automatically with EVENTO&apos;s
                 transparent pricing.
@@ -242,7 +249,7 @@ function SmartCalculatorContent() {
             </div>
 
             <div className="flex items-center gap-2 text-xs bg-white/10 backdrop-blur-md border border-white/10 px-4 py-2.5 rounded-xl self-start md:self-center">
-              <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />
+              <ShieldCheck className="w-5 h-5 text-amber-400 shrink-0" />
               <span>Managed by EVENTO • No Vendor Hassle</span>
             </div>
           </div>
@@ -254,16 +261,21 @@ function SmartCalculatorContent() {
               onClick={() => setStep(1)}
               className={`flex items-center gap-2 sm:gap-3 p-3 rounded-xl transition-all ${
                 step === 1
-                  ? "bg-white text-indigo-950 font-bold shadow-lg"
-                  : "bg-white/5 hover:bg-white/10 text-indigo-100/80"
+                  ? "bg-white text-black font-bold shadow-lg"
+                  : "bg-white/5 hover:bg-white/10 text-slate-300"
               }`}
             >
               <div
                 className={`flex h-7 w-7 items-center justify-center rounded-lg text-xs font-bold ${
                   step === 1
-                    ? "bg-indigo-600 text-white"
+                    ? "text-black"
                     : "bg-white/20 text-white"
                 }`}
+                style={
+                  step === 1
+                    ? { background: "linear-gradient(135deg, #F59E0B, #FB923C)" }
+                    : undefined
+                }
               >
                 1
               </div>
@@ -280,16 +292,21 @@ function SmartCalculatorContent() {
               onClick={() => setStep(2)}
               className={`flex items-center gap-2 sm:gap-3 p-3 rounded-xl transition-all ${
                 step === 2
-                  ? "bg-white text-indigo-950 font-bold shadow-lg"
-                  : "bg-white/5 hover:bg-white/10 text-indigo-100/80"
+                  ? "bg-white text-black font-bold shadow-lg"
+                  : "bg-white/5 hover:bg-white/10 text-slate-300"
               }`}
             >
               <div
                 className={`flex h-7 w-7 items-center justify-center rounded-lg text-xs font-bold ${
                   step === 2
-                    ? "bg-indigo-600 text-white"
+                    ? "text-black"
                     : "bg-white/20 text-white"
                 }`}
+                style={
+                  step === 2
+                    ? { background: "linear-gradient(135deg, #F59E0B, #FB923C)" }
+                    : undefined
+                }
               >
                 2
               </div>
@@ -306,16 +323,21 @@ function SmartCalculatorContent() {
               onClick={() => setStep(3)}
               className={`flex items-center gap-2 sm:gap-3 p-3 rounded-xl transition-all ${
                 step === 3
-                  ? "bg-white text-indigo-950 font-bold shadow-lg"
-                  : "bg-white/5 hover:bg-white/10 text-indigo-100/80"
+                  ? "bg-white text-black font-bold shadow-lg"
+                  : "bg-white/5 hover:bg-white/10 text-slate-300"
               }`}
             >
               <div
                 className={`flex h-7 w-7 items-center justify-center rounded-lg text-xs font-bold ${
                   step === 3
-                    ? "bg-indigo-600 text-white"
+                    ? "text-black"
                     : "bg-white/20 text-white"
                 }`}
+                style={
+                  step === 3
+                    ? { background: "linear-gradient(135deg, #F59E0B, #FB923C)" }
+                    : undefined
+                }
               >
                 3
               </div>
@@ -334,8 +356,8 @@ function SmartCalculatorContent() {
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {bookingSuccessId ? (
           /* Success Screen */
-          <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 sm:p-12 text-center border border-slate-200 dark:border-slate-800 shadow-xl max-w-2xl mx-auto animate-fadeIn">
-            <div className="w-16 h-16 bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto mb-6">
+          <div className="bg-white dark:bg-black rounded-3xl p-8 sm:p-12 text-center border border-slate-200 dark:border-white/10 shadow-xl max-w-2xl mx-auto animate-fadeIn">
+            <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-full flex items-center justify-center mx-auto mb-6">
               <CheckCircle2 className="w-10 h-10" />
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">
@@ -343,7 +365,7 @@ function SmartCalculatorContent() {
             </h2>
             <p className="mt-3 text-slate-600 dark:text-slate-400 text-sm sm:text-base">
               Thank you for choosing EVENTO. Your reference ID is{" "}
-              <strong className="text-indigo-600 dark:text-indigo-400">
+              <strong className="text-amber-600 dark:text-amber-400">
                 {bookingSuccessId}
               </strong>
               . Our platform coordinators are reviewing your custom event plan and will get in touch shortly.
@@ -352,7 +374,8 @@ function SmartCalculatorContent() {
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 href="/dashboard/bookings"
-                className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-sm shadow-lg shadow-indigo-500/25 hover:opacity-90 transition-opacity"
+                className="w-full sm:w-auto px-6 py-3.5 rounded-xl text-black font-bold text-sm shadow-lg shadow-amber-500/25 hover:opacity-90 transition-opacity"
+                style={{ background: "linear-gradient(135deg, #F59E0B, #FB923C)" }}
               >
                 View My Bookings
               </Link>
@@ -362,7 +385,7 @@ function SmartCalculatorContent() {
                   setBookingSuccessId(null);
                   setStep(1);
                 }}
-                className="w-full sm:w-auto px-6 py-3.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                className="w-full sm:w-auto px-6 py-3.5 rounded-xl border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-semibold text-sm hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
               >
                 Plan Another Event
               </button>
@@ -407,12 +430,12 @@ function SmartCalculatorContent() {
               )}
 
               {/* Navigation Bar */}
-              <div className="flex items-center justify-between pt-6 border-t border-slate-200 dark:border-slate-800">
+              <div className="flex items-center justify-between pt-6 border-t border-slate-200 dark:border-white/10">
                 {step > 1 ? (
                   <button
                     type="button"
                     onClick={() => setStep(step - 1)}
-                    className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-semibold text-sm hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 font-semibold text-sm hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     Previous Step
@@ -428,9 +451,14 @@ function SmartCalculatorContent() {
                     onClick={() => setStep(step + 1)}
                     className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm shadow-md transition-all ${
                       canProceedNext()
-                        ? "bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white shadow-indigo-500/25"
+                        ? "text-black hover:opacity-90 shadow-amber-500/25"
                         : "bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
                     }`}
+                    style={
+                      canProceedNext()
+                        ? { background: "linear-gradient(135deg, #F59E0B, #FB923C)" }
+                        : undefined
+                    }
                   >
                     Continue to {step === 1 ? "Select Services" : "Configure"}
                     <ArrowRight className="w-4 h-4" />
@@ -440,7 +468,8 @@ function SmartCalculatorContent() {
                     type="button"
                     disabled={selectedServiceKeys.length === 0}
                     onClick={() => setIsSummaryOpen(true)}
-                    className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold text-sm shadow-lg shadow-indigo-500/25 transition-all"
+                    className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl text-black font-bold text-sm shadow-lg shadow-amber-500/25 transition-all hover:opacity-90"
+                    style={{ background: "linear-gradient(135deg, #F59E0B, #FB923C)" }}
                   >
                     Review Booking Summary
                     <ArrowRight className="w-4 h-4" />
@@ -499,7 +528,7 @@ export default function SmartCalculatorPage() {
   return (
     <Suspense fallback={
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
       </div>
     }>
       <SmartCalculatorContent />

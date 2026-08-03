@@ -44,17 +44,19 @@ type FormData = yup.InferType<typeof schema> & {
   profileImage?: FileList;
 };
 
+const ACCENT_GRADIENT = "linear-gradient(135deg, #F59E0B, #FB923C)";
+
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-2 pt-1">
       <span
         className="w-1 h-1 rounded-full shrink-0"
-        style={{ background: "linear-gradient(135deg, #4F7DF3, #9B5DE5)" }}
+        style={{ background: ACCENT_GRADIENT }}
       />
-      <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-[#7E7AA6] whitespace-nowrap">
+      <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-slate-500 whitespace-nowrap">
         {children}
       </span>
-      <span className="flex-1 h-px bg-[#7C6FE8]/15" />
+      <span className="flex-1 h-px bg-white/10" />
     </div>
   );
 }
@@ -136,11 +138,11 @@ export function SignUpForm() {
   };
 
   const inputClass =
-    "w-full bg-[#F1F0FA] border-transparent text-[#171334] placeholder-[#8A85B0] focus:ring-2 focus:ring-[#7C6FE8] focus:border-transparent rounded-lg h-9 text-sm transition-all pl-9";
-  const labelClass = "text-[#D6D2EF] font-semibold text-xs";
+    "w-full bg-[#F5F5F3] border-transparent text-[#171334] placeholder-[#9A9A94] focus:ring-2 focus:ring-amber-500 focus:border-transparent rounded-lg h-9 text-sm transition-all pl-9";
+  const labelClass = "text-slate-300 font-semibold text-xs";
   const errorClass = "text-rose-400 text-[11px] font-semibold mt-0.5";
   const iconClass =
-    "absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#8A85B0] pointer-events-none";
+    "absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#8A8A82] pointer-events-none";
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-2.5 text-left w-full">
@@ -148,17 +150,17 @@ export function SignUpForm() {
       <div className="flex flex-col items-center space-y-1.5 mb-1">
         <div
           className="relative w-[72px] h-[72px] rounded-full p-[2px]"
-          style={{ background: "linear-gradient(135deg, #4F7DF3, #9B5DE5)" }}
+          style={{ background: ACCENT_GRADIENT }}
         >
-          <div className="relative group w-full h-full rounded-full overflow-hidden bg-[#1F1B44] flex items-center justify-center cursor-pointer">
+          <div className="relative group w-full h-full rounded-full overflow-hidden bg-[#1A1A1A] flex items-center justify-center cursor-pointer">
             {imagePreview ? (
               <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
             ) : (
-              <User className="w-7 h-7 text-[#9B8CF0]" />
+              <User className="w-7 h-7 text-amber-400/70" />
             )}
             <label
               htmlFor="profileImage"
-              className="absolute inset-0 bg-[#171334]/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-[9px] text-white font-semibold transition-opacity cursor-pointer"
+              className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center text-[9px] text-white font-semibold transition-opacity cursor-pointer"
             >
               <Camera className="w-4 h-4 mb-0.5" />
               Upload
@@ -166,10 +168,10 @@ export function SignUpForm() {
           </div>
           <label
             htmlFor="profileImage"
-            className="absolute bottom-0 right-0 w-5 h-5 rounded-full flex items-center justify-center border-2 border-[#171334] cursor-pointer"
-            style={{ background: "linear-gradient(135deg, #4F7DF3, #9B5DE5)" }}
+            className="absolute bottom-0 right-0 w-5 h-5 rounded-full flex items-center justify-center border-2 border-black cursor-pointer"
+            style={{ background: ACCENT_GRADIENT }}
           >
-            <Camera className="w-2.5 h-2.5 text-white" />
+            <Camera className="w-2.5 h-2.5 text-black" />
           </label>
         </div>
 
@@ -214,7 +216,7 @@ export function SignUpForm() {
           {errors.dateOfBirth && <p className={errorClass}>{errors.dateOfBirth.message}</p>}
         </div>
 
-        {/* Gender — fixed: named peer groups so each radio only affects its own label */}
+        {/* Gender — named peer groups so each radio only affects its own label */}
         <div className="space-y-1">
           <label className={labelClass}>Gender</label>
           <div className="grid grid-cols-3 gap-1">
@@ -228,7 +230,7 @@ export function SignUpForm() {
               />
               <label
                 htmlFor="gender-male"
-                className="peer-checked/male:text-white peer-checked/male:border-transparent peer-checked/male:[background-image:linear-gradient(135deg,#4F7DF3,#9B5DE5)] cursor-pointer text-center rounded-lg h-9 flex items-center justify-center text-[10px] font-bold capitalize border border-[#7C6FE8]/15 bg-[#1F1B44] text-[#A8A3C9] transition-all block w-full"
+                className="peer-checked/male:text-black peer-checked/male:border-transparent peer-checked/male:[background-image:linear-gradient(135deg,#F59E0B,#FB923C)] cursor-pointer text-center rounded-lg h-9 flex items-center justify-center text-[10px] font-bold capitalize border border-white/10 bg-[#1A1A1A] text-slate-400 transition-all block w-full"
               >
                 Male
               </label>
@@ -244,7 +246,7 @@ export function SignUpForm() {
               />
               <label
                 htmlFor="gender-female"
-                className="peer-checked/female:text-white peer-checked/female:border-transparent peer-checked/female:[background-image:linear-gradient(135deg,#4F7DF3,#9B5DE5)] cursor-pointer text-center rounded-lg h-9 flex items-center justify-center text-[10px] font-bold capitalize border border-[#7C6FE8]/15 bg-[#1F1B44] text-[#A8A3C9] transition-all block w-full"
+                className="peer-checked/female:text-black peer-checked/female:border-transparent peer-checked/female:[background-image:linear-gradient(135deg,#F59E0B,#FB923C)] cursor-pointer text-center rounded-lg h-9 flex items-center justify-center text-[10px] font-bold capitalize border border-white/10 bg-[#1A1A1A] text-slate-400 transition-all block w-full"
               >
                 Female
               </label>
@@ -260,7 +262,7 @@ export function SignUpForm() {
               />
               <label
                 htmlFor="gender-other"
-                className="peer-checked/other:text-white peer-checked/other:border-transparent peer-checked/other:[background-image:linear-gradient(135deg,#4F7DF3,#9B5DE5)] cursor-pointer text-center rounded-lg h-9 flex items-center justify-center text-[10px] font-bold capitalize border border-[#7C6FE8]/15 bg-[#1F1B44] text-[#A8A3C9] transition-all block w-full"
+                className="peer-checked/other:text-black peer-checked/other:border-transparent peer-checked/other:[background-image:linear-gradient(135deg,#F59E0B,#FB923C)] cursor-pointer text-center rounded-lg h-9 flex items-center justify-center text-[10px] font-bold capitalize border border-white/10 bg-[#1A1A1A] text-slate-400 transition-all block w-full"
               >
                 Other
               </label>
@@ -303,7 +305,7 @@ export function SignUpForm() {
           <button
             type="button"
             onClick={() => setShowPassword((v) => !v)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8A85B0] hover:text-[#171334] transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8A8A82] hover:text-[#171334] transition-colors"
           >
             {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
           </button>
@@ -324,7 +326,7 @@ export function SignUpForm() {
           <button
             type="button"
             onClick={() => setShowConfirmPassword((v) => !v)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8A85B0] hover:text-[#171334] transition-colors"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8A8A82] hover:text-[#171334] transition-colors"
           >
             {showConfirmPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
           </button>
@@ -333,14 +335,14 @@ export function SignUpForm() {
       </div>
 
       <Button
-        className="w-full h-9 mt-1 text-white font-bold text-sm rounded-lg transition-all shadow-sm border-0"
-        style={{ background: "linear-gradient(135deg, #4F7DF3, #9B5DE5)" }}
+        className="w-full h-9 mt-1 text-black font-bold text-sm rounded-lg transition-all shadow-sm border-0"
+        style={{ background: ACCENT_GRADIENT }}
         type="submit"
         disabled={isLoading}
       >
         {isLoading ? (
           <span className="flex items-center justify-center gap-2">
-            <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">
+            <svg className="animate-spin h-4 w-4 text-black" viewBox="0 0 24 24" fill="none">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path
                 className="opacity-75"
@@ -357,10 +359,10 @@ export function SignUpForm() {
 
       <div className="relative my-2">
         <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-[#7C6FE8]/15" />
+          <span className="w-full border-t border-white/10" />
         </div>
         <div className="relative flex justify-center text-[10px] uppercase tracking-wider">
-          <span className="bg-[#171334] px-3 text-[#7E7AA6] font-semibold">Or continue with</span>
+          <span className="bg-black px-3 text-slate-500 font-semibold">Or continue with</span>
         </div>
       </div>
 
@@ -368,11 +370,11 @@ export function SignUpForm() {
         <SocialLogin />
       </div>
 
-      <div className="text-center text-xs mt-2 text-[#A8A3C9] font-medium">
+      <div className="text-center text-xs mt-2 text-slate-400 font-medium">
         Already have an account?{" "}
         <button
           type="button"
-          className="text-[#C7BEFA] font-bold hover:underline"
+          className="text-amber-300 font-bold hover:underline"
           onClick={() => router.push("/login")}
         >
           Sign In
