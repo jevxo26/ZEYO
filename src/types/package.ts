@@ -11,8 +11,13 @@ export interface EventPackage {
   subtitle: string;
   eventTypeId: string;
   basePrice: number;
+  price?: number;
+  currency?: string;
+  maxGuests?: number;
+  included?: string[];
   discountPercentage: number;
   imageUrl?: string;
   popular?: boolean;
+  tier?: string;
   configuredServices: ConfiguredPackageService[];
 }
