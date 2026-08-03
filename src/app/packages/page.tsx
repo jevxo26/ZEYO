@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   BadgeCheck,
@@ -8,8 +8,6 @@ import {
   PackageSearch,
   ShieldCheck,
   Receipt,
-  ArrowRight,
-  Filter,
 } from "lucide-react";
 import { Footer } from "@/components/Footer";
 import Navbar from "@/components/Navbar";
@@ -18,8 +16,8 @@ import { EventPackage } from "@/types/package";
 import { EVENT_TYPES } from "@/lib/calculatorData";
 
 function PackageCard({ pkg }: { pkg: EventPackage }) {
-  const eventType = EVENT_TYPES.find(e => e.id === pkg.eventTypeId);
-  
+  const isPopular = pkg.popular;
+
   return (
     <div
       className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg ${
@@ -46,7 +44,7 @@ function PackageCard({ pkg }: { pkg: EventPackage }) {
         {isPopular && (
           <span className="absolute right-2.5 top-2.5 rounded-full bg-gradient-to-r from-violet-600 to-blue-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-sm">
             Most Popular
-          </div>
+          </span>
         )}
         {pkg.discountPercentage > 0 && (
           <div className="absolute right-4 top-4 rounded-full bg-rose-500 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-white shadow-md">
@@ -57,7 +55,7 @@ function PackageCard({ pkg }: { pkg: EventPackage }) {
 
       <div className="flex flex-1 flex-col p-4">
         <h3 className="text-[15px] font-semibold leading-snug text-slate-900">
-          {title}
+          {pkg.title}
         </h3>
         {pkg.subtitle && (
           <p className="mt-0.5 line-clamp-1 text-xs text-slate-500">
@@ -68,10 +66,10 @@ function PackageCard({ pkg }: { pkg: EventPackage }) {
         <div className="mt-2.5 flex items-end justify-between">
           <p className="flex items-baseline gap-1">
             <span className="bg-gradient-to-r from-violet-700 to-blue-700 bg-clip-text text-xl font-bold text-transparent">
-              {price.toLocaleString("en-BD")}
+              {pkg.price.toLocaleString("en-BD")}
             </span>
             <span className="text-[11px] font-medium text-slate-400">
-              {currency}
+              {pkg.currency}
             </span>
           </p>
           {pkg.maxGuests && (
@@ -81,9 +79,9 @@ function PackageCard({ pkg }: { pkg: EventPackage }) {
           )}
         </div>
 
-        {included.length > 0 && (
+        {pkg.included.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5">
-            {included.slice(0, 3).map((item, index) => (
+            {pkg.included.slice(0, 3).map((item, index) => (
               <span
                 key={`${pkg.id}-${item}-${index}`}
                 className="inline-flex items-center gap-1 rounded-full border border-violet-100 bg-violet-50/70 px-2 py-0.5 text-[10.5px] font-medium text-violet-700"
@@ -110,13 +108,27 @@ function PackageCard({ pkg }: { pkg: EventPackage }) {
   );
 }
 
+const MIN_GUESTS = 0;
+const MAX_GUESTS = 500;
+
 export default function PackagesPage() {
   const packages = useDynamicPackages();
   const [selectedEventType, setSelectedEventType] = useState<string>("all");
+  const [guestCount, setGuestCount] = useState<number>(MAX_GUESTS);
 
-  const filteredPackages = selectedEventType === "all" 
-    ? packages 
-    : packages.filter(p => p.eventTypeId === selectedEventType);
+  const filteredPackages = useMemo(() => {
+    return packages.filter((p) => {
+      const matchesEventType =
+        selectedEventType === "all" || p.eventTypeId === selectedEventType;
+      const matchesGuests = !p.maxGuests || p.maxGuests >= guestCount || guestCount === MAX_GUESTS;
+      return matchesEventType && matchesGuests;
+    });
+  }, [packages, selectedEventType, guestCount]);
+
+  function resetFilters() {
+    setSelectedEventType("all");
+    setGuestCount(MAX_GUESTS);
+  }
 
   return (
     <>
@@ -162,21 +174,32 @@ export default function PackagesPage() {
 
               <div className="mt-5">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                  Package Tier
+                  Event Type
                 </p>
                 <div className="mt-3 space-y-2.5">
-                  {TIERS.map((tier) => (
+                  <label className="flex cursor-pointer items-center gap-2.5 text-sm text-slate-700">
+                    <input
+                      type="radio"
+                      name="eventType"
+                      checked={selectedEventType === "all"}
+                      onChange={() => setSelectedEventType("all")}
+                      className="h-4 w-4 border-slate-300 text-violet-700 focus:ring-violet-600"
+                    />
+                    All Events
+                  </label>
+                  {EVENT_TYPES.map((eventType) => (
                     <label
-                      key={tier}
+                      key={eventType.id}
                       className="flex cursor-pointer items-center gap-2.5 text-sm text-slate-700"
                     >
                       <input
-                        type="checkbox"
-                        checked={selectedTiers.includes(tier)}
-                        onChange={() => toggleTier(tier)}
-                        className="h-4 w-4 rounded border-slate-300 text-violet-700 focus:ring-violet-600"
+                        type="radio"
+                        name="eventType"
+                        checked={selectedEventType === eventType.id}
+                        onChange={() => setSelectedEventType(eventType.id)}
+                        className="h-4 w-4 border-slate-300 text-violet-700 focus:ring-violet-600"
                       />
-                      {tier}
+                      {eventType.name}
                     </label>
                   ))}
                 </div>
