@@ -50,9 +50,10 @@ function normalizePackageItem(raw: Record<string, unknown>): EventPackage {
   );
 
   return {
-    id: Number(raw.id ?? 0),
+    id: String(raw.id ?? "0"),
     title: String(raw.name ?? raw.title ?? `Package ${raw.id ?? ""}`),
-    subtitle: typeof raw.description === "string" ? raw.description : undefined,
+    subtitle: typeof raw.description === "string" ? raw.description : "",
+    basePrice: Number.isFinite(price) ? price : 0,
     price: Number.isFinite(price) ? price : 0,
     currency:
       typeof pricings?.[0]?.currency === "string"
@@ -72,6 +73,9 @@ function normalizePackageItem(raw: Record<string, unknown>): EventPackage {
     popular: Boolean(setting?.isFeatured ?? raw.popular),
     tier: typeof raw.tier === "string" ? raw.tier : undefined,
     maxGuests: typeof raw.maxGuests === "number" ? raw.maxGuests : undefined,
+    eventTypeId: "evt-type-wedding",
+    discountPercentage: 0,
+    configuredServices: [],
   };
 }
 
@@ -114,14 +118,14 @@ function FeaturedCard({ pkg }: { pkg: EventPackage }) {
       <div className="flex flex-1 flex-col p-6">
         <h3 className="text-lg font-semibold text-slate-900">{pkg.title}</h3>
         <p className="mt-1 text-sm text-slate-500">
-          {pkg.price.toLocaleString("en-BD")}{" "}
+          {(pkg.price ?? pkg.basePrice ?? 0).toLocaleString("en-BD")}{" "}
           <span className="font-normal text-slate-400">
-            {pkg.currency} / Starting
+            {pkg.currency || "BDT"} / Starting
           </span>
         </p>
 
         <ul className="mt-4 space-y-1.5">
-          {pkg.included.slice(0, 4).map((item, index) => (
+          {(pkg.included || []).slice(0, 4).map((item, index) => (
             <li
               key={`${pkg.id}-${item}-${index}`}
               className="flex items-start gap-2 text-sm text-slate-600"

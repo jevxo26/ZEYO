@@ -66,10 +66,10 @@ function PackageCard({ pkg }: { pkg: EventPackage }) {
         <div className="mt-2.5 flex items-end justify-between">
           <p className="flex items-baseline gap-1">
             <span className="bg-gradient-to-r from-violet-700 to-blue-700 bg-clip-text text-xl font-bold text-transparent">
-              {pkg.price.toLocaleString("en-BD")}
+              {(pkg.price ?? pkg.basePrice ?? 0).toLocaleString("en-BD")}
             </span>
             <span className="text-[11px] font-medium text-slate-400">
-              {pkg.currency}
+              {pkg.currency || "BDT"}
             </span>
           </p>
           {pkg.maxGuests && (
@@ -79,9 +79,9 @@ function PackageCard({ pkg }: { pkg: EventPackage }) {
           )}
         </div>
 
-        {pkg.included.length > 0 && (
+        {(pkg.included || []).length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5">
-            {pkg.included.slice(0, 3).map((item, index) => (
+            {(pkg.included || []).slice(0, 3).map((item, index) => (
               <span
                 key={`${pkg.id}-${item}-${index}`}
                 className="inline-flex items-center gap-1 rounded-full border border-violet-100 bg-violet-50/70 px-2 py-0.5 text-[10.5px] font-medium text-violet-700"
