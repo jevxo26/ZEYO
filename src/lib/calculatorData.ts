@@ -5,13 +5,13 @@ import {
 } from "@/types/calculator";
 
 export const BANGLADESH_ZONES: ZoneOption[] = [
-  { id: "dhaka", name: "Dhaka", slug: "dhaka", priceMultiplier: 1.0 },
+  { id: "dhaka-north", name: "Dhaka North", slug: "dhaka-north", priceMultiplier: 1.0 },
+  { id: "dhaka-south", name: "Dhaka South", slug: "dhaka-south", priceMultiplier: 1.0 },
   { id: "chattogram", name: "Chattogram", slug: "chattogram", priceMultiplier: 1.15 },
-  { id: "rajshahi", name: "Rajshahi", slug: "rajshahi", priceMultiplier: 0.85 },
   { id: "sylhet", name: "Sylhet", slug: "sylhet", priceMultiplier: 1.05 },
+  { id: "rajshahi", name: "Rajshahi", slug: "rajshahi", priceMultiplier: 0.85 },
   { id: "khulna", name: "Khulna", slug: "khulna", priceMultiplier: 0.9 },
-  { id: "rangpur", name: "Rangpur", slug: "rangpur", priceMultiplier: 0.8 },
-  { id: "barishal", name: "Barishal", slug: "barishal", priceMultiplier: 0.85 },
+  { id: "dhaka", name: "Dhaka Metro", slug: "dhaka", priceMultiplier: 1.0 },
 ];
 
 export const EVENT_TYPES: EventTypeOption[] = [

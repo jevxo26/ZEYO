@@ -1,6 +1,7 @@
 "use client";
 
 import { SignUpForm } from "@/components/auth/signup";
+import Navbar from "@/components/Navbar";
 import Link from "next/link";
 import { ShieldCheck, ArrowLeft } from "lucide-react";
 import { Fraunces, Manrope } from "next/font/google";
@@ -20,7 +21,7 @@ const manrope = Manrope({
 export default function RegisterPage() {
   return (
     <div
-      className={`${fraunces.variable} ${manrope.variable} h-screen flex overflow-hidden bg-[#F5F5F3]`}
+      className={`${fraunces.variable} ${manrope.variable} h-screen flex overflow-hidden bg-[#F4F5FC]`}
       style={{
         fontFamily: "var(--font-body)",
         backgroundImage:
@@ -28,9 +29,11 @@ export default function RegisterPage() {
         backgroundSize: "18px 18px",
       }}
     >
-      {/* Left Column: Pass Card */}
-      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 relative z-10 overflow-hidden">
-        <div className="w-full max-w-xl h-full flex flex-col justify-center">
+      <Navbar />
+      <div className="flex-1 flex min-h-[calc(100vh-80px)]">
+        {/* Left Column: Pass Card */}
+        <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8 relative z-10">
+          <div className="w-full max-w-xl h-full flex flex-col justify-center">
           <Link
             href="/"
             className="inline-flex items-center gap-2 mb-3 text-[#6B6B6B] hover:text-black transition-colors shrink-0"
@@ -141,8 +144,8 @@ export default function RegisterPage() {
               />
             </div>
             <div>
-              <p className="text-white font-semibold text-sm">Michael Torres</p>
-              <p className="text-slate-400 text-xs">Lead Coordinator</p>
+              <p className="text-[#F1F0FA] font-semibold text-sm">Michael Torres</p>
+              <p className="text-[#A8A3C9] text-xs">Lead Coordinator</p>
             </div>
           </div>
         </div>

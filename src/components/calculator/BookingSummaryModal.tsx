@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import apiClient from "@/lib/apiClient";
+import { toast } from "sonner";
+import { createNotification } from "@/lib/notifications";
 import { ConfiguredServiceState } from "@/types/calculator";
 import {
   CheckCircle2,
@@ -26,6 +28,7 @@ interface BookingSummaryModalProps {
   zoneName: string;
   eventTypeName: string;
   eventDate: string;
+  onDateChange?: (date: string) => void;
   globalGuestCount: number;
   configurations: Record<string, ConfiguredServiceState>;
   onSuccess: (bookingId?: string) => void;
@@ -37,6 +40,7 @@ export default function BookingSummaryModal({
   zoneName,
   eventTypeName,
   eventDate,
+  onDateChange,
   globalGuestCount,
   configurations,
   onSuccess,
@@ -64,12 +68,16 @@ export default function BookingSummaryModal({
     setIsSubmitting(true);
     setError(null);
 
+    if (!eventDate) {
+      toast.error("Please select a tentative event date to proceed.");
+      return;
+    }
+
     try {
       // Build payload for backend API
       const payload = {
-        title: `${eventTypeName} - ${zoneName} (${eventDate || "TBD"})`,
-        eventDate:
-          eventDate || new Date(Date.now() + 86400000 * 14).toISOString(),
+        title: `${eventTypeName} - ${zoneName} (${eventDate})`,
+        eventDate: new Date(eventDate).toISOString(),
         guestCount: globalGuestCount,
         zoneName,
         eventTypeName,
@@ -96,9 +104,7 @@ export default function BookingSummaryModal({
         bookingNumber: generatedId,
         eventName: `${eventTypeName} Celebration (${zoneName})`,
         eventType: eventTypeName,
-        eventDate: eventDate
-          ? new Date(eventDate).toISOString()
-          : new Date(Date.now() + 86400000 * 14).toISOString(),
+        eventDate: new Date(eventDate).toISOString(),
         location: zoneName + " Metro",
         budget: totalEstimatedCost,
         grandTotal: totalEstimatedCost,
@@ -133,6 +139,7 @@ export default function BookingSummaryModal({
         list.unshift(newBookingObj);
         localStorage.setItem("customBookings", JSON.stringify(list));
         window.dispatchEvent(new CustomEvent("dashboard-data-update"));
+        createNotification("Booking Received", `Customer created new booking ${generatedId} for ${eventTypeName}.`, "📦");
       }
 
       onSuccess(generatedId);
@@ -193,11 +200,21 @@ export default function BookingSummaryModal({
 
             <div className="flex items-center gap-2.5">
               <Calendar className="w-5 h-5 text-blue-500 shrink-0" />
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <span className="block text-xs text-slate-400">Event Date</span>
-                <span className="font-bold text-sm text-slate-900 dark:text-white truncate">
-                  {eventDate || "Tentative"}
-                </span>
+                {onDateChange ? (
+                  <input
+                    type="date"
+                    required
+                    value={eventDate}
+                    onChange={(e) => onDateChange(e.target.value)}
+                    className="w-full mt-0.5 px-2 py-1 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded text-xs font-bold text-slate-900 dark:text-white"
+                  />
+                ) : (
+                  <span className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                    {eventDate || "Tentative"}
+                  </span>
+                )}
               </div>
             </div>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { SignInForm } from "@/components/auth/signin";
+import Navbar from "@/components/Navbar";
 import Link from "next/link";
 import { ShieldCheck, ArrowLeft } from "lucide-react";
 import { Fraunces, Manrope } from "next/font/google";
@@ -20,7 +21,7 @@ const manrope = Manrope({
 export default function LoginPage() {
   return (
     <div
-      className={`${fraunces.variable} ${manrope.variable} h-screen flex overflow-hidden bg-[#F5F5F3]`}
+      className={`${fraunces.variable} ${manrope.variable} h-screen flex overflow-hidden bg-[#F4F5FC]`}
       style={{
         fontFamily: "var(--font-body)",
         backgroundImage:
@@ -33,14 +34,14 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 mb-3 text-[#6B6B6B] hover:text-black transition-colors"
+            className="inline-flex items-center gap-2 mb-3 text-[#6B6795] hover:text-[#171334] transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span className="text-xs font-semibold">Back to home</span>
           </Link>
 
           {/* The Pass */}
-          <div className="relative rounded-[28px] bg-black border border-white/10 shadow-[0_25px_60px_-20px_rgba(0,0,0,0.65)] p-5 sm:p-6 overflow-hidden">
+          <div className="relative rounded-[28px] bg-[#171334] border border-[#7C6FE8]/20 shadow-[0_25px_60px_-20px_rgba(23,19,52,0.55)] p-5 sm:p-6 overflow-hidden">
             {/* Corner glow accent */}
             <div
               className="pointer-events-none absolute -top-16 -right-16 w-40 h-40 rounded-full blur-3xl"
@@ -142,8 +143,8 @@ export default function LoginPage() {
               SJ
             </div>
             <div>
-              <p className="text-white font-semibold text-sm">Sarah Jenkins</p>
-              <p className="text-slate-400 text-xs">Event Director, Gulshan Convention</p>
+              <p className="text-[#F1F0FA] font-semibold text-sm">Sarah Jenkins</p>
+              <p className="text-[#A8A3C9] text-xs">Event Director, Gulshan Convention</p>
             </div>
           </div>
         </div>

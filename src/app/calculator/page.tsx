@@ -10,11 +10,13 @@ import ServiceConfigurator from "@/components/calculator/ServiceConfigurator";
 import LiveBudgetSidebar from "@/components/calculator/LiveBudgetSidebar";
 import BookingSummaryModal from "@/components/calculator/BookingSummaryModal";
 import {
-  BANGLADESH_ZONES,
   EVENT_TYPES,
   CALCULATOR_SERVICES,
   calculateServicePrice,
 } from "@/lib/calculatorData";
+import { useDynamicZones } from "@/hooks/useDynamicZones";
+import { useDynamicServices } from "@/hooks/useDynamicServices";
+import { useDynamicPackages } from "@/hooks/useDynamicPackages";
 import { ConfiguredServiceState } from "@/types/calculator";
 import {
   MapPin,
@@ -33,7 +35,8 @@ function SmartCalculatorContent() {
   const router = useRouter();
 
   // Step state: 1 -> Zone & Event, 2 -> Select Services, 3 -> Configure Services
-  const [step, setStep] = useState<number>(1);
+  const hasInitialParams = Boolean(searchParams.get("zone") && searchParams.get("event"));
+  const [step, setStep] = useState<number>(hasInitialParams ? 2 : 1);
 
   // 1. Zone & Event State
   const initialZone = searchParams.get("zone") || "dhaka";
@@ -61,12 +64,64 @@ function SmartCalculatorContent() {
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
   const [bookingSuccessId, setBookingSuccessId] = useState<string | null>(null);
 
+  const dynamicZones = useDynamicZones();
+  
   const activeZone =
-    BANGLADESH_ZONES.find((z) => z.id === selectedZoneId) ||
-    BANGLADESH_ZONES[0];
+    dynamicZones.find((z) => z.id === selectedZoneId) ||
+    dynamicZones[0];
   const activeEvent =
     EVENT_TYPES.find((e) => e.id === selectedEventTypeId) ||
     EVENT_TYPES[0];
+
+  const dynamicServices = useDynamicServices();
+  const dynamicPackages = useDynamicPackages();
+
+  // Package Initialization
+  const [hasInitializedPackage, setHasInitializedPackage] = useState(false);
+
+  useEffect(() => {
+    const pkgId = searchParams.get("packageId");
+    if (pkgId && dynamicPackages.length > 0 && dynamicServices.length > 0 && !hasInitializedPackage) {
+      const pkg = dynamicPackages.find(p => p.id === pkgId);
+      if (pkg) {
+        setSelectedEventTypeId(pkg.eventTypeId);
+        setSelectedServiceKeys(pkg.configuredServices.map(cs => cs.serviceKey));
+        
+        // Seed configurations
+        const initialConfigs: Record<string, ConfiguredServiceState> = {};
+        pkg.configuredServices.forEach(cs => {
+          const srv = dynamicServices.find(s => s.key === cs.serviceKey);
+          if (!srv) return;
+          
+          const tier = srv.tiers.find(t => t.id === cs.tierId) || srv.tiers[0];
+          const cov = srv.coverages.find(c => c.id === cs.coverageId) || srv.coverages[0];
+          if (!tier || !cov) return;
+          
+          const initialPrice = calculateServicePrice(
+            srv, tier.id, cov.id, srv.isPerGuest ? 300 : 1, cs.addons, activeZone.priceMultiplier
+          );
+          
+          initialConfigs[srv.key] = {
+            serviceKey: srv.key,
+            serviceName: srv.name,
+            selectedTierId: tier.id,
+            tierName: tier.name,
+            tierPrice: tier.price,
+            selectedCoverageId: cov.id,
+            coverageName: cov.name,
+            coverageMultiplier: cov.multiplier,
+            guestCount: srv.isPerGuest ? 300 : 1,
+            selectedAddons: cs.addons.map(a => srv.addons.find(ad => ad.id === a)).filter(Boolean) as any,
+            calculatedPrice: initialPrice,
+          };
+        });
+        
+        setConfigurations(initialConfigs);
+        setStep(3); // Jump straight to configuration step
+      }
+      setHasInitializedPackage(true);
+    }
+  }, [searchParams, dynamicPackages, dynamicServices, hasInitializedPackage, activeZone.priceMultiplier]);
 
   // Initialize configurations whenever selectedServiceKeys or guestCount changes
   useEffect(() => {
@@ -74,7 +129,7 @@ function SmartCalculatorContent() {
       const next: Record<string, ConfiguredServiceState> = {};
 
       selectedServiceKeys.forEach((key) => {
-        const srv = CALCULATOR_SERVICES.find((s) => s.key === key);
+        const srv = dynamicServices.find((s) => s.key === key);
         if (!srv) return;
 
         if (prev[key]) {
@@ -94,8 +149,8 @@ function SmartCalculatorContent() {
           };
         } else {
           // Default fresh configuration
-          const defaultTier = srv.tiers[0];
-          const defaultCoverage = srv.coverages[0];
+          const defaultTier = srv.tiers[0] || { id: "", name: "", price: 0, description: "", features: [] };
+          const defaultCoverage = srv.coverages[0] || { id: "", name: "", multiplier: 1 };
           const initialPrice = calculateServicePrice(
             srv,
             defaultTier.id,
@@ -123,7 +178,7 @@ function SmartCalculatorContent() {
 
       return next;
     });
-  }, [selectedServiceKeys, activeZone.priceMultiplier, globalGuestCount]);
+  }, [selectedServiceKeys, activeZone.priceMultiplier, globalGuestCount, dynamicServices]);
 
   const handleToggleService = (key: string) => {
     setSelectedServiceKeys((prev) =>
@@ -132,7 +187,7 @@ function SmartCalculatorContent() {
   };
 
   const handleSelectAllServices = () => {
-    setSelectedServiceKeys(CALCULATOR_SERVICES.map((s) => s.key));
+    setSelectedServiceKeys(dynamicServices.map((s) => s.key));
   };
 
   const handleClearAllServices = () => {
@@ -334,6 +389,7 @@ function SmartCalculatorContent() {
               {step === 2 && (
                 <ServiceSelector
                   selectedKeys={selectedServiceKeys}
+                  activeZoneId={selectedZoneId}
                   onToggleService={handleToggleService}
                   onSelectAll={handleSelectAllServices}
                   onClearAll={handleClearAllServices}
@@ -425,6 +481,7 @@ function SmartCalculatorContent() {
         zoneName={activeZone.name}
         eventTypeName={activeEvent.name}
         eventDate={eventDate}
+        onDateChange={(date) => setEventDate(date)}
         globalGuestCount={globalGuestCount}
         configurations={configurations}
         onSuccess={(id) => {

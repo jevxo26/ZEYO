@@ -11,12 +11,16 @@ import {
   Send,
   CheckCircle2,
   Calendar,
+  Check,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import apiClient from "@/lib/apiClient";
 import { createNotification } from "@/lib/notifications";
 import { NewBookingModal } from "@/components/dashboard/NewBookingModal";
 import { Plus } from "lucide-react";
+import { useDynamicZones } from "@/hooks/useDynamicZones";
+import { useDynamicServices } from "@/hooks/useDynamicServices";
 
 interface VendorItemType {
   id: string;
@@ -26,7 +30,10 @@ interface VendorItemType {
   rating: string;
   jobs: number;
   verified: boolean;
+  status?: string;
   payoutRate: string;
+  supportedServiceKeys?: string[];
+  supportedZoneIds?: string[];
 }
 
 const DEFAULT_VENDORS: VendorItemType[] = [
@@ -38,57 +45,10 @@ const DEFAULT_VENDORS: VendorItemType[] = [
     rating: "4.9",
     jobs: 3,
     verified: true,
+    status: "VERIFIED",
     payoutRate: "৳32,000 / Event",
-  },
-  {
-    name: "Cinematic Beats Videography",
-    id: "V-1102",
-    category: "Videography",
-    zone: "Dhaka Zone",
-    rating: "4.8",
-    jobs: 2,
-    verified: true,
-    payoutRate: "৳36,000 / Event",
-  },
-  {
-    name: "Grand Kacchi Caterers Bangladesh",
-    id: "V-8831",
-    category: "Catering",
-    zone: "Dhaka Zone",
-    rating: "4.9",
-    jobs: 4,
-    verified: true,
-    payoutRate: "৳650 / Plate",
-  },
-  {
-    name: "Sylhet Garden Floral & Decor",
-    id: "V-3344",
-    category: "Decoration",
-    zone: "Sylhet Zone",
-    rating: "4.7",
-    jobs: 1,
-    verified: true,
-    payoutRate: "৳42,000 / Event",
-  },
-  {
-    name: "Chattogram Stage & Sound Systems",
-    id: "V-5510",
-    category: "Stage & Lighting",
-    zone: "Chattogram Zone",
-    rating: "4.6",
-    jobs: 2,
-    verified: true,
-    payoutRate: "৳38,000 / Event",
-  },
-  {
-    name: "Rajshahi Imperial Sound & DJ",
-    id: "V-7712",
-    category: "Sound System",
-    zone: "Rajshahi Zone",
-    rating: "4.8",
-    jobs: 1,
-    verified: true,
-    payoutRate: "৳28,000 / Event",
+    supportedServiceKeys: ["photography"],
+    supportedZoneIds: ["zone-1"],
   },
 ];
 
@@ -97,20 +57,20 @@ const DEFAULT_CUSTOMER_BOOKINGS = [
     id: "BKG-2026-001",
     label: "#BKG-2026-001 - Royal Wedding Ceremony (Gulshan Club, Dhaka Zone)",
     date: "2026-11-15",
-  },
-  {
-    id: "BKG-2026-002",
-    label: "#BKG-2026-002 - Gaye Holud Night (Banani Hall, Dhaka Zone)",
-    date: "2026-11-13",
+    zoneId: "zone-1", // Dhaka
   },
   {
     id: "BKG-2026-003",
     label: "#BKG-2026-003 - Corporate Annual Summit (Radisson Blu, Chattogram Zone)",
     date: "2026-12-01",
+    zoneId: "zone-2", // Chattogram
   },
 ];
 
 export default function VendorsPage() {
+  const dynamicZones = useDynamicZones();
+  const dynamicServices = useDynamicServices();
+
   const [vendorsList, setVendorsList] = useState<VendorItemType[]>(DEFAULT_VENDORS);
   const [activeBookings, setActiveBookings] = useState<any[]>(DEFAULT_CUSTOMER_BOOKINGS);
 
@@ -121,7 +81,7 @@ export default function VendorsPage() {
 
   // Dispatch Form State inside Modal
   const [targetBookingId, setTargetBookingId] = useState("BKG-2026-001");
-  const [targetService, setTargetService] = useState("Photography");
+  const [targetService, setTargetService] = useState("photography");
   const [dispatchNotes, setDispatchNotes] = useState("");
 
   const fetchVendorsAndBookings = async () => {
@@ -135,6 +95,7 @@ export default function VendorsPage() {
             id: b.id || `CUSTOM-${i}`,
             label: `${b.bookingNumber || `#${b.id}`} - ${b.eventName || b.notes || "Celebration"} (${b.location || "Location TBD"})`,
             date: b.eventDate ? new Date(b.eventDate).toISOString().split("T")[0] : "Upcoming",
+            zoneId: b.zoneId || "zone-1",
           }));
         }
       } catch (e) {}
@@ -149,57 +110,33 @@ export default function VendorsPage() {
       setTargetBookingId(uniqueBookings[0].id);
     }
 
-    let localCustomVendors: any[] = [];
-    let loggedInVendorList: any[] = [];
+    let usersVendors: any[] = [];
 
     if (typeof window !== "undefined") {
       try {
-        const storedVendors = localStorage.getItem("customVendors");
-        if (storedVendors) {
-          localCustomVendors = JSON.parse(storedVendors);
-        }
-      } catch (e) {}
-
-      try {
-        const uStr = localStorage.getItem("user");
-        if (uStr) {
-          const u = JSON.parse(uStr);
-          const userRole = (u.role || "").toLowerCase();
-          const fullName = `${u.firstName || u.name || ""} ${u.lastName || ""}`.trim() || u.email;
-          if (fullName && (userRole === "vendor" || userRole === "partner")) {
-            loggedInVendorList.push({
-              name: `${fullName} (Logged-in Partner)`,
-              id: u.id || `V-USER-${u.email?.slice(0, 4) || "LIVE"}`,
-              category: u.category || u.vendorCategory || u.companyName || "Verified Event Service",
-              zone: u.zone || "Dhaka Zone",
-              rating: "5.0",
-              jobs: u.jobsCount || 2,
-              verified: true,
-              payoutRate: "৳35,000 / Event",
-            });
-          }
+        const storedUsers = localStorage.getItem("users");
+        if (storedUsers) {
+          const allUsers = JSON.parse(storedUsers);
+          usersVendors = allUsers.filter((u: any) => u.role === "vendor").map((u: any) => ({
+            id: u.id,
+            name: u.businessName || u.name,
+            category: u.supportedServiceKeys?.map((k: string) => k.replace("-", " ")).join(", ") || "Unknown",
+            zone: u.supportedZoneIds?.length + " Zones" || "Dhaka Zone",
+            rating: u.rating?.toFixed(1) || "5.0",
+            jobs: u.jobsCompleted || 0,
+            verified: u.status === "VERIFIED",
+            status: u.status,
+            payoutRate: "Dynamic / OS Calculated",
+            supportedServiceKeys: u.supportedServiceKeys || [],
+            supportedZoneIds: u.supportedZoneIds || [],
+          }));
         }
       } catch (e) {}
     }
 
-    let rawVendorsList = [...loggedInVendorList, ...localCustomVendors, ...DEFAULT_VENDORS];
-
-    try {
-      const res = await apiClient.get("/vendors");
-      if (res.data && res.data.success !== false && Array.isArray(res.data.data) && res.data.data.length > 0) {
-        rawVendorsList = [...loggedInVendorList, ...localCustomVendors, ...res.data.data];
-      }
-    } catch (e) {}
-
-    const sanitizedVendors = rawVendorsList.map((v) => {
-      if (v.name && v.name.includes("Dhaka Royal Photography Studio")) {
-        return { ...v, name: "Dhaka Royal Photo Team" };
-      }
-      return v;
-    });
-
-    const uniqueVendors = sanitizedVendors.filter(
-      (v, idx, self) => idx === self.findIndex((t) => String(t.id) === String(v.id) || String(t.name) === String(v.name))
+    const rawVendorsList = [...usersVendors, ...DEFAULT_VENDORS];
+    const uniqueVendors = rawVendorsList.filter(
+      (v, idx, self) => idx === self.findIndex((t) => String(t.id) === String(v.id))
     );
     setVendorsList(uniqueVendors);
   };
@@ -211,146 +148,121 @@ export default function VendorsPage() {
     return () => window.removeEventListener("dashboard-data-update", handleUpdate);
   }, []);
 
-  const handleOnboardVendor = () => {
-    window.dispatchEvent(
-      new CustomEvent("open-dashboard-modal", { detail: "new-vendor" })
-    );
+  const handleApprove = (vendorId: string) => {
+    try {
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      const updated = users.map((u: any) => u.id === vendorId ? { ...u, status: "VERIFIED" } : u);
+      localStorage.setItem("users", JSON.stringify(updated));
+      fetchVendorsAndBookings();
+      toast.success("Vendor Approved!");
+    } catch (e) {}
   };
 
+  const handleReject = (vendorId: string) => {
+    try {
+      const users = JSON.parse(localStorage.getItem("users") || "[]");
+      const updated = users.map((u: any) => u.id === vendorId ? { ...u, status: "REJECTED" } : u);
+      localStorage.setItem("users", JSON.stringify(updated));
+      fetchVendorsAndBookings();
+      toast.success("Vendor Rejected!");
+    } catch (e) {}
+  };
+
+  const filteredVendors = vendorsList.filter((v) => {
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      if (
+        !v.name.toLowerCase().includes(q) &&
+        !v.category.toLowerCase().includes(q) &&
+        !v.id.toLowerCase().includes(q)
+      ) {
+        return false;
+      }
+    }
+    if (selectedCategory !== "All Categories" && !v.category.includes(selectedCategory)) {
+      return false;
+    }
+    if (selectedZone !== "All Zones" && v.zone !== selectedZone) {
+      return false;
+    }
+    return true;
+  });
+
   const handleOpenDispatch = (vendor: VendorItemType) => {
+    if (!vendor.verified) {
+      toast.error("Cannot dispatch unverified vendors!");
+      return;
+    }
     setSelectedVendor(vendor);
-    setTargetService(vendor.category);
   };
 
   const handleAssignVendor = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedVendor) return;
 
-    const updatedVendorId = selectedVendor.id;
-    const bookingRefStr = String(targetBookingId).startsWith("#") ? String(targetBookingId) : `#${targetBookingId}`;
+    // Vendor Availability Logic Check
+    const targetBooking = activeBookings.find(b => b.id === targetBookingId);
+    if (!targetBooking) return;
+    
+    const zoneId = targetBooking.zoneId || "zone-1"; // fallback for old data
 
-    // 1. Try Backend API assignment
-    try {
-      await apiClient.post("/vendors/assign", {
-        vendorId: selectedVendor.id,
-        bookingId: targetBookingId,
-        service: targetService,
-        notes: dispatchNotes,
-      });
-    } catch (err) {}
+    if (selectedVendor.supportedZoneIds && !selectedVendor.supportedZoneIds.includes(zoneId)) {
+      toast.error(`Vendor does not support this booking's zone!`);
+      return;
+    }
+    if (selectedVendor.supportedServiceKeys && !selectedVendor.supportedServiceKeys.includes(targetService)) {
+      toast.error(`Vendor does not provide this service!`);
+      return;
+    }
 
-    // 2. Update vendor active jobs count locally
-    setVendorsList((prev) => {
-      const updated = prev.map((v) =>
-        v.id === updatedVendorId ? { ...v, jobs: (v.jobs || 0) + 1 } : v
-      );
-      if (typeof window !== "undefined") {
-        try {
-          localStorage.setItem("customVendors", JSON.stringify(updated));
-        } catch (err) {}
-      }
-      return updated;
-    });
-
-    // 3. Update customer booking status & assigned vendor info
     if (typeof window !== "undefined") {
       try {
-        const stored = localStorage.getItem("customBookings");
-        if (stored) {
-          let list = JSON.parse(stored);
-          list = list.map((b: any) => {
-            if (
-              String(b.id) === String(targetBookingId) ||
-              String(b.bookingNumber) === String(targetBookingId) ||
-              String(b.bookingNumber).endsWith(String(targetBookingId))
-            ) {
-              return {
-                ...b,
-                bookingStatus: "confirmed",
-                status: "CONFIRMED",
-                assignedVendor: selectedVendor.name,
-                assignedVendorId: selectedVendor.id,
-                assignedService: targetService,
-              };
-            }
-            return b;
-          });
-          localStorage.setItem("customBookings", JSON.stringify(list));
+        // 1. Update Booking to reflect assigned vendor
+        const storedBookings = localStorage.getItem("customBookings");
+        let bookingList = storedBookings ? JSON.parse(storedBookings) : [];
+        const bIdx = bookingList.findIndex((b: any) => String(b.id) === String(targetBookingId));
+        if (bIdx >= 0) {
+          bookingList[bIdx].assignedVendorId = selectedVendor.id;
+          bookingList[bIdx].assignedVendor = selectedVendor.name;
+          bookingList[bIdx].assignedService = targetService;
+          localStorage.setItem("customBookings", JSON.stringify(bookingList));
         }
-      } catch (err) {}
-    }
 
-    // 4. Create explicit Task entry in customVendorTasks for Vendor Task Board
-    if (typeof window !== "undefined") {
-      try {
+        // 2. Create Explicit Task for the Vendor
         const storedTasks = localStorage.getItem("customVendorTasks");
-        const tasksList = storedTasks ? JSON.parse(storedTasks) : [];
+        let taskList = storedTasks ? JSON.parse(storedTasks) : [];
         const newTask = {
-          id: `TSK-${Math.floor(1000 + Math.random() * 9000)}`,
-          bookingRef: bookingRefStr,
-          title: `Dispatched ${targetService} Execution`,
+          id: `TSK-${Date.now()}`,
+          bookingRef: targetBooking.bookingNumber || `#${targetBooking.id}`,
+          title: targetBooking.eventName || "Assigned Celebration Service",
           category: targetService,
-          zone: selectedVendor.zone,
-          venue: `Assigned Venue for ${bookingRefStr}`,
-          date: new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
-          duration: "Full Event Duration",
-          payout: `${selectedVendor.payoutRate} (Protected Escrow)`,
-          status: "Confirmed",
+          zone: targetBooking.location || zoneId,
+          venue: targetBooking.location || "Location TBD",
+          date: targetBooking.eventDate ? new Date(targetBooking.eventDate).toLocaleDateString() : "Upcoming",
+          duration: "Full Event",
+          payout: `৳${Number(targetBooking.grandTotal || targetBooking.budget || 35000).toLocaleString()} (Escrow)`,
+          status: "Pending Vendor Acceptance",
           requirements: [
-            {
-              title: `${targetService} Service Delivery`,
-              desc: dispatchNotes || "Execute assigned service line item according to EVENTO specifications.",
-            },
-            {
-              title: "Quality Assurance & Deliverables Upload",
-              desc: "Upload media files / work completion proof for EVENTO QA inspection upon event finish.",
-            },
+            { title: "Service Delivery", desc: `Provide ${targetService} according to EVENTO standard.` },
           ],
-          coordinatorNotes: dispatchNotes || "Coordinate with EVENTO Dispatch Officer upon arrival.",
+          coordinatorNotes: "Coordinate with EVENTO Dispatch upon arrival.",
           assignedVendorId: selectedVendor.id,
-          assignedVendorName: selectedVendor.name,
+          assignedVendorName: selectedVendor.name
         };
-        tasksList.unshift(newTask);
-        localStorage.setItem("customVendorTasks", JSON.stringify(tasksList));
-      } catch (err) {}
+        taskList.unshift(newTask);
+        localStorage.setItem("customVendorTasks", JSON.stringify(taskList));
+        
+        // Trigger dashboard update
+        window.dispatchEvent(new CustomEvent("dashboard-data-update"));
+        createNotification("Vendor Assigned", `Vendor ${selectedVendor.name} assigned to ${targetBooking.bookingNumber}.`, "✅");
+      } catch (e) {
+        console.warn("Failed to persist vendor dispatch locally", e);
+      }
     }
 
-    // 5. Create live real-time notification
-    createNotification(
-      "Vendor Dispatched to Booking",
-      `Assigned ${selectedVendor.name} (${targetService}) to ${bookingRefStr}.`,
-      "📦"
-    );
-
-    window.dispatchEvent(new CustomEvent("dashboard-data-update"));
-
-    toast.success(
-      `✓ Dispatched ${selectedVendor.name} to booking ${bookingRefStr} for ${targetService}!`,
-      { duration: 5000 }
-    );
+    toast.success("Vendor dispatched successfully!");
     setSelectedVendor(null);
-    setDispatchNotes("");
   };
-
-  const filteredVendors = vendorsList.filter((v) => {
-    if (
-      selectedCategory !== "All Categories" &&
-      v.category !== selectedCategory
-    )
-      return false;
-    if (selectedZone !== "All Zones" && v.zone !== selectedZone) return false;
-
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      return (
-        v.name.toLowerCase().includes(q) ||
-        v.id.toLowerCase().includes(q) ||
-        v.category.toLowerCase().includes(q) ||
-        v.zone.toLowerCase().includes(q)
-      );
-    }
-    return true;
-  });
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
@@ -362,33 +274,15 @@ export default function VendorsPage() {
           </div>
           <div>
             <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider bg-purple-500/20 text-purple-200 border border-purple-400/20">
-              Admin Operations Center — Managed Event OS
+              Admin Dashboard
             </span>
             <h1 className="text-xl sm:text-2xl font-bold mt-1">
               Managed Vendor Pool &amp; Dispatch Hub
             </h1>
             <p className="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
-              Customers never see individual vendor names or payout rates. As an EVENTO Admin Coordinator, use this panel to assign vetted background vendor teams to customer bookings and oversee service quality.
+              Customers never see individual vendor names or payout rates. As an EVENTO Admin Coordinator, use this panel to approve verified vendors and assign vetted background vendor teams to customer bookings.
             </p>
           </div>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-2 shrink-0">
-          <button
-            onClick={() =>
-              window.dispatchEvent(
-                new CustomEvent("open-dashboard-modal", { detail: "new-booking" })
-              )
-            }
-            className="px-4 py-2.5 bg-purple-600 text-white hover:bg-purple-500 rounded-xl text-xs font-bold shadow-sm transition-colors flex items-center justify-center gap-2"
-          >
-            <Plus className="w-4 h-4 text-white" /> Add Custom Booking
-          </button>
-          <button
-            onClick={handleOnboardVendor}
-            className="px-4 py-2.5 bg-white text-slate-900 hover:bg-slate-100 rounded-xl text-xs font-bold shadow-sm transition-colors flex items-center justify-center gap-2"
-          >
-            <UserCheck className="w-4 h-4 text-purple-700" /> Onboard Vendor Team
-          </button>
         </div>
       </div>
 
@@ -400,37 +294,9 @@ export default function VendorsPage() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search vendors by name, category or ID..."
+            placeholder="Search vendors by name..."
             className="w-full pl-9 pr-3 py-2 text-xs rounded-lg border border-slate-200 bg-slate-50 outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white text-slate-900 transition-all"
           />
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-3 py-2 text-xs font-semibold rounded-lg border border-slate-200 bg-slate-50 outline-none text-slate-700"
-          >
-            <option value="All Categories">All Categories</option>
-            <option value="Photography">Photography</option>
-            <option value="Videography">Videography</option>
-            <option value="Catering">Catering</option>
-            <option value="Decoration">Decoration</option>
-            <option value="Stage & Lighting">Stage &amp; Lighting</option>
-            <option value="Sound System">Sound System</option>
-          </select>
-
-          <select
-            value={selectedZone}
-            onChange={(e) => setSelectedZone(e.target.value)}
-            className="px-3 py-2 text-xs font-semibold rounded-lg border border-slate-200 bg-slate-50 outline-none text-slate-700"
-          >
-            <option value="All Zones">All Zones</option>
-            <option value="Dhaka Zone">Dhaka Zone</option>
-            <option value="Chattogram Zone">Chattogram Zone</option>
-            <option value="Rajshahi Zone">Rajshahi Zone</option>
-            <option value="Sylhet Zone">Sylhet Zone</option>
-          </select>
         </div>
       </div>
 
@@ -441,10 +307,8 @@ export default function VendorsPage() {
             <thead className="bg-slate-50 text-slate-500 text-xs font-semibold uppercase tracking-wider border-b border-slate-200">
               <tr>
                 <th className="px-6 py-4">Vendor Partner</th>
-                <th className="px-6 py-4">Service Category</th>
-                <th className="px-6 py-4">Coverage Zone</th>
-                <th className="px-6 py-4">Internal Payout Rate</th>
-                <th className="px-6 py-4">Admin Rating</th>
+                <th className="px-6 py-4">Service Coverage</th>
+                <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4">Active Jobs</th>
                 <th className="px-6 py-4 text-right">Dispatch Action</th>
               </tr>
@@ -455,20 +319,12 @@ export default function VendorsPage() {
                   <tr key={v.id ? `${v.id}-${idx}` : idx} className="hover:bg-slate-50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 border border-purple-200 flex items-center justify-center font-bold text-sm shrink-0">
+                        <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 border border-purple-200 flex items-center justify-center font-bold text-sm shrink-0 uppercase">
                           {v.name[0]}
                         </div>
                         <div>
                           <div className="flex items-center gap-1.5">
                             <p className="font-bold text-slate-900">{v.name}</p>
-                            {v.verified && (
-                              <span
-                                className="text-[10px] font-bold px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded-full"
-                                title="Verified EVENTO Partner"
-                              >
-                                ✓ Verified
-                              </span>
-                            )}
                           </div>
                           <p className="text-xs font-mono text-slate-400">
                             ID: {v.id}
@@ -477,54 +333,49 @@ export default function VendorsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 text-slate-700">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-semibold bg-slate-100 text-slate-700 max-w-[200px] truncate">
                         <Briefcase className="w-3.5 h-3.5 text-slate-400" />{" "}
-                        {v.category}
+                        {v.category || "None defined"}
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-slate-600 flex items-center gap-1 text-xs">
-                        <MapPin className="w-3.5 h-3.5 text-slate-400" />{" "}
-                        {v.zone}
-                      </span>
+                      {v.status === "PENDING_VERIFICATION" ? (
+                        <div className="flex items-center gap-2">
+                          <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-amber-50 text-amber-600 border border-amber-200 rounded-full">
+                            Pending Approval
+                          </span>
+                          <button onClick={() => handleApprove(v.id)} className="p-1 rounded bg-emerald-100 text-emerald-700 hover:bg-emerald-200" title="Approve"><Check className="w-3.5 h-3.5" /></button>
+                          <button onClick={() => handleReject(v.id)} className="p-1 rounded bg-rose-100 text-rose-700 hover:bg-rose-200" title="Reject"><X className="w-3.5 h-3.5" /></button>
+                        </div>
+                      ) : v.status === "REJECTED" ? (
+                        <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-500 rounded-full">Rejected</span>
+                      ) : (
+                        <span className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full flex items-center gap-1 w-max">
+                          <CheckCircle2 className="w-3 h-3" /> Verified Partner
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4">
-                      <span className="font-bold text-slate-900 text-xs">
-                        {v.payoutRate}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-1 font-bold text-slate-900">
-                        <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                        <span>{v.rating}</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${
-                          v.jobs > 0
-                            ? "bg-emerald-100 text-emerald-800"
-                            : "bg-slate-100 text-slate-500"
-                        }`}
-                      >
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${v.jobs > 0 ? "bg-purple-100 text-purple-800" : "bg-slate-100 text-slate-500"}`}>
                         {v.jobs} active {v.jobs === 1 ? "job" : "jobs"}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <button
                         onClick={() => handleOpenDispatch(v)}
-                        className="px-3.5 py-1.5 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-sm transition-colors inline-flex items-center gap-1.5"
+                        disabled={v.status !== "VERIFIED"}
+                        className="px-3.5 py-1.5 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-sm transition-colors inline-flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <Send className="w-3.5 h-3.5" />
-                        Dispatch to Booking
+                        Dispatch
                       </button>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="text-center py-10 text-slate-500">
-                    No vendor partners match your search or zone filters.
+                  <td colSpan={5} className="text-center py-10 text-slate-500">
+                    No vendor partners match your search filters.
                   </td>
                 </tr>
               )}
@@ -556,26 +407,10 @@ export default function VendorsPage() {
             </div>
 
             <form onSubmit={handleAssignVendor} className="p-6 space-y-4">
-              {/* Selected Vendor Summary Card */}
               <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
-                    Selected Partner
-                  </span>
-                  <p className="font-bold text-slate-900 text-sm mt-0.5">
-                    {selectedVendor.name}
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    {selectedVendor.category} • {selectedVendor.zone} • ID: {selectedVendor.id}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <span className="text-xs font-bold text-slate-900 block">
-                    {selectedVendor.payoutRate}
-                  </span>
-                  <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-600">
-                    ★ {selectedVendor.rating}
-                  </span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Selected Partner</span>
+                  <p className="font-bold text-slate-900 text-sm mt-0.5">{selectedVendor.name}</p>
                 </div>
               </div>
 
@@ -588,7 +423,7 @@ export default function VendorsPage() {
                 <select
                   value={targetBookingId}
                   onChange={(e) => setTargetBookingId(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-lg border border-slate-300 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900"
+                  className="w-full px-3.5 py-2 rounded-lg border border-slate-300 bg-white text-xs font-semibold text-slate-900"
                 >
                   {activeBookings.map((b, idx) => (
                     <option key={b.id ? `booking-opt-${b.id}-${idx}` : `opt-idx-${idx}`} value={b.id}>
@@ -601,28 +436,18 @@ export default function VendorsPage() {
               {/* Service Assignment Category */}
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-slate-700">
-                  Service Line Item to Assign
+                  Service Key to Fulfill
                 </label>
-                <input
-                  type="text"
+                <select
                   value={targetService}
                   onChange={(e) => setTargetService(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-lg border border-slate-300 bg-white text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900"
-                />
-              </div>
-
-              {/* Special Dispatch Instructions */}
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700">
-                  Instructions for Vendor Team
-                </label>
-                <textarea
-                  rows={3}
-                  value={dispatchNotes}
-                  onChange={(e) => setDispatchNotes(e.target.value)}
-                  placeholder="e.g. Ensure senior photographers arrive at venue by 4:00 PM for equipment check."
-                  className="w-full px-3.5 py-2 rounded-lg border border-slate-300 bg-white text-xs font-normal text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900 leading-relaxed"
-                />
+                  className="w-full px-3.5 py-2 rounded-lg border border-slate-300 bg-white text-xs font-semibold text-slate-900"
+                >
+                  {dynamicServices.map(s => (
+                    <option key={s.key} value={s.key}>{s.name}</option>
+                  ))}
+                </select>
+                <p className="text-[10px] text-slate-500 mt-1">Vendor must have this service and the booking's zone configured in their profile.</p>
               </div>
 
               {/* Modal Actions */}
@@ -636,7 +461,7 @@ export default function VendorsPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg shadow-sm transition-colors inline-flex items-center gap-1.5"
+                  className="px-5 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg shadow-sm inline-flex items-center gap-1.5"
                 >
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   Confirm Vendor Assignment

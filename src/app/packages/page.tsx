@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import {
   BadgeCheck,
@@ -8,193 +8,50 @@ import {
   PackageSearch,
   ShieldCheck,
   Receipt,
+  ArrowRight,
+  Filter,
 } from "lucide-react";
 import { Footer } from "@/components/Footer";
 import Navbar from "@/components/Navbar";
-import type { EventPackage } from "@/types/package";
-import apiClient from "@/lib/apiClient";
-
-// TODO: point this at your real endpoint if it differs
-const PACKAGES_ENDPOINT = "/packages";
-
-function normalizePackageItem(raw: Record<string, unknown>): EventPackage {
-  const packageCategory = raw.packageCategory as { name?: unknown } | undefined;
-  const packageSubCategory = raw.packageSubCategory as
-    | { name?: unknown }
-    | undefined;
-  const event = raw.event as { name?: unknown } | undefined;
-  const pricings = raw.pricings as
-    | Array<{
-        finalPrice?: unknown;
-        currency?: unknown;
-      }>
-    | undefined;
-  const setting = raw.setting as { isFeatured?: unknown } | undefined;
-
-  const included = Array.from(
-    new Set(
-      Array.isArray(raw.included)
-        ? raw.included.filter(
-            (item): item is string => typeof item === "string",
-          )
-        : [
-            typeof packageCategory?.name === "string"
-              ? String(packageCategory.name)
-              : undefined,
-            typeof packageSubCategory?.name === "string"
-              ? String(packageSubCategory.name)
-              : undefined,
-            typeof event?.name === "string" ? String(event.name) : undefined,
-          ].filter((item): item is string => Boolean(item)),
-    ),
-  );
-
-  const price = Number(
-    raw.activePrice ??
-      raw.startingPrice ??
-      raw.price ??
-      pricings?.[0]?.finalPrice ??
-      0,
-  );
-
-  return {
-    id: Number(raw.id ?? 0),
-    title: String(raw.name ?? raw.title ?? `Package ${raw.id ?? ""}`),
-    subtitle: typeof raw.description === "string" ? raw.description : undefined,
-    price: Number.isFinite(price) ? price : 0,
-    currency:
-      typeof pricings?.[0]?.currency === "string"
-        ? String(pricings[0].currency)
-        : typeof raw.currency === "string"
-          ? raw.currency
-          : "BDT",
-    imageUrl:
-      typeof raw.thumbnail === "string"
-        ? raw.thumbnail
-        : typeof raw.banner === "string"
-          ? raw.banner
-          : typeof raw.imageUrl === "string"
-            ? raw.imageUrl
-            : undefined,
-    included,
-    popular: Boolean(setting?.isFeatured ?? raw.popular),
-    tier: typeof raw.tier === "string" ? raw.tier : undefined,
-    maxGuests: typeof raw.maxGuests === "number" ? raw.maxGuests : undefined,
-  };
-}
-
-const TIERS = ["Basic", "Standard", "Premium", "Luxury"] as const;
-type Tier = (typeof TIERS)[number];
-
-const MIN_GUESTS = 100;
-const MAX_GUESTS = 1000;
-
-const DEFAULT_PACKAGES: EventPackage[] = [
-  {
-    id: "wedding-basic",
-    title: "Wedding Basic Package",
-    subtitle: "Complete essential wedding event package for indoor celebrations.",
-    price: 180000,
-    currency: "BDT",
-    imageUrl: "/images/wedding-1.jpg",
-    included: [
-      "Photography (1 Senior Photographer)",
-      "Videography (HD Event Coverage)",
-      "Basic Decoration (Floral Backdrop & Gate)",
-      "Catering (Menu A - 250 Guests)",
-    ],
-    popular: false,
-    tier: "Basic",
-    maxGuests: 250,
-  },
-  {
-    id: "wedding-premium",
-    title: "Wedding Premium Package",
-    subtitle: "All-inclusive wedding package featuring fresh florals & royal dining.",
-    price: 380000,
-    currency: "BDT",
-    imageUrl: "/images/wedding-2.jpg",
-    included: [
-      "Photography (2 Senior Photographers)",
-      "Videography (4K Cinematic Teaser)",
-      "Premium Decoration (Fresh Flowers Stage)",
-      "Catering (Royal Kacchi - 400 Guests)",
-    ],
-    popular: true,
-    tier: "Premium",
-    maxGuests: 400,
-  },
-  {
-    id: "wedding-luxury",
-    title: "Wedding Luxury Royal Package",
-    subtitle: "Royal palace celebration with imported flowers & celebrity DJ.",
-    price: 750000,
-    currency: "BDT",
-    imageUrl: "/images/wedding-3.jpg",
-    included: [
-      "Photography (3 Master Photographers)",
-      "Videography (Full Movie Feature)",
-      "Luxury Theme Decoration (Exotic Flowers)",
-      "Catering (Imperial Grand - 600 Guests)",
-    ],
-    popular: false,
-    tier: "Luxury",
-    maxGuests: 600,
-  },
-];
-
-function CardSkeleton() {
-  return (
-    <div className="animate-pulse overflow-hidden rounded-2xl border border-slate-200 bg-white">
-      <div className="aspect-[16/9] w-full bg-slate-100" />
-      <div className="space-y-2.5 p-4">
-        <div className="h-4 w-2/3 rounded bg-slate-100" />
-        <div className="h-3.5 w-1/2 rounded bg-slate-100" />
-        <div className="h-8 w-full rounded bg-slate-100" />
-      </div>
-    </div>
-  );
-}
+import { useDynamicPackages } from "@/hooks/useDynamicPackages";
+import { EventPackage } from "@/types/package";
+import { EVENT_TYPES } from "@/lib/calculatorData";
 
 function PackageCard({ pkg }: { pkg: EventPackage }) {
-  const isPopular = !!pkg.popular;
-  const title = pkg.title ?? "Package";
-  const price = pkg.price ?? 0;
-  const currency = pkg.currency ?? "BDT";
-  const included = pkg.included ?? [];
-
+  const eventType = EVENT_TYPES.find(e => e.id === pkg.eventTypeId);
+  
   return (
     <div
       className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-white transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg ${
         isPopular
-          ? "border-transparent shadow-md ring-2 ring-amber-400/60"
-          : "border-slate-200 shadow-sm hover:border-amber-200"
+          ? "border-transparent shadow-md ring-2 ring-violet-400/60"
+          : "border-slate-200 shadow-sm hover:border-violet-200"
       }`}
     >
       {/* Shorter, fixed-ratio image so the card never stretches tall */}
       <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">
         {pkg.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={pkg.imageUrl}
-            alt={title}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            alt={pkg.title}
+            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+            loading="lazy"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-slate-300">
-            <ImageOff className="h-7 w-7" />
+            <ImageOff className="h-12 w-12 opacity-50" />
           </div>
         )}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent" />
         {isPopular && (
-          <span className="absolute right-2.5 top-2.5 rounded-full bg-black px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-amber-400 shadow-sm">
+          <span className="absolute right-2.5 top-2.5 rounded-full bg-gradient-to-r from-violet-600 to-blue-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-sm">
             Most Popular
-          </span>
+          </div>
         )}
-        {pkg.tier && (
-          <span className="absolute left-2.5 top-2.5 rounded-full bg-white/90 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-slate-700 backdrop-blur-sm">
-            {pkg.tier}
-          </span>
+        {pkg.discountPercentage > 0 && (
+          <div className="absolute right-4 top-4 rounded-full bg-rose-500 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-white shadow-md">
+            Save {pkg.discountPercentage}%
+          </div>
         )}
       </div>
 
@@ -210,10 +67,10 @@ function PackageCard({ pkg }: { pkg: EventPackage }) {
 
         <div className="mt-2.5 flex items-end justify-between">
           <p className="flex items-baseline gap-1">
-            <span className="text-xl font-bold text-slate-900">
+            <span className="bg-gradient-to-r from-violet-700 to-blue-700 bg-clip-text text-xl font-bold text-transparent">
               {price.toLocaleString("en-BD")}
             </span>
-            <span className="text-[11px] font-medium text-amber-600">
+            <span className="text-[11px] font-medium text-slate-400">
               {currency}
             </span>
           </p>
@@ -229,7 +86,7 @@ function PackageCard({ pkg }: { pkg: EventPackage }) {
             {included.slice(0, 3).map((item, index) => (
               <span
                 key={`${pkg.id}-${item}-${index}`}
-                className="inline-flex items-center gap-1 rounded-full border border-amber-100 bg-amber-50/70 px-2 py-0.5 text-[10.5px] font-medium text-amber-700"
+                className="inline-flex items-center gap-1 rounded-full border border-violet-100 bg-violet-50/70 px-2 py-0.5 text-[10.5px] font-medium text-violet-700"
               >
                 <BadgeCheck className="h-3 w-3 shrink-0" />
                 <span className="max-w-[9rem] truncate">{item}</span>
@@ -242,8 +99,8 @@ function PackageCard({ pkg }: { pkg: EventPackage }) {
           href={`/packages/${pkg.id}`}
           className={`mt-3.5 inline-flex w-full items-center justify-center rounded-lg px-4 py-2 text-xs font-semibold transition-all ${
             isPopular
-              ? "bg-black text-amber-400 shadow-sm hover:bg-slate-800"
-              : "border border-slate-300 text-slate-800 hover:border-amber-400 hover:text-amber-800"
+              ? "bg-gradient-to-r from-violet-600 to-blue-600 text-white shadow-sm hover:from-violet-700 hover:to-blue-700"
+              : "border border-slate-300 text-slate-800 hover:border-violet-400 hover:text-violet-800"
           }`}
         >
           {isPopular ? "View Details & Customize" : "View Details"}
@@ -253,71 +110,13 @@ function PackageCard({ pkg }: { pkg: EventPackage }) {
   );
 }
 
-const Page = () => {
-  const [packages, setPackages] = useState<EventPackage[]>([]);
-  const [status, setStatus] = useState<"loading" | "error" | "ready">(
-    "loading",
-  );
+export default function PackagesPage() {
+  const packages = useDynamicPackages();
+  const [selectedEventType, setSelectedEventType] = useState<string>("all");
 
-  const [selectedTiers, setSelectedTiers] = useState<Tier[]>([
-    "Basic",
-    "Standard",
-    "Premium",
-  ]);
-  const [guestCount, setGuestCount] = useState(500);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadPackages() {
-      setStatus("loading");
-      try {
-        const res = await apiClient.get(PACKAGES_ENDPOINT);
-        const payload = res.data;
-        const rawList = Array.isArray(payload) ? payload : (payload.data ?? []);
-        const list: EventPackage[] = Array.isArray(rawList)
-          ? rawList.map((item) =>
-              normalizePackageItem(item as Record<string, unknown>),
-            )
-          : [];
-
-        if (!cancelled) {
-          setPackages(list.length > 0 ? list : DEFAULT_PACKAGES);
-          setStatus("ready");
-        }
-      } catch (err) {
-        console.error("Failed to load packages", err);
-        if (!cancelled) {
-          setPackages(DEFAULT_PACKAGES);
-          setStatus("ready");
-        }
-      }
-    }
-
-    loadPackages();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  const toggleTier = (tier: Tier) => {
-    setSelectedTiers((prev) =>
-      prev.includes(tier) ? prev.filter((t) => t !== tier) : [...prev, tier],
-    );
-  };
-
-  const resetFilters = () => {
-    setSelectedTiers(["Basic", "Standard", "Premium"]);
-    setGuestCount(500);
-  };
-
-  const filteredPackages = useMemo(() => {
-    return packages.filter((pkg) => {
-      const tierOk = pkg.tier ? selectedTiers.includes(pkg.tier as Tier) : true;
-      const guestsOk = pkg.maxGuests ? pkg.maxGuests >= guestCount : true;
-      return tierOk && guestsOk;
-    });
-  }, [packages, selectedTiers, guestCount]);
+  const filteredPackages = selectedEventType === "all" 
+    ? packages 
+    : packages.filter(p => p.eventTypeId === selectedEventType);
 
   return (
     <>
@@ -325,13 +124,13 @@ const Page = () => {
 
       <section className="relative overflow-hidden bg-slate-50/60 px-6 py-16 sm:px-10">
         <div className="pointer-events-none absolute inset-0 -z-10">
-          <div className="absolute -top-24 left-0 h-72 w-72 rounded-full bg-amber-200/40 blur-3xl" />
-          <div className="absolute -top-10 right-0 h-72 w-72 rounded-full bg-orange-200/30 blur-3xl" />
+          <div className="absolute -top-24 left-0 h-72 w-72 rounded-full bg-violet-200/40 blur-3xl" />
+          <div className="absolute -top-10 right-0 h-72 w-72 rounded-full bg-blue-200/40 blur-3xl" />
         </div>
 
         <div className="mx-auto max-w-6xl">
           {/* Header */}
-          <h1 className="text-3xl font-bold text-slate-900 sm:text-4xl">
+          <h1 className="bg-gradient-to-r from-violet-700 via-indigo-700 to-blue-700 bg-clip-text text-3xl font-bold text-transparent sm:text-4xl">
             Available Packages for Your Event
           </h1>
           <p className="mt-2 text-slate-500">
@@ -339,11 +138,15 @@ const Page = () => {
           </p>
 
           <div className="mt-4 flex flex-wrap gap-3">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-white px-3 py-1.5 text-sm font-medium text-amber-800">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-white px-3 py-1.5 text-sm font-medium text-violet-800">
               <ShieldCheck className="h-4 w-4" />
-              Pre-vetted Vendors
+              100% Escrow Protected
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-white px-3 py-1.5 text-sm font-medium text-amber-800">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-purple-200 bg-purple-50 px-4 py-2 text-sm font-semibold text-purple-800">
+              <BadgeCheck className="h-4 w-4" />
+              Pre-vetted EVENTO Vendors
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-white px-3 py-1.5 text-sm font-medium text-violet-800">
               <Receipt className="h-4 w-4" />
               Transparent Pricing
             </span>
@@ -371,7 +174,7 @@ const Page = () => {
                         type="checkbox"
                         checked={selectedTiers.includes(tier)}
                         onChange={() => toggleTier(tier)}
-                        className="h-4 w-4 rounded border-slate-300 accent-amber-600 text-amber-600 focus:ring-amber-500"
+                        className="h-4 w-4 rounded border-slate-300 text-violet-700 focus:ring-violet-600"
                       />
                       {tier}
                     </label>
@@ -394,9 +197,9 @@ const Page = () => {
                   step={50}
                   value={guestCount}
                   onChange={(e) => setGuestCount(Number(e.target.value))}
-                  className="mt-1 w-full accent-amber-600"
+                  className="mt-1 w-full accent-violet-700"
                 />
-                <div className="mt-3 rounded-md bg-amber-50 px-3 py-2 text-center text-sm font-medium text-amber-800">
+                <div className="mt-3 rounded-md bg-gradient-to-r from-violet-50 to-blue-50 px-3 py-2 text-center text-sm font-medium text-violet-800">
                   Selected: ~{guestCount} Guests
                 </div>
               </div>
@@ -404,48 +207,26 @@ const Page = () => {
               <button
                 type="button"
                 onClick={resetFilters}
-                className="mt-6 w-full rounded-md border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-amber-300 hover:bg-amber-50 hover:text-amber-800"
+                className="mt-6 w-full rounded-md border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-violet-300 hover:bg-violet-50 hover:text-violet-800"
               >
                 Reset Filters
               </button>
             </aside>
 
-            {/* Package Grid */}
-            <div>
-              {status === "loading" && (
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <CardSkeleton key={i} />
-                  ))}
-                </div>
-              )}
-
-              {status === "error" && (
-                <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white py-16 text-center">
-                  <PackageSearch className="mb-3 h-9 w-9 text-slate-300" />
-                  <p className="font-semibold text-slate-900">
-                    Couldn&apos;t load packages
-                  </p>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Please refresh or try again shortly.
-                  </p>
-                </div>
-              )}
-
-              {status === "ready" && filteredPackages.length === 0 && (
-                <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white py-16 text-center">
-                  <PackageSearch className="mb-3 h-9 w-9 text-slate-300" />
-                  <p className="font-semibold text-slate-900">
+            {/* Grid */}
+            <div className="flex-1">
+              {filteredPackages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-200 bg-white py-24 text-center">
+                  <PackageSearch className="mb-4 h-12 w-12 text-slate-300" />
+                  <p className="text-lg font-bold text-slate-900">
                     No packages match your filters
                   </p>
-                  <p className="mt-1 max-w-xs text-sm text-slate-500">
-                    Try adjusting the tier or guest count on the left.
+                  <p className="mt-2 text-sm text-slate-500">
+                    Try selecting a different event type.
                   </p>
                 </div>
-              )}
-
-              {status === "ready" && filteredPackages.length > 0 && (
-                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+              ) : (
+                <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
                   {filteredPackages.map((pkg) => (
                     <PackageCard key={pkg.id} pkg={pkg} />
                   ))}
@@ -459,6 +240,4 @@ const Page = () => {
       <Footer />
     </>
   );
-};
-
-export default Page;
+}

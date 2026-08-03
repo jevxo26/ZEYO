@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, Check, ImageOff, PackageSearch, Sparkles } from "lucide-react";
+import { ArrowRight, ImageOff, PackageSearch } from "lucide-react";
 import type { EventPackage } from "@/types/package";
 
 // TODO: point this at your real endpoint if it differs, e.g.
@@ -77,78 +77,58 @@ function normalizePackageItem(raw: Record<string, unknown>): EventPackage {
 
 function CardSkeleton() {
   return (
-    <div className="animate-pulse overflow-hidden rounded-3xl border border-slate-200 bg-white">
-      <div className="h-52 w-full bg-slate-100" />
-      <div className="space-y-3 p-7">
+    <div className="animate-pulse overflow-hidden rounded-2xl border border-slate-200 bg-white">
+      <div className="h-48 w-full bg-slate-100" />
+      <div className="space-y-3 p-6">
         <div className="h-5 w-2/3 rounded bg-slate-100" />
         <div className="h-4 w-1/3 rounded bg-slate-100" />
-        <div className="h-4 w-full rounded bg-slate-100" />
-        <div className="h-4 w-5/6 rounded bg-slate-100" />
-        <div className="h-11 w-full rounded-xl bg-slate-100" />
+        <div className="h-9 w-full rounded bg-slate-100" />
       </div>
     </div>
   );
 }
 
 function FeaturedCard({ pkg }: { pkg: EventPackage }) {
-  const title = pkg.title ?? "Package";
-  const price = pkg.price ?? 0;
-  const currency = pkg.currency ?? "BDT";
-  const included = pkg.included ?? [];
-
+  const eventType = EVENT_TYPES.find(e => e.id === pkg.eventTypeId);
+  
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:border-amber-200 hover:shadow-2xl hover:shadow-amber-100">
-      {/* Image */}
-      <div className="relative h-52 w-full overflow-hidden bg-slate-100">
+    <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md">
+      <div className="relative h-48 w-full bg-slate-100">
         {pkg.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={pkg.imageUrl}
-            alt={title}
+            alt={pkg.title}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-slate-300">
-            <ImageOff className="h-8 w-8" />
+            <ImageOff className="h-10 w-10 opacity-50" />
           </div>
         )}
-
-        {/* subtle gradient at image bottom for depth */}
-        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/40 to-transparent" />
-
         {pkg.popular && (
-          <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-black px-3 py-1.5 text-xs font-bold text-amber-400 shadow-lg shadow-black/30">
-            <Sparkles className="h-3 w-3" />
+          <span className="absolute right-3 top-3 rounded-full bg-gradient-to-r from-violet-600 to-blue-600 px-3 py-1 text-xs font-semibold text-white">
             Popular
-          </span>
+          </div>
         )}
       </div>
 
-      {/* Content */}
-      <div className="flex flex-1 flex-col p-7">
-        <h3 className="text-lg font-bold text-slate-900">{title}</h3>
-
-        <p className="mt-1.5 flex items-baseline gap-1.5">
-          <span className="text-2xl font-extrabold tracking-tight text-slate-900">
-            {price.toLocaleString("en-BD")}
+      <div className="flex flex-1 flex-col p-6">
+        <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
+        <p className="mt-1 text-sm text-slate-500">
+          {price.toLocaleString("en-BD")}{" "}
+          <span className="font-normal text-slate-400">
+            {currency} / Starting
           </span>
-          <span className="text-xs font-semibold text-amber-600">
-            {currency}
-          </span>
-          <span className="text-xs font-medium text-slate-400">Starting</span>
         </p>
 
-        <div className="mt-1 h-px w-full bg-slate-100" />
-
-        <ul className="mt-4 space-y-2.5">
+        <ul className="mt-4 space-y-1.5">
           {included.slice(0, 4).map((item, index) => (
             <li
               key={`${pkg.id}-${item}-${index}`}
-              className="flex items-start gap-2.5 text-sm text-slate-600"
+              className="flex items-start gap-2 text-sm text-slate-600"
             >
-              <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-amber-100">
-                <Check className="h-2.5 w-2.5 text-amber-700" strokeWidth={3} />
-              </span>
+              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-gradient-to-r from-violet-500 to-blue-500" />
               {item}
             </li>
           ))}
@@ -156,65 +136,26 @@ function FeaturedCard({ pkg }: { pkg: EventPackage }) {
 
         <Link
           href={`/packages/${pkg.id}`}
-          className="mt-7 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white transition-all duration-300 hover:bg-black group-hover:gap-3"
+          className="mt-6 inline-flex w-full items-center justify-center rounded-md border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-800 transition-colors hover:border-violet-300 hover:text-violet-700"
         >
           View Details
-          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
         </Link>
       </div>
     </div>
   );
 }
 
-export function FeaturedPackages() {
-  const [packages, setPackages] = useState<EventPackage[]>([]);
-  const [status, setStatus] = useState<"loading" | "error" | "ready">(
-    "loading",
-  );
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadFeatured() {
-      setStatus("loading");
-      try {
-        const res = await fetch(FEATURED_PACKAGES_ENDPOINT, {
-          credentials: "include",
-        });
-        if (!res.ok) throw new Error(`Request failed: ${res.status}`);
-        const payload = await res.json();
-        const rawList = Array.isArray(payload) ? payload : (payload.data ?? []);
-        const list: EventPackage[] = Array.isArray(rawList)
-          ? rawList.map((item) =>
-              normalizePackageItem(item as Record<string, unknown>),
-            )
-          : [];
-
-        if (!cancelled) {
-          setPackages(list);
-          setStatus("ready");
-        }
-      } catch (err) {
-        console.error("Failed to load featured packages", err);
-        if (!cancelled) setStatus("error");
-      }
-    }
-
-    loadFeatured();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+export default function FeaturedPackages() {
+  const allPackages = useDynamicPackages();
+  const featured = allPackages.filter(p => p.popular).slice(0, 3);
+  const packagesToDisplay = featured.length > 0 ? featured : allPackages.slice(0, 3);
 
   return (
     <section className="bg-white px-6 py-24 sm:px-10">
       <div className="mx-auto max-w-6xl">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
           <div>
-            <span className="text-xs font-bold uppercase tracking-[0.2em] text-amber-600">
-              Curated for You
-            </span>
-            <h2 className="mt-2 text-3xl font-bold text-slate-900 sm:text-4xl">
+            <h2 className="text-3xl font-bold text-slate-900 sm:text-4xl">
               Featured Planning Packages
             </h2>
             <p className="mt-2 max-w-lg text-slate-500">
@@ -223,12 +164,19 @@ export function FeaturedPackages() {
             </p>
           </div>
 
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+          {packagesToDisplay.map((pkg) => (
+            <FeaturedCard key={pkg.id} pkg={pkg} />
+          ))}
+        </div>
+
+        <div className="mt-16 text-center">
           <Link
             href="/packages"
-            className="group inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-slate-900 transition-colors hover:text-amber-700"
+            className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-violet-700 hover:text-violet-800"
           >
             View All Packages
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
 
@@ -242,7 +190,7 @@ export function FeaturedPackages() {
           )}
 
           {status === "error" && (
-            <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-slate-50 py-16 text-center">
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 py-16 text-center">
               <PackageSearch className="mb-3 h-9 w-9 text-slate-300" />
               <p className="font-semibold text-slate-900">
                 Couldn&apos;t load packages
@@ -254,7 +202,7 @@ export function FeaturedPackages() {
           )}
 
           {status === "ready" && packages.length === 0 && (
-            <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-slate-50 py-16 text-center">
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 py-16 text-center">
               <PackageSearch className="mb-3 h-9 w-9 text-slate-300" />
               <p className="font-semibold text-slate-900">No packages yet</p>
               <p className="mt-1 max-w-xs text-sm text-slate-500">

@@ -23,9 +23,11 @@ import { toast } from "sonner";
 
 const NAV_LINKS = [
   { label: "Home", href: "/" },
+  { label: "Events", href: "/calculator" },
   { label: "Packages", href: "/packages" },
-  { label: "Smart Calculator", href: "/calculator" },
+  { label: "Calculator", href: "/calculator" },
   { label: "About", href: "/about" },
+  { label: "FAQ", href: "/contact#faq" },
   { label: "Contact", href: "/contact" },
 ];
 

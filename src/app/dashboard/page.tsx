@@ -187,44 +187,42 @@ export default function DashboardOverviewPage() {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
-      {/* ── Role Banner & Header ──────────────────────────────────────────────── */}
-      <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-800 via-indigo-800 to-blue-700 text-white border border-indigo-500/40 shadow-md hover:shadow-indigo-900/30 hover:shadow-xl transition-shadow duration-500 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-white/15 border border-white/30 flex items-center justify-center shrink-0 transition-all duration-300 hover:bg-white/25 hover:border-white/50 hover:scale-110">
-            <ShieldCheck className="w-5 h-5 text-white" />
+      {/* ── Role Banner & Header (Hidden for Admin) ──────────────────────────────────────────────── */}
+      {role !== "admin" && (
+        <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-800 via-indigo-800 to-blue-700 text-white border border-indigo-500/40 shadow-md hover:shadow-indigo-900/30 hover:shadow-xl transition-shadow duration-500 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-white/15 border border-white/30 flex items-center justify-center shrink-0 transition-all duration-300 hover:bg-white/25 hover:border-white/50 hover:scale-110">
+              <ShieldCheck className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <span className="text-xs font-bold text-blue-100 uppercase tracking-wider">
+                {role === "vendor"
+                  ? "Vendor Partner Operations Portal"
+                  : "Customer Celebration Portal"}
+              </span>
+              <p className="text-sm text-white/80">
+                {role === "vendor"
+                  ? "Dispatched technical tasks, venue specifications, and protected escrow payouts."
+                  : "All bookings, calculations, and vendor task dispatches are centralized by EVENTO Platform Operations."}
+              </p>
+            </div>
           </div>
-          <div>
-            <span className="text-xs font-bold text-blue-100 uppercase tracking-wider">
-              {role === "vendor"
-                ? "Vendor Partner Operations Portal"
-                : role === "admin"
-                ? "Admin Operations Center — Managed Event OS"
-                : "Customer Celebration Portal"}
-            </span>
-            <p className="text-sm text-white/80">
-              {role === "vendor"
-                ? "Dispatched technical tasks, venue specifications, and protected escrow payouts."
-                : role === "admin"
-                ? "Platform-wide management across all 7 Bangladesh zones, vendor onboarding, and task dispatches."
-                : "All bookings, calculations, and vendor task dispatches are centralized by EVENTO Platform Operations."}
-            </p>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link
+              href="/calculator"
+              className="px-3 py-1.5 rounded-xl bg-white text-purple-700 hover:bg-blue-50 text-xs font-bold transition-all duration-200 shadow-sm hover:shadow-lg hover:shadow-black/10 hover:-translate-y-0.5 active:translate-y-0"
+            >
+              + Smart Calculator
+            </Link>
+            <Link
+              href="/packages"
+              className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
+            >
+              Browse Packages
+            </Link>
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <Link
-            href="/calculator"
-            className="px-3 py-1.5 rounded-xl bg-white text-purple-700 hover:bg-blue-50 text-xs font-bold transition-all duration-200 shadow-sm hover:shadow-lg hover:shadow-black/10 hover:-translate-y-0.5 active:translate-y-0"
-          >
-            + Smart Calculator
-          </Link>
-          <Link
-            href="/packages"
-            className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
-          >
-            Browse Packages
-          </Link>
-        </div>
-      </div>
+      )}
 
       {/* ── Welcome Header per Role ───────────────────────────────────────────── */}
       <div className="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">

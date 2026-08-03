@@ -5,6 +5,8 @@ interface User {
   name: string;
   email: string;
   role: string;
+  supportedServiceKeys?: string[];
+  supportedZoneIds?: string[];
 }
 
 interface AuthState {

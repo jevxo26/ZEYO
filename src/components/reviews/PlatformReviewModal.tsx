@@ -33,20 +33,44 @@ export default function PlatformReviewModal({
     setIsSubmitting(true);
 
     try {
-      // Post to our reviews / audit endpoint
+      const newReview = {
+        id: `REV-${Date.now()}`,
+        bookingReference,
+        eventName,
+        overallRating,
+        bookingProcessRating,
+        serviceQualityRating,
+        supportTeamRating,
+        comment,
+        reviewTarget: "EVENTO_PLATFORM",
+        date: new Date().toISOString()
+      };
+
+      if (typeof window !== "undefined") {
+        try {
+          const stored = localStorage.getItem("custom_reviews") || "[]";
+          const list = JSON.parse(stored);
+          list.unshift(newReview);
+          localStorage.setItem("custom_reviews", JSON.stringify(list));
+
+          const bstored = localStorage.getItem("customBookings");
+          if (bstored) {
+            const blist = JSON.parse(bstored);
+            const bIdx = blist.findIndex((b:any) => String(b.bookingNumber) === String(bookingReference) || String(b.id) === String(bookingReference));
+            if (bIdx >= 0) {
+              blist[bIdx].hasReview = true;
+              blist[bIdx].reviewData = newReview;
+              localStorage.setItem("customBookings", JSON.stringify(blist));
+              window.dispatchEvent(new CustomEvent("dashboard-data-update"));
+            }
+          }
+        } catch (e) {}
+      }
+
       await fetch("/api/reviews", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          bookingReference,
-          eventName,
-          overallRating,
-          bookingProcessRating,
-          serviceQualityRating,
-          supportTeamRating,
-          comment,
-          reviewTarget: "EVENTO_PLATFORM", // explicitly platform review
-        }),
+        body: JSON.stringify(newReview),
       }).catch(() => null);
 
       setIsSuccess(true);
