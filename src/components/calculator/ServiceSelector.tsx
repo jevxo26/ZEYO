@@ -32,8 +32,8 @@ interface ServiceSelectorProps {
 }
 
 const serviceIcons: Record<string, React.ReactNode> = {
-  Camera: <Camera className="w-5 h-5 text-indigo-500" />,
-  Video: <Video className="w-5 h-5 text-purple-500" />,
+  Camera: <Camera className="w-5 h-5 text-amber-500" />,
+  Video: <Video className="w-5 h-5 text-orange-500" />,
   Utensils: <Utensils className="w-5 h-5 text-amber-500" />,
   Sparkles: <Sparkles className="w-5 h-5 text-pink-500" />,
   Layers: <Layers className="w-5 h-5 text-blue-500" />,
@@ -70,7 +70,7 @@ export default function ServiceSelector({
 
   return (
     <div className="space-y-6 animate-fadeIn">
-      <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-slate-200/80 dark:border-slate-800/80 shadow-sm">
+      <div className="bg-white/80 dark:bg-black/60 backdrop-blur-md rounded-2xl p-6 sm:p-8 border border-slate-200/80 dark:border-white/10 shadow-sm">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <div>
             <h3 className="text-xl font-bold text-slate-900 dark:text-white">
@@ -85,7 +85,7 @@ export default function ServiceSelector({
             <button
               type="button"
               onClick={isAllSelected ? onClearAll : onSelectAll}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-lg border border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 text-slate-700 dark:text-slate-300 transition-colors"
             >
               {isAllSelected ? (
                 <>
@@ -94,7 +94,7 @@ export default function ServiceSelector({
                 </>
               ) : (
                 <>
-                  <CheckSquare className="w-4 h-4 text-indigo-600" />
+                  <CheckSquare className="w-4 h-4 text-amber-500" />
                   Select All Services
                 </>
               )}
@@ -112,23 +112,28 @@ export default function ServiceSelector({
                 onClick={() => onToggleService(srv.key)}
                 className={`group relative flex flex-col min-h-[160px] w-full p-5 rounded-xl border text-left transition-all duration-300 ease-out hover:-translate-y-1 active:translate-y-0 active:duration-100 ${
                   isChecked
-                    ? "border-indigo-600 bg-indigo-50/90 dark:bg-indigo-950/40 shadow-md hover:shadow-xl hover:shadow-indigo-500/10 ring-2 ring-indigo-500/20"
-                    : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm hover:shadow-xl hover:shadow-indigo-500/10 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                    ? "border-amber-500 bg-amber-50/90 dark:bg-amber-950/20 shadow-md hover:shadow-xl hover:shadow-amber-500/10 ring-2 ring-amber-500/20"
+                    : "border-slate-200 dark:border-white/10 bg-white dark:bg-black/40 shadow-sm hover:shadow-xl hover:shadow-amber-500/10 hover:border-amber-300 dark:hover:border-amber-700/50 hover:bg-slate-50 dark:hover:bg-white/5"
                 }`}
               >
                 {/* Icon + checkbox row — fixed-size elements, never squeezed by text */}
                 <div className="flex items-center justify-between">
-                  <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 shrink-0 transition-all duration-300 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-950/60 group-hover:scale-105">
+                  <div className="p-2.5 rounded-xl bg-slate-100 dark:bg-white/10 shrink-0 transition-all duration-300 group-hover:bg-amber-100 dark:group-hover:bg-amber-950/40 group-hover:scale-105">
                     {serviceIcons[srv.iconName] || (
-                      <Sparkles className="w-5 h-5 text-indigo-500" />
+                      <Sparkles className="w-5 h-5 text-amber-500" />
                     )}
                   </div>
                   <div
                     className={`flex h-5 w-5 items-center justify-center rounded-md border shrink-0 transition-all duration-200 ${
                       isChecked
-                        ? "bg-indigo-600 border-indigo-600 text-white"
-                        : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 group-hover:border-indigo-400 dark:group-hover:border-indigo-600"
+                        ? "text-black border-transparent"
+                        : "border-slate-300 dark:border-slate-600 bg-white dark:bg-black/40 group-hover:border-amber-400 dark:group-hover:border-amber-600"
                     }`}
+                    style={
+                      isChecked
+                        ? { background: "linear-gradient(135deg, #F59E0B, #FB923C)" }
+                        : undefined
+                    }
                   >
                     {isChecked && <Check className="h-3.5 w-3.5 stroke-[3]" />}
                   </div>
@@ -136,7 +141,7 @@ export default function ServiceSelector({
 
                 {/* Text block — full card width, wraps safely, never touches icon/checkbox */}
                 <div className="mt-4 min-w-0">
-                  <span className="block font-semibold text-slate-900 dark:text-white text-sm sm:text-base leading-snug break-words transition-colors duration-200 group-hover:text-indigo-700 dark:group-hover:text-indigo-300">
+                  <span className="block font-semibold text-slate-900 dark:text-white text-sm sm:text-base leading-snug break-words transition-colors duration-200 group-hover:text-amber-700 dark:group-hover:text-amber-300">
                     {srv.name}
                   </span>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 leading-relaxed break-words line-clamp-3">
@@ -145,7 +150,7 @@ export default function ServiceSelector({
                 </div>
 
                 {/* Subtle top accent line that reveals on hover for a premium touch */}
-                <span className="pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-indigo-400/0 to-transparent group-hover:via-indigo-400/60 transition-all duration-300" />
+                <span className="pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-amber-400/0 to-transparent group-hover:via-amber-400/60 transition-all duration-300" />
               </button>
             );
           })}
