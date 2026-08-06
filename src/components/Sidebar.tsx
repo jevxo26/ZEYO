@@ -66,13 +66,14 @@ export default function Sidebar() {
   const customerRoutes = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
     { name: "My Bookings", href: "/dashboard/bookings", icon: ShoppingBag },
-    { name: "Event Calendar", href: "/dashboard/my-events", icon: Calendar },
+    { name: "Package Schedules", href: "/dashboard/my-events", icon: Calendar },
     { name: "Messages", href: "/dashboard/messages", icon: MessageSquare },
   ];
 
   const vendorRoutes = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
     { name: "My Tasks", href: "/dashboard/tasks", icon: ClipboardList },
+    { name: "Messages", href: "/dashboard/messages", icon: MessageSquare },
     { name: "Earnings", href: "/dashboard/earnings", icon: Wallet },
     { name: "Settings", href: "/dashboard/settings", icon: Settings },
   ];
@@ -80,7 +81,7 @@ export default function Sidebar() {
   const adminRoutes = [
     { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
     { name: "All Bookings", href: "/dashboard/bookings", icon: ShoppingBag },
-    { name: "All Events", href: "/dashboard/my-events", icon: Calendar },
+    { name: "Package Schedules", href: "/dashboard/my-events", icon: Calendar },
     { name: "Vendor Partners", href: "/dashboard/vendors", icon: Users },
     { name: "Task Dispatch", href: "/dashboard/tasks", icon: ClipboardList },
     { name: "Messages", href: "/dashboard/messages", icon: MessageSquare },
@@ -134,17 +135,17 @@ export default function Sidebar() {
           </button>
         </div>
 
-        {role !== "vendor" && (
+        {role === "admin" && (
           <button
             onClick={() =>
               window.dispatchEvent(
-                new CustomEvent("open-dashboard-modal", { detail: "new-booking" })
+                new CustomEvent("open-dashboard-modal", { detail: "new-package" })
               )
             }
             className="w-full cursor-pointer rounded-xl bg-gradient-to-r from-purple-600 to-blue-500 px-4 py-2.5 text-xs font-bold text-white shadow-sm transition hover:from-purple-700 hover:to-blue-600"
           >
             <span className="flex items-center justify-center gap-2">
-              <Plus size={13} /> {role === "admin" ? "Create Event" : "New Booking"}
+              <Plus size={13} /> Create Package
             </span>
           </button>
         )}

@@ -74,6 +74,7 @@ export default function BookingDetailsPage() {
   const [transactions, setTransactions] = useState<any[]>([]);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState<number | string>("");
+  const [paymentMethod, setPaymentMethod] = useState<"bkash" | "nagad" | "card">("bkash");
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   // Edit form state
@@ -283,11 +284,18 @@ export default function BookingDetailsPage() {
 
     setIsProcessingPayment(true);
     setTimeout(() => {
+      const methodLabel =
+        paymentMethod === "bkash"
+          ? "bKash Direct Wallet"
+          : paymentMethod === "nagad"
+          ? "Nagad Digital Wallet"
+          : "Credit Card / Online Banking";
+
       const newTransaction = {
         id: `TXN-${Date.now()}`,
         amount: amt,
         date: new Date().toISOString(),
-        method: "Credit Card / Online",
+        method: methodLabel,
         status: "SUCCESS"
       };
 
@@ -732,6 +740,45 @@ export default function BookingDetailsPage() {
               </button>
             </div>
             <form onSubmit={handleMakePayment} className="p-6 space-y-5">
+              <div>
+                <label className="text-xs font-semibold text-slate-700 block mb-2">Select Payment Gateway</label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("bkash")}
+                    className={`py-2 px-2.5 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                      paymentMethod === "bkash"
+                        ? "border-pink-500 bg-pink-50 text-pink-700 ring-2 ring-pink-500/20"
+                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    <span>💗 bKash</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("nagad")}
+                    className={`py-2 px-2.5 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                      paymentMethod === "nagad"
+                        ? "border-orange-500 bg-orange-50 text-orange-700 ring-2 ring-orange-500/20"
+                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    <span>🟠 Nagad</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("card")}
+                    className={`py-2 px-2.5 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                      paymentMethod === "card"
+                        ? "border-indigo-500 bg-indigo-50 text-indigo-700 ring-2 ring-indigo-500/20"
+                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                    }`}
+                  >
+                    <span>💳 Card</span>
+                  </button>
+                </div>
+              </div>
+
               <div>
                 <label className="text-xs font-semibold text-slate-700 block mb-1">Amount to Pay (BDT)</label>
                 <div className="relative">

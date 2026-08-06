@@ -10,6 +10,18 @@ import { useAppSelector } from "@/store/store";
 
 const DEFAULT_MY_EVENTS = [
   {
+    id: "EVT-2026-NUSRAT",
+    eventCode: "#EVT-2026-NUSRAT",
+    bookingNumber: "#BKG-2026-NUSRAT",
+    eventName: "Nusrat & Fahim Grand Reception",
+    eventType: "Reception",
+    eventDate: "2026-12-30",
+    location: "Chattogram Grand Ballroom",
+    bookingStatus: "pending",
+    grandTotal: 285000,
+    createdAt: new Date().toISOString(),
+  },
+  {
     id: "EVT-2026-192",
     eventCode: "#EVT-2026-192",
     bookingNumber: "#BKG-2026-192",
@@ -94,22 +106,28 @@ export default function MyEventsPage() {
       } catch (e) {}
     }
 
+    let list: any[] = [];
     try {
       const response = await apiClient.get("/bookings/my").catch(() => apiClient.get("/customers/events"));
       if (response && response.data && response.data.success !== false) {
         const rawData = response.data.data;
-        const list = Array.isArray(rawData) ? rawData : (Array.isArray(rawData?.data) ? rawData.data : []);
-        const combined = [...localCustom, ...list];
-        setEventsList(combined.length > 0 ? combined : [...localCustom, ...DEFAULT_MY_EVENTS]);
-      } else {
-        setEventsList([...localCustom, ...DEFAULT_MY_EVENTS]);
+        list = Array.isArray(rawData) ? rawData : (Array.isArray(rawData?.data) ? rawData.data : []);
       }
-    } catch (error) {
-      setEventsList([...localCustom, ...DEFAULT_MY_EVENTS]);
-    } finally {
-      setIsLoading(false);
-      setLastRefreshed(new Date());
-    }
+    } catch (error) {}
+
+    const combined = [...localCustom, ...list, ...DEFAULT_MY_EVENTS];
+    const unique = combined.filter((e, idx, self) => idx === self.findIndex((item) => String(item.id) === String(e.id)));
+
+    // Sort chronologically descending (newest bookings first)
+    unique.sort((a, b) => {
+      const dateA = new Date(a.createdAt || a.eventDate || 0).getTime();
+      const dateB = new Date(b.createdAt || b.eventDate || 0).getTime();
+      return dateB - dateA;
+    });
+
+    setEventsList(unique);
+    setIsLoading(false);
+    setLastRefreshed(new Date());
   };
 
   useEffect(() => {
@@ -180,7 +198,7 @@ export default function MyEventsPage() {
       <div className="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-            {role === "admin" ? "All Platform Events" : "My Events"}
+            {role === "admin" ? "All Platform Package Schedules" : "My Package Schedules"}
           </h1>
           <div className="flex items-center gap-2 mt-1.5">
             <span className="relative flex h-2 w-2">
@@ -196,17 +214,30 @@ export default function MyEventsPage() {
           </div>
           <p className="text-sm text-slate-500 mt-1">
             {role === "admin"
-              ? "Monitor progression stages and track all scheduled events across Bangladesh."
-              : "Monitor event progression stages and track upcoming schedules."}
+              ? "Monitor progression stages and track all scheduled package executions across Bangladesh."
+              : "Monitor package execution stages and track upcoming schedules."}
           </p>
         </div>
         <div className="flex gap-3 shrink-0">
-          <button
-            onClick={handleOpenNewEvent}
-            className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white rounded-lg text-sm font-semibold shadow-sm hover:shadow-md hover:shadow-purple-500/20 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" /> Create New Event
-          </button>
+          {role === "admin" ? (
+            <button
+              onClick={() =>
+                window.dispatchEvent(
+                  new CustomEvent("open-dashboard-modal", { detail: "new-package" })
+                )
+              }
+              className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-700 hover:to-blue-600 text-white rounded-lg text-sm font-semibold shadow-sm hover:shadow-md hover:shadow-purple-500/20 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" /> Create Package
+            </button>
+          ) : (
+            <Link
+              href="/packages"
+              className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-sm font-semibold shadow-sm hover:shadow-md transition-all duration-200 flex items-center gap-2"
+            >
+              Explore Packages
+            </Link>
+          )}
         </div>
       </div>
 

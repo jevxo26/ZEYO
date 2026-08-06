@@ -17,6 +17,7 @@ import {
   Sliders,
   Wallet,
   ClipboardList,
+  Package,
 } from "lucide-react";
 import Link from "next/link";
 import { useAppSelector } from "@/store/store";
@@ -165,8 +166,8 @@ export default function DashboardOverviewPage() {
     };
   }, []);
 
-  const handleNewBooking = () => {
-    window.dispatchEvent(new CustomEvent("open-dashboard-modal", { detail: "new-booking" }));
+  const handleCreatePackage = () => {
+    window.dispatchEvent(new CustomEvent("open-dashboard-modal", { detail: "new-package" }));
   };
 
   const handleAddZone = () => {
@@ -189,13 +190,13 @@ export default function DashboardOverviewPage() {
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* ── Role Banner & Header (Hidden for Admin) ──────────────────────────────────────────────── */}
       {role !== "admin" && (
-        <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-800 via-indigo-800 to-blue-700 text-white border border-indigo-500/40 shadow-md hover:shadow-indigo-900/30 hover:shadow-xl transition-shadow duration-500 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="bg-gradient-to-r from-purple-700 via-purple-800 to-blue-900 rounded-2xl p-6 text-white shadow-md flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/15 border border-white/30 flex items-center justify-center shrink-0 transition-all duration-300 hover:bg-white/25 hover:border-white/50 hover:scale-110">
-              <ShieldCheck className="w-5 h-5 text-white" />
+            <div className="p-2.5 bg-white/10 rounded-xl backdrop-blur-md shrink-0">
+              <Sparkles className="w-6 h-6 text-yellow-300" />
             </div>
             <div>
-              <span className="text-xs font-bold text-blue-100 uppercase tracking-wider">
+              <span className="text-[10px] font-extrabold uppercase tracking-widest px-2 py-0.5 rounded bg-yellow-400 text-slate-950">
                 {role === "vendor"
                   ? "Vendor Partner Operations Portal"
                   : "Customer Celebration Portal"}
@@ -243,7 +244,7 @@ export default function DashboardOverviewPage() {
             {role === "vendor"
               ? "Access your assigned execution specifications, submit progress updates, and track escrow payouts with zero client identity exposure."
               : role === "admin"
-              ? "Oversee platform financial margins, coordinate vendor partner dispatches, and manage zone pricing multipliers across Bangladesh."
+              ? "Oversee platform financial margins, create & manage event packages, and coordinate vendor partner dispatches."
               : "Track your active celebration milestones across Bangladesh, estimate budgets by zone, and communicate with EVENTO lead coordinators."}
           </p>
         </div>
@@ -252,11 +253,11 @@ export default function DashboardOverviewPage() {
           {role === "admin" ? (
             <>
               <button
-                onClick={handleNewBooking}
+                onClick={handleCreatePackage}
                 className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white px-4 py-2.5 rounded-xl font-bold shadow-sm hover:shadow-lg hover:shadow-purple-600/30 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 text-xs cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
-                Create Event
+                Create Package
               </button>
               <button
                 onClick={handleAddVendor}
@@ -291,13 +292,13 @@ export default function DashboardOverviewPage() {
               </Link>
             </>
           ) : (
-            <button
-              onClick={handleNewBooking}
-              className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-bold shadow-sm hover:shadow-lg hover:shadow-slate-900/20 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 text-xs cursor-pointer"
+            <Link
+              href="/packages"
+              className="flex items-center gap-2 bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl font-bold shadow-sm hover:shadow-lg hover:shadow-slate-900/20 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 text-xs"
             >
-              <Plus className="w-4 h-4" />
-              Add Custom Booking
-            </button>
+              <Package className="w-4 h-4" />
+              Explore Event Packages
+            </Link>
           )}
         </div>
       </div>
