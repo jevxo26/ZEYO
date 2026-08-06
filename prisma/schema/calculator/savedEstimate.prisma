@@ -1,0 +1,23 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// SavedEstimate — customer can save an estimate for later
+// customerId → Customer
+// ─────────────────────────────────────────────────────────────────────────────
+
+model SavedEstimate {
+  id           Int                  @id @default(autoincrement())
+  customerId   Int
+  customer     Customer             @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  calculatorId Int
+  calculator   SmartEventCalculator @relation(fields: [calculatorId], references: [id], onDelete: Cascade)
+  estimateName String
+  status       String               @default("saved") // saved | expired | converted | deleted
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  comparisonsAsOne Comparison[] @relation("ComparisonEstimateOne")
+  comparisonsAsTwo Comparison[] @relation("ComparisonEstimateTwo")
+
+  @@index([customerId])
+  @@index([calculatorId])
+  @@index([status])
+}

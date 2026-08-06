@@ -1,0 +1,17 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// CustomerTestimonial — featured review shown on platform
+// ─────────────────────────────────────────────────────────────────────────────
+
+model CustomerTestimonial {
+  id           Int      @id @default(autoincrement())
+  reviewId     Int      @unique
+  review       Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  title        String?
+  displayOrder Int      @default(0)
+  isFeatured   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([isFeatured])
+  @@index([displayOrder])
+}

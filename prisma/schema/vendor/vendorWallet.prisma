@@ -1,0 +1,15 @@
+model VendorWallet {
+  id                 Int      @id @default(autoincrement())
+  vendorId           Int      @unique
+  vendor             Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  balance            Float    @default(0.0)
+  pendingAmount      Float    @default(0.0)
+  withdrawableAmount Float    @default(0.0)
+  currency           String   @default("BDT")
+  status             String   @default("active") // active | suspended
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  transactions VendorTransaction[]
+  payouts      VendorPayout[]
+}

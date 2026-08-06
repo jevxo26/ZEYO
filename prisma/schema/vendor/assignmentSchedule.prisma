@@ -1,0 +1,18 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// AssignmentSchedule — event date/time per assignment item
+// ─────────────────────────────────────────────────────────────────────────────
+
+model AssignmentSchedule {
+  id               Int            @id @default(autoincrement())
+  assignmentItemId Int            @unique
+  assignmentItem   AssignmentItem @relation(fields: [assignmentItemId], references: [id], onDelete: Cascade)
+  eventDate        DateTime
+  startTime        String?
+  endTime          String?
+  reportingTime    String?
+  location         String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([eventDate])
+}

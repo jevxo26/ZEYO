@@ -1,0 +1,21 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// PaymentSchedule — milestone-based payment schedule
+// milestone: advance | pre_event | post_completion
+// status: pending | paid | overdue
+// ─────────────────────────────────────────────────────────────────────────────
+
+model PaymentSchedule {
+  id         Int      @id @default(autoincrement())
+  paymentId  Int
+  payment    Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  milestone  String
+  percentage Decimal  @db.Decimal(5, 2)
+  amount     Decimal  @db.Decimal(12, 2)
+  dueDate    DateTime
+  status     String   @default("pending")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([paymentId])
+  @@index([status])
+}

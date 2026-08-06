@@ -1,0 +1,20 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// ServiceSubCategory Model
+// e.g. Photography → Wedding Photography, Corporate Photography
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ServiceSubCategory {
+  id                Int             @id @default(autoincrement())
+  serviceCategoryId Int
+  category          ServiceCategory @relation(fields: [serviceCategoryId], references: [id], onDelete: Cascade)
+  name              String
+  description       String?
+  displayOrder      Int             @default(0)
+  status            String          @default("active")
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@index([serviceCategoryId])
+  @@index([status])
+  @@index([displayOrder])
+}

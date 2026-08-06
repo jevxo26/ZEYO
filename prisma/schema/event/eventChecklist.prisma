@@ -1,0 +1,20 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// EventChecklist Model
+// Pre-event preparation checklist items per event
+// ─────────────────────────────────────────────────────────────────────────────
+
+model EventChecklist {
+  id           Int      @id @default(autoincrement())
+  eventId      Int
+  event        Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  title        String
+  description  String?
+  displayOrder Int      @default(0)
+  isRequired   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([displayOrder])
+  @@index([isRequired])
+}

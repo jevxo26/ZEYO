@@ -1,0 +1,19 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// PaymentLog — system-level event log per payment
+// logType: gateway_call | webhook | manual | system | error
+// ─────────────────────────────────────────────────────────────────────────────
+
+model PaymentLog {
+  id              Int      @id @default(autoincrement())
+  paymentId       Int
+  payment         Payment  @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  logType         String   @default("system")
+  description     String?
+  gatewayResponse Json?
+  ipAddress       String?
+  deviceInfo      String?
+  createdAt       DateTime @default(now())
+
+  @@index([paymentId])
+  @@index([logType])
+}

@@ -1,0 +1,19 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// PaymentGateway — gateway config per payment method
+// environment: sandbox | production
+// ─────────────────────────────────────────────────────────────────────────────
+
+model PaymentGateway {
+  id              Int           @id @default(autoincrement())
+  paymentMethodId Int
+  paymentMethod   PaymentMethod @relation(fields: [paymentMethodId], references: [id], onDelete: Cascade)
+  gatewayName     String
+  merchantId      String?
+  environment     String        @default("sandbox")
+  status          String        @default("active")
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([paymentMethodId])
+  @@index([status])
+}

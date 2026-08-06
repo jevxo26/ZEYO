@@ -1,0 +1,18 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// BookingTimeline — event lifecycle milestones
+// e.g. Submitted → Reviewed → Vendor Assigned → Payment Received → Completed
+// ─────────────────────────────────────────────────────────────────────────────
+
+model BookingTimeline {
+  id            Int      @id @default(autoincrement())
+  bookingId     Int
+  booking       Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  title         String
+  description   String?
+  status        String   @default("pending")
+  createdBy     Int?
+  createdByUser User?    @relation(fields: [createdBy], references: [id], onDelete: SetNull)
+  createdAt     DateTime @default(now())
+
+  @@index([bookingId])
+}

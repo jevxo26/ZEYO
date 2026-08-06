@@ -1,0 +1,20 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// PlatformCommission — platform commission per booking/vendor pair
+// commissionType: percentage | fixed
+// ─────────────────────────────────────────────────────────────────────────────
+
+model PlatformCommission {
+  id               Int      @id @default(autoincrement())
+  bookingId        Int
+  booking          Booking  @relation("platformCommissions", fields: [bookingId], references: [id])
+  vendorId         Int?
+  vendor           Vendor?  @relation("vendorCommissions", fields: [vendorId], references: [id], onDelete: SetNull)
+  commissionType   String   @default("percentage")
+  commissionRate   Decimal  @db.Decimal(5, 2)
+  commissionAmount Decimal  @db.Decimal(12, 2)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([bookingId])
+  @@index([vendorId])
+}

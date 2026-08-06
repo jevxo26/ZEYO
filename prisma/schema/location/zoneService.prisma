@@ -1,0 +1,14 @@
+model ZoneService {
+  id          Int      @id @default(autoincrement())
+  zoneId      Int
+  zone        Zone     @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  serviceId   Int
+  isAvailable Boolean  @default(true)
+  priority    Int      @default(0)
+  remarks     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([zoneId, serviceId])
+  @@index([zoneId])
+}

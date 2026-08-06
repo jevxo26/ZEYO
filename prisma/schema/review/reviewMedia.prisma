@@ -1,0 +1,16 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// ReviewMedia — customer-uploaded photos/videos with review
+// fileType: image | video
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ReviewMedia {
+  id        Int      @id @default(autoincrement())
+  reviewId  Int
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  fileType  String   @default("image")
+  fileUrl   String
+  thumbnail String?
+  createdAt DateTime @default(now())
+
+  @@index([reviewId])
+}

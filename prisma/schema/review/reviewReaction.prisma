@@ -1,0 +1,18 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// ReviewReaction — helpful / like reactions on reviews
+// reactionType: helpful | like
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ReviewReaction {
+  id           Int      @id @default(autoincrement())
+  reviewId     Int
+  review       Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  customerId   Int
+  customer     Customer @relation("reviewReactions", fields: [customerId], references: [id])
+  reactionType String   @default("helpful")
+  createdAt    DateTime @default(now())
+
+  @@unique([reviewId, customerId, reactionType])
+  @@index([reviewId])
+  @@index([customerId])
+}

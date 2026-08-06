@@ -1,0 +1,140 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Notification — Core notification entity with channel extensions
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Notification {
+  id               Int       @id @default(autoincrement())
+  customerId       Int?
+  customer         Customer? @relation("customerNotifications", fields: [customerId], references: [id], onDelete: Cascade)
+  bookingId        Int?
+  booking          Booking?  @relation("bookingNotifications", fields: [bookingId], references: [id], onDelete: SetNull)
+  title            String
+  message          String
+  notificationType String // e.g., SYSTEM, BOOKING, PROMOTIONAL
+  priority         String    @default("low") // low, medium, high
+  status           String    @default("pending")
+  isRead           Boolean   @default(false)
+  readAt           DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Extensions & Relations
+  pushNotifications      PushNotification[]
+  emailNotifications     EmailNotification[]
+  smsNotifications       SMSNotification[]
+  inAppNotifications     InAppNotification[]
+  bookingNotifications   BookingNotification[]
+  paymentNotifications   PaymentNotification[]
+  assignmentNotification AssignmentNotification[]
+  notificationQueue      NotificationQueue[]
+  notificationHistory    NotificationHistory[]
+
+  @@index([customerId])
+  @@index([bookingId])
+  @@index([status])
+  @@index([isRead])
+}
+
+model PushNotification {
+  id             Int          @id @default(autoincrement())
+  notificationId Int
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  deviceToken    String
+  title          String?
+  body           String
+  image          String?
+  status         String       @default("pending")
+  sentAt         DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@index([notificationId])
+}
+
+model EmailNotification {
+  id             Int          @id @default(autoincrement())
+  notificationId Int
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  email          String
+  subject        String
+  body           String
+  status         String       @default("pending")
+  sentAt         DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@index([notificationId])
+}
+
+model SMSNotification {
+  id             Int          @id @default(autoincrement())
+  notificationId Int
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  phone          String
+  message        String
+  provider       String?
+  status         String       @default("pending")
+  sentAt         DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@index([notificationId])
+}
+
+model InAppNotification {
+  id             Int          @id @default(autoincrement())
+  notificationId Int
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  customerId     Int
+  customer       Customer     @relation("customerInAppNotifications", fields: [customerId], references: [id], onDelete: Cascade)
+  icon           String?
+  actionUrl      String?
+  isRead         Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([notificationId])
+  @@index([customerId])
+}
+
+model BookingNotification {
+  id             Int          @id @default(autoincrement())
+  bookingId      Int
+  booking        Booking      @relation("bookingEventNotifications", fields: [bookingId], references: [id], onDelete: Cascade)
+  notificationId Int
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  event          String // e.g., Booking Submitted, Booking Approved
+  status         String       @default("active")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([bookingId])
+  @@index([notificationId])
+}
+
+model PaymentNotification {
+  id             Int          @id @default(autoincrement())
+  paymentId      Int
+  payment        Payment      @relation("paymentNotifications", fields: [paymentId], references: [id], onDelete: Cascade)
+  notificationId Int
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  event          String // e.g., Payment Successful
+  status         String       @default("active")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([paymentId])
+  @@index([notificationId])
+}
+
+model AssignmentNotification {
+  id             Int              @id @default(autoincrement())
+  assignmentId   Int
+  assignment     VendorAssignment @relation("assignmentNotifications", fields: [assignmentId], references: [id], onDelete: Cascade)
+  notificationId Int
+  notification   Notification     @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  event          String // e.g., Vendor Assigned
+  status         String           @default("active")
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  @@index([assignmentId])
+  @@index([notificationId])
+}

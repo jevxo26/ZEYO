@@ -1,0 +1,24 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// BookingInvoice — generated invoice per booking
+// invoiceNumber format: INV-2026-00001
+// status: draft | sent | paid | void
+// ─────────────────────────────────────────────────────────────────────────────
+
+model BookingInvoice {
+  id            Int      @id @default(autoincrement())
+  bookingId     Int
+  booking       Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  invoiceNumber String   @unique
+  invoiceDate   DateTime @default(now())
+  subtotal      Decimal  @db.Decimal(14, 2)
+  tax           Decimal  @default(0) @db.Decimal(14, 2)
+  discount      Decimal  @default(0) @db.Decimal(14, 2)
+  grandTotal    Decimal  @db.Decimal(14, 2)
+  status        String   @default("draft")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([bookingId])
+  @@index([invoiceNumber])
+  @@index([status])
+}

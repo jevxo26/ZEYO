@@ -1,0 +1,23 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// SelectedService — services ticked by the customer in Step 3
+// ─────────────────────────────────────────────────────────────────────────────
+
+model SelectedService {
+  id           Int                  @id @default(autoincrement())
+  calculatorId Int
+  calculator   SmartEventCalculator @relation(fields: [calculatorId], references: [id], onDelete: Cascade)
+  serviceId    Int
+  service      Service              @relation(fields: [serviceId], references: [id])
+  isSelected   Boolean              @default(true)
+  displayOrder Int                  @default(0)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  configurations SelectedServiceConfiguration[]
+  options        SelectedServiceOption[]
+  addons         SelectedAddon[]
+
+  @@unique([calculatorId, serviceId])
+  @@index([calculatorId])
+  @@index([serviceId])
+}

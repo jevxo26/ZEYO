@@ -8,21 +8,190 @@ datasource db {
 }
 
 model User {
+  id            Int       @id @default(autoincrement())
+  name          String
+  firstName     String?
+  lastName      String?
+  fullName      String?
+  email         String    @unique
+  phone         String?
+  password      String?
+  profileImage  String?
+  dateOfBirth   DateTime?
+  gender        String?
+  roleId        Int?
+  status        String    @default("active")
+  isVerified    Boolean   @default(false)
+  emailVerified Boolean   @default(false)
+  phoneVerified Boolean   @default(false)
+  lastLoginAt   DateTime?
+  lastActiveAt  DateTime?
+  provider      String    @default("local")
+  providerId    String?   @unique
+  role          String    @default("employee")
+  issueDate     DateTime  @default(now())
+  loginLog      Json?
+  userRole      Role?     @relation(fields: [roleId], references: [id], onDelete: SetNull)
+
+  profile   UserProfile?
+  addresses UserAddress[]
+
+  resetPasswordToken       String?
+  resetPasswordExpires     DateTime?
+  emailVerificationToken   String?
+  emailVerificationExpires DateTime?
+  phoneVerificationToken   String?
+  phoneVerificationExpires DateTime?
+  refreshToken             String?
+  deletedAt                DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([resetPasswordToken])
+  @@index([emailVerificationToken])
+  @@index([phoneVerificationToken])
+  @@index([deletedAt])
+}
+
+model Role {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
+  description String?
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model UserProfile {
+  id                String   @id @default(uuid())
+  userId            Int      @unique
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  occupation        String?
+  companyName       String?
+  organization      String?
+  bio               String?
+  website           String?
+  facebook          String?
+  instagram         String?
+  linkedin          String?
+  preferredLanguage String   @default("bn")
+  preferredCurrency String   @default("BDT")
+  timezone          String   @default("Asia/Dhaka")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model UserAddress {
+  id     Int  @id @default(autoincrement())
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  label         String?
+  receiverName  String
+  receiverPhone String
+
+  countryId  Int
+  divisionId Int?
+  districtId Int?
+  cityId     Int?
+  areaId     Int?
+  zoneId     Int?
+
+  addressLine1 String
+  addressLine2 String?
+  postalCode   String?
+
+  latitude  Float?
+  longitude Float?
+
+  isDefault Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Service {
+  id                    Int                    @id @default(autoincrement())
+  name                  String
+  description           String?
+  price                 Float?
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  categoryId            Int?
+  category              ServiceCategory?       @relation(fields: [categoryId], references: [id])
+  serviceOptions        ServiceOption[]
+  serviceConfigurations ServiceConfiguration[]
+  serviceVariants       ServiceVariant[]
+  serviceCoverages      ServiceCoverage[]
+}
+
+model ServiceCategory {
+  id                   Int                  @id @default(autoincrement())
+  name                 String
+  description          String?
+  services             Service[]
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+  serviceSubCategories ServiceSubCategory[]
+}
+
+model ServiceSubCategory {
+  id          Int              @id @default(autoincrement())
+  name        String
+  description String?
+  categoryId  Int?
+  category    ServiceCategory? @relation(fields: [categoryId], references: [id])
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model ServiceType {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ServiceOption {
   id        Int      @id @default(autoincrement())
   name      String
-  email     String   @unique
-  phone     String?
-  password  String?
-  provider  String   @default("local")
-  providerId String? @unique
-  role      String   @default("employee")
-  issueDate DateTime @default(now())
-  loginLog  Json?    // Can store array of login timestamps or IP addresses
-  
-  resetPasswordToken   String?
-  resetPasswordExpires DateTime?
-  refreshToken         String?
+  value     String?
+  serviceId Int?
+  service   Service? @relation(fields: [serviceId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
 
+model ServiceConfiguration {
+  id        Int      @id @default(autoincrement())
+  key       String
+  value     String?
+  serviceId Int?
+  service   Service? @relation(fields: [serviceId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ServiceVariant {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?
+  serviceId   Int?
+  service     Service? @relation(fields: [serviceId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ServiceCoverage {
+  id        Int      @id @default(autoincrement())
+  region    String
+  details   String?
+  serviceId Int?
+  service   Service? @relation(fields: [serviceId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

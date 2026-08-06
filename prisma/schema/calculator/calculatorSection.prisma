@@ -1,0 +1,18 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// CalculatorSection — service grouping within the calculator UI
+// e.g. Photography, Catering, Decoration, Transportation
+// ─────────────────────────────────────────────────────────────────────────────
+
+model CalculatorSection {
+  id           Int                  @id @default(autoincrement())
+  calculatorId Int
+  calculator   SmartEventCalculator @relation(fields: [calculatorId], references: [id], onDelete: Cascade)
+  sectionName  String
+  displayOrder Int                  @default(0)
+  status       String               @default("active")
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@index([calculatorId])
+  @@index([displayOrder])
+}

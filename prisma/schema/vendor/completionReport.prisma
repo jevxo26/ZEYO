@@ -1,0 +1,18 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// CompletionReport — final report submitted by vendor after job completion
+// ─────────────────────────────────────────────────────────────────────────────
+
+model CompletionReport {
+  id               Int            @id @default(autoincrement())
+  assignmentItemId Int            @unique
+  assignmentItem   AssignmentItem @relation(fields: [assignmentItemId], references: [id], onDelete: Cascade)
+  report           String
+  completedBy      Int?
+  completedByUser  User?          @relation("CompletionReportBy", fields: [completedBy], references: [id], onDelete: SetNull)
+  completionTime   DateTime?
+  remarks          String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([completedBy])
+}

@@ -1,0 +1,59 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Role Model
+// Core RBAC entity. Defines system and custom roles for all actor types
+// (Customer, Vendor, VendorEmployee, Admin, Staff).
+// Referenced by User via roleId FK, and by all RBAC junction tables.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Role {
+  id          Int       @id @default(autoincrement())
+
+  // ── Identity ───────────────────────────────────────────────────────────────
+  name        String    @unique
+  code        String    @unique  // e.g. SUPER_ADMIN, VENDOR_EMPLOYEE
+  description String?
+
+  // ── Classification ─────────────────────────────────────────────────────────
+  roleType    String    @default("custom") // system | staff | vendor | customer | custom
+  priority    Int       @default(0)        // Higher = more privileged
+  isSystem    Boolean   @default(false)    // System roles cannot be deleted
+
+  // ── Status ─────────────────────────────────────────────────────────────────
+  status      String    @default("active") // active | inactive
+
+  // ── Audit ──────────────────────────────────────────────────────────────────
+  createdBy   Int?      // User ID who created this role (null = seeded)
+  updatedBy   Int?      // User ID who last updated this role
+
+  // ── Soft Delete ────────────────────────────────────────────────────────────
+  deletedAt   DateTime?
+
+  // ── Timestamps ─────────────────────────────────────────────────────────────
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // ── Relations (Authentication) ─────────────────────────────────────────────
+  users       User[]    
+
+  // ── Relations (RBAC) ───────────────────────────────────────────────────────
+  rolePermissions       RolePermission[]
+  userRoles             UserRole[]
+  adminRoles            AdminRole[]
+  vendorRoles           VendorRole[]
+  employeeRoles         EmployeeRole[]
+  parentHierarchies     RoleHierarchy[]   @relation("ParentRole")
+  childHierarchies      RoleHierarchy[]   @relation("ChildRole")
+  roleScopes            RoleScope[]
+  roleAssignmentHistory RoleAssignmentHistory[]
+  resourcePermissions   ResourcePermission[]
+  dataPermissions       DataPermission[]
+  apiPermissions        ApiPermission[]
+  featurePermissions    FeaturePermission[]
+  permissionAudits      PermissionAudit[]
+
+  // ── Indexes ────────────────────────────────────────────────────────────────
+  @@index([code])
+  @@index([roleType])
+  @@index([status])
+  @@index([deletedAt])
+}

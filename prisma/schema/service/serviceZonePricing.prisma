@@ -1,0 +1,25 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// ServiceZonePricing Model
+// ⭐ Core pricing table — zone-wise price per service
+// e.g. Photography: Dhaka → 15,000 | Rajshahi → 12,000
+// zoneId references Zone model (Part 6)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ServiceZonePricing {
+  id            Int       @id @default(autoincrement())
+  serviceId     Int
+  service       Service   @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  zoneId        Int
+  zone          Zone      @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  price         Decimal   @db.Decimal(12, 2)
+  effectiveFrom DateTime?
+  effectiveTo   DateTime?
+  status        String    @default("active")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([serviceId, zoneId])
+  @@index([serviceId])
+  @@index([zoneId])
+  @@index([status])
+}

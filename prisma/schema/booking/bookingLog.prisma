@@ -1,0 +1,18 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// BookingLog — system-level activity log (IP, device, action)
+// logType: view | update | status_change | payment | cancellation
+// ─────────────────────────────────────────────────────────────────────────────
+
+model BookingLog {
+  id          Int      @id @default(autoincrement())
+  bookingId   Int
+  booking     Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  logType     String   @default("view")
+  description String?
+  ipAddress   String?
+  deviceInfo  String?
+  createdAt   DateTime @default(now())
+
+  @@index([bookingId])
+  @@index([logType])
+}

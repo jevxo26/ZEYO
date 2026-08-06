@@ -1,0 +1,17 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// ServiceTag Model
+// Searchable tags (Wedding, Premium, Outdoor, Indoor, Luxury)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ServiceTag {
+  id        Int      @id @default(autoincrement())
+  serviceId Int
+  service   Service  @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  tag       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([serviceId, tag])
+  @@index([serviceId])
+  @@index([tag])
+}

@@ -1,0 +1,18 @@
+model Area {
+  id         Int      @id @default(autoincrement())
+  cityId     Int
+  city       City     @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  name       String
+  postalCode String?
+  latitude   Float?
+  longitude  Float?
+  status     String   @default("active")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  zones             Zone[]
+  userAddresses     UserAddress[]
+  customerAddresses CustomerAddress[]
+
+  @@index([cityId])
+}
