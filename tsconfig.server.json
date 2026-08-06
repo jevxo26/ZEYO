@@ -8,5 +8,7 @@
     "emitDecoratorMetadata": true,
     "isolatedModules": false
   },
-  "include": ["server/**/*.ts"]
+  "include": [
+    "server/**/*.ts"
+  ]
 }
