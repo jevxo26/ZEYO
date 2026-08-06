@@ -118,8 +118,9 @@ export default function PackagesPage() {
 
   const filteredPackages = useMemo(() => {
     return packages.filter((p: EventPackage) => {
+      const pEventType = p.eventTypeId?.replace("evt-type-", "") || "";
       const matchesEventType =
-        selectedEventType === "all" || p.eventTypeId === selectedEventType;
+        selectedEventType === "all" || pEventType === selectedEventType;
       const matchesGuests = !p.maxGuests || p.maxGuests >= guestCount || guestCount === MAX_GUESTS;
       return matchesEventType && matchesGuests;
     });

@@ -117,31 +117,47 @@ export default function BookingSummaryModal({
         bookingStatus: "pending",
         status: "PENDING",
         createdAt: new Date().toISOString(),
+        customerName,
+        customerPhone,
+        customerEmail,
       };
 
       try {
         await apiClient.post("/bookings", {
           eventName: newBookingObj.eventName,
           eventType: eventTypeName,
-          eventDate: newBookingObj.eventDate,
+          eventDate: new Date(eventDate).toISOString(),
           location: zoneName,
           budget: totalEstimatedCost,
           notes: customerNote,
           status: "PENDING",
+          customerName,
+          customerPhone,
+          customerEmail,
+          services: configList.map((cfg) => ({
+            serviceKey: cfg.serviceKey,
+            serviceName: cfg.serviceName,
+            tierName: cfg.tierName,
+            tierPrice: cfg.tierPrice,
+            coverageName: cfg.coverageName,
+            guestCount: cfg.guestCount,
+            addons: cfg.selectedAddons,
+            calculatedPrice: cfg.calculatedPrice,
+          })),
         });
+
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new CustomEvent("dashboard-data-update"));
+          createNotification(
+            "Booking Received",
+            `Customer created new booking ${generatedId} for ${eventTypeName}.`,
+            "📦"
+          );
+        }
       } catch (e) {
         console.warn("Calculator backend booking fallback:", e);
       }
-
-      if (typeof window !== "undefined") {
-        const stored = localStorage.getItem("customBookings");
-        const list = stored ? JSON.parse(stored) : [];
-        list.unshift(newBookingObj);
-        localStorage.setItem("customBookings", JSON.stringify(list));
-        window.dispatchEvent(new CustomEvent("dashboard-data-update"));
-        createNotification("Booking Received", `Customer created new booking ${generatedId} for ${eventTypeName}.`, "📦");
-      }
-
+      
       onSuccess(generatedId);
     } catch (err: any) {
       console.warn("Backend submit fallback:", err);
