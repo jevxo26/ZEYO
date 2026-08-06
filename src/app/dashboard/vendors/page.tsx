@@ -85,68 +85,47 @@ export default function VendorsPage() {
   const [dispatchNotes, setDispatchNotes] = useState("");
 
   const fetchVendorsAndBookings = async () => {
-    let customBookingsMapped: any[] = [];
-    if (typeof window !== "undefined") {
-      try {
-        const stored = localStorage.getItem("customBookings");
-        if (stored) {
-          const list = JSON.parse(stored);
-          customBookingsMapped = list.map((b: any, i: number) => ({
-            id: b.id || `CUSTOM-${i}`,
-            label: `${b.bookingNumber || `#${b.id}`} - ${b.eventName || b.notes || "Celebration"} (${b.location || "Location TBD"})`,
-            date: b.eventDate ? new Date(b.eventDate).toISOString().split("T")[0] : "Upcoming",
-            zoneId: b.zoneId || "zone-1",
-          }));
-        }
-      } catch (e) {}
+    let apiBookings: any[] = [];
+    try {
+      const res = await apiClient.get("/admin/bookings").catch(() => apiClient.get("/bookings/my")).catch(() => null);
+      if (res && res.data && (Array.isArray(res.data.data) || Array.isArray(res.data))) {
+        const raw = Array.isArray(res.data.data) ? res.data.data : res.data;
+        apiBookings = raw.map((b: any, i: number) => ({
+          id: String(b.id || `BKG-${i}`),
+          label: `${b.bookingNumber || `#${b.id}`} - ${b.eventName || b.title || "Celebration"} (${b.location || "Location TBD"})`,
+          date: b.eventDate ? new Date(b.eventDate).toISOString().split("T")[0] : "Upcoming",
+          zoneId: b.zoneId || "zone-1",
+        }));
+      }
+    } catch (e) {}
+
+    setActiveBookings(apiBookings);
+    if (apiBookings.length > 0) {
+      setTargetBookingId(apiBookings[0].id);
     }
 
-    const mergedBookings = [...customBookingsMapped, ...DEFAULT_CUSTOMER_BOOKINGS];
-    const uniqueBookings = mergedBookings.filter(
-      (item, idx, self) => idx === self.findIndex((t) => String(t.id) === String(item.id))
-    );
-    setActiveBookings(uniqueBookings);
-    if (uniqueBookings.length > 0) {
-      setTargetBookingId(uniqueBookings[0].id);
-    }
+    let apiVendors: any[] = [];
+    try {
+      const res = await apiClient.get("/vendors").catch(() => apiClient.get("/admin/vendors")).catch(() => null);
+      if (res && res.data && (Array.isArray(res.data.data) || Array.isArray(res.data))) {
+        const raw = Array.isArray(res.data.data) ? res.data.data : res.data;
+        apiVendors = raw.map((u: any) => ({
+          id: String(u.id),
+          name: u.businessName || u.name || "Vendor Partner",
+          category: u.supportedServiceKeys?.map((k: string) => k.replace("-", " ")).join(", ") || u.category || "General Service",
+          zone: u.zone || "Dhaka Zone",
+          rating: u.rating ? String(u.rating) : "5.0",
+          jobs: u.jobsCompleted || 0,
+          verified: u.status === "VERIFIED" || u.verified,
+          status: u.status || "VERIFIED",
+          payoutRate: "Dynamic / OS Calculated",
+          supportedServiceKeys: u.supportedServiceKeys || [],
+          supportedZoneIds: u.supportedZoneIds || [],
+        }));
+      }
+    } catch (e) {}
 
-    let usersVendors: any[] = [];
-    let customVendors: any[] = [];
-
-    if (typeof window !== "undefined") {
-      try {
-        const storedCustom = localStorage.getItem("customVendors");
-        if (storedCustom) {
-          customVendors = JSON.parse(storedCustom);
-        }
-      } catch (e) {}
-
-      try {
-        const storedUsers = localStorage.getItem("users");
-        if (storedUsers) {
-          const allUsers = JSON.parse(storedUsers);
-          usersVendors = allUsers.filter((u: any) => u.role === "vendor").map((u: any) => ({
-            id: u.id,
-            name: u.businessName || u.name,
-            category: u.supportedServiceKeys?.map((k: string) => k.replace("-", " ")).join(", ") || "Unknown",
-            zone: u.supportedZoneIds?.length + " Zones" || "Dhaka Zone",
-            rating: u.rating?.toFixed(1) || "5.0",
-            jobs: u.jobsCompleted || 0,
-            verified: u.status === "VERIFIED",
-            status: u.status,
-            payoutRate: "Dynamic / OS Calculated",
-            supportedServiceKeys: u.supportedServiceKeys || [],
-            supportedZoneIds: u.supportedZoneIds || [],
-          }));
-        }
-      } catch (e) {}
-    }
-
-    const rawVendorsList = [...customVendors, ...usersVendors, ...DEFAULT_VENDORS];
-    const uniqueVendors = rawVendorsList.filter(
-      (v, idx, self) => idx === self.findIndex((t) => String(t.id) === String(v.id))
-    );
-    setVendorsList(uniqueVendors);
+    setVendorsList(apiVendors);
   };
 
   useEffect(() => {

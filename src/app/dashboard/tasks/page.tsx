@@ -173,60 +173,32 @@ export default function TaskDetailsPage() {
     const currentVendorId = currentUser?.id;
     const currentCategory = currentUser?.category || currentUser?.vendorCategory || "";
 
-    if (typeof window !== "undefined") {
-      try {
-        const storedAssigned = localStorage.getItem("customVendorTasks");
-        if (storedAssigned) {
-          const rawAssigned: AssignedTaskType[] = JSON.parse(storedAssigned);
-          customAssigned = rawAssigned.map((t: any, i: number) => ({
-            ...t,
-            bookingRef: t.bookingRef || (t.id ? (String(t.id).startsWith("#") ? String(t.id) : `#${t.id}`) : `#BKG-2026-10${i + 1}`),
-            title: t.title || t.eventName || "Assigned Celebration Service",
-            category: t.category || t.serviceCategory || "Fulfillment",
-          }));
-        }
-      } catch (e) {}
+    let apiAssigned: AssignedTaskType[] = [];
+    try {
+      const endpoint = isVendorRole ? "/vendor/work" : "/admin/assignments";
+      const res = await apiClient.get(endpoint).catch(() => null);
+      if (res && res.data && (Array.isArray(res.data.data) || Array.isArray(res.data))) {
+        const raw = Array.isArray(res.data.data) ? res.data.data : res.data;
+        apiAssigned = raw.map((t: any, i: number) => ({
+          id: String(t.id || `TSK-API-${i}`),
+          bookingRef: t.bookingRef || `#BKG-2026-${t.id || i + 1}`,
+          title: t.title || t.eventName || "Operational Event Task",
+          category: t.category || t.serviceCategory || "Execution",
+          zone: t.zone || "Dhaka Zone",
+          venue: t.venue || "Location TBD",
+          date: t.date || "Upcoming",
+          duration: t.duration || "Full Duration",
+          payout: t.payout || `৳${Number(t.payoutAmount || 35000).toLocaleString()} (Protected Escrow)`,
+          status: t.status || "Confirmed",
+          requirements: Array.isArray(t.requirements) ? t.requirements : [
+            { title: "Service Delivery", desc: "Execute according to event contract specs." }
+          ],
+          coordinatorNotes: t.coordinatorNotes || "Coordinate with EVENTO Dispatch officer upon arrival.",
+        }));
+      }
+    } catch (e) {}
 
-      try {
-        const storedBookings = localStorage.getItem("customBookings") || localStorage.getItem("custom_bookings");
-        if (storedBookings) {
-          const list = JSON.parse(storedBookings);
-          const assignedOnly = list.filter((b: any) => b.assignedVendor || b.assignedVendorId || b.bookingStatus === "confirmed" || b.status === "CONFIRMED");
-
-          customMapped = assignedOnly.map((b: any, i: number) => ({
-            id: String(b.id || `CUSTOM-${i}`),
-            bookingRef: b.bookingNumber || `#${b.id || `BKG-${i + 1}`}`,
-            title: b.eventName || b.notes || "Custom Celebration",
-            category: b.assignedService || b.eventType || "Event Execution",
-            zone: "Dhaka Zone",
-            venue: b.location || "Location TBD",
-            date: b.eventDate ? new Date(b.eventDate).toLocaleDateString() : "Upcoming",
-            duration: "Full Event Duration",
-            payout: `৳${Number(b.grandTotal || b.budget || 45000).toLocaleString()} (Protected Escrow)`,
-            status: b.bookingStatus || b.status || "Confirmed",
-            requirements: [
-              {
-                title: `${b.eventType || "Event"} Setup & Delivery`,
-                desc: b.notes || "Full service execution according to customer specs.",
-              },
-              {
-                title: "Quality Assurance Check",
-                desc: "Ensure all line items pass EVENTO QA criteria before event commencement.",
-              },
-            ],
-            coordinatorNotes: b.assignedVendor ? `Assigned to ${b.assignedVendor}. Coordinate with EVENTO Dispatch officer.` : "Coordinate with EVENTO Dispatch officer upon arrival.",
-          }));
-        }
-      } catch (e) {}
-    }
-
-    // Merge explicitly dispatched tasks first (customAssigned has highest priority)
-    let combinedPool = [...customAssigned, ...customMapped];
-
-    // Deduplicate pool strictly by unique task ID so new Admin dispatches are never discarded
-    let uniquePool = combinedPool.filter(
-      (item, idx, self) => idx === self.findIndex((t) => String(t.id) === String(item.id))
-    );
+    let uniquePool = apiAssigned.length > 0 ? apiAssigned : DEFAULT_VENDOR_TASKS;
 
     // If logged in as Vendor or filtered by category, apply matching filter
     if (isVendorRole && (currentVendorName || currentVendorId || currentCategory)) {
@@ -240,6 +212,8 @@ export default function TaskDetailsPage() {
         uniquePool = vendorFiltered;
       }
     }
+
+    setTasksList(uniquePool);
 
     // Fall back to DEFAULT_VENDOR_TASKS only if uniquePool is empty
     if (uniquePool.length === 0) {

@@ -5,101 +5,12 @@ import { SlidersHorizontal, Plus, ShoppingBag, Clock, MapPin, Calendar, Search }
 import Link from "next/link";
 import apiClient from "@/lib/apiClient";
 import { NewBookingModal } from "@/components/dashboard/NewBookingModal";
+import { useAppSelector } from "@/store/store";
 
-const DEFAULT_CUSTOMER_BOOKINGS = [
-  {
-    id: "BKG-2026-NUSRAT",
-    bookingNumber: "BKG-2026-NUSRAT",
-    eventName: "Nusrat & Fahim Grand Reception",
-    eventType: "Reception",
-    eventDate: "2026-12-30",
-    location: "Chattogram Grand Ballroom",
-    bookingStatus: "pending",
-    grandTotal: 285000,
-    subtotal: 285000,
-    tax: 0,
-    discount: 0,
-    customerName: "Nusrat Jahan",
-    customerPhone: "+880 1819 776655",
-    customerEmail: "nusrat.reception@gmail.com",
-    createdAt: "2026-08-06T10:09:00Z",
-    notes: "Nusrat & Fahim Grand Reception - Chattogram (300 Guests). Smart Calculator Custom Booking.",
-    services: [
-      { name: "Photography", tier: "Premium Candid Team", price: 15000 },
-      { name: "Videography", tier: "4K Cinematic Teaser & Film", price: 45000 },
-      { name: "Catering", tier: "Royal Reception Banquet", price: 175000 },
-      { name: "Decoration", tier: "Floral Stage & Entry Arch", price: 50000 },
-    ],
-  },
-  {
-    id: "BKG-2026-AHMED",
-    bookingNumber: "BKG-2026-AHMED",
-    eventName: "Ahmed Wedding Gala",
-    eventType: "Wedding",
-    eventDate: "2026-12-24",
-    location: "Radisson Blu, Dhaka North",
-    bookingStatus: "pending",
-    grandTotal: 350000,
-    subtotal: 350000,
-    tax: 0,
-    discount: 0,
-    customerName: "Ahmed Tanvir",
-    customerPhone: "+880 1711 009988",
-    customerEmail: "ahmed.wedding@gmail.com",
-    createdAt: "2026-08-06T10:06:00Z",
-    notes: "Ahmed Wedding - Dhaka North (350 Guests). Calculated & Booked via Smart Calculator.",
-    services: [
-      { name: "Photography", tier: "Luxury Master Team", price: 18000 },
-      { name: "Videography", tier: "4K Cinematic & Drone", price: 40000 },
-      { name: "Catering", tier: "Imperial Grand Menu", price: 220000 },
-      { name: "Decoration", tier: "Royal Floral Stage", price: 72000 },
-    ],
-  },
-  {
-    id: "BKG-2026-001",
-    bookingNumber: "BKG-2026-001",
-    eventName: "Royal Wedding Ceremony",
-    eventType: "Wedding",
-    eventDate: "2026-11-15",
-    location: "Gulshan Club, Dhaka",
-    bookingStatus: "confirmed",
-    grandTotal: 380000,
-    subtotal: 360000,
-    tax: 20000,
-    discount: 0,
-    createdAt: "2026-07-20T10:00:00Z",
-    notes: "Wedding Premium Package with Photography, Videography & Catering (400 Guests). Managed by EVENTO Operations.",
-    services: [
-      { name: "Photography", tier: "Premium", price: 35000 },
-      { name: "Videography", tier: "Premium", price: 40000 },
-      { name: "Catering", tier: "Premium", price: 240000 },
-      { name: "Decoration", tier: "Standard", price: 45000 },
-    ],
-  },
-  {
-    id: "BKG-2026-002",
-    bookingNumber: "BKG-2026-002",
-    eventName: "Gaye Holud Night Celebration",
-    eventType: "Gaye Holud",
-    eventDate: "2026-11-13",
-    location: "Banani Convention Hall, Dhaka",
-    bookingStatus: "pending",
-    grandTotal: 180000,
-    subtotal: 170000,
-    tax: 10000,
-    discount: 0,
-    createdAt: "2026-07-25T14:30:00Z",
-    notes: "Holud Special Decor + Stage Lighting & Live DJ. Managed by EVENTO Coordinator.",
-    services: [
-      { name: "Decoration", tier: "Premium", price: 65000 },
-      { name: "Stage & Lighting", tier: "Standard", price: 45000 },
-      { name: "DJ & Sound System", tier: "Basic", price: 30000 },
-      { name: "Photography", tier: "Basic", price: 25000 },
-    ],
-  },
-];
+const DEFAULT_CUSTOMER_BOOKINGS: any[] = [];
 
 export default function BookingsPage() {
+  const { user } = useAppSelector((state) => state.auth);
   const [bookingsList, setBookingsList] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -108,24 +19,10 @@ export default function BookingsPage() {
 
   const fetchBookings = async () => {
     setIsLoading(true);
-    let localCustom: any[] = [];
-    if (typeof window !== "undefined") {
-      try {
-        const stored =
-          localStorage.getItem("customBookings") ||
-          localStorage.getItem("custom_bookings");
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed)) {
-            localCustom = parsed;
-          }
-        }
-      } catch (e) {}
-    }
-
     let apiList: any[] = [];
     try {
-      const response = await apiClient.get("/bookings/my").catch(() => null);
+      const endpoint = user?.role === "admin" ? "/admin/bookings" : "/bookings/my";
+      const response = await apiClient.get(endpoint).catch(() => null);
       if (response && response.data && response.data.success !== false) {
         const rawData = response.data.data;
         apiList = Array.isArray(rawData)
@@ -136,8 +33,7 @@ export default function BookingsPage() {
       }
     } catch (error) {}
 
-    const combinedPool = [...localCustom, ...apiList, ...DEFAULT_CUSTOMER_BOOKINGS];
-    const uniqueBookings = combinedPool.filter(
+    const uniqueBookings = apiList.filter(
       (b, idx, self) =>
         idx ===
         self.findIndex(
