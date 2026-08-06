@@ -36,6 +36,7 @@ import {
   KeyRound,
   ArrowUpRight,
 } from "lucide-react";
+import apiClient from "@/lib/apiClient";
 import { toast } from "sonner";
 import { useAppSelector, useAppDispatch } from "@/store/store";
 import { setCredentials } from "@/store/slices/authSlice";
@@ -283,7 +284,7 @@ export default function PackageDetailsPage() {
         dispatch(
           setCredentials({
             user: loggedInUser,
-            token: "token-" + Date.now(),
+            token: "demo-token-" + Date.now(),
           })
         );
         toast.success("✓ Signed in successfully! You can now book this package.", {
@@ -300,7 +301,7 @@ export default function PackageDetailsPage() {
         dispatch(
           setCredentials({
             user: newAccountUser,
-            token: "token-" + Date.now(),
+            token: "demo-token-" + Date.now(),
           })
         );
         toast.success("✓ Account created successfully! You can now book this package.", {
@@ -362,43 +363,6 @@ export default function PackageDetailsPage() {
       return;
     }
     setIsSubmitting(true);
-
-    const saveBookingToLocal = (bookingId: string) => {
-      const newBookingObj = {
-        id: bookingId,
-        bookingNumber: bookingId,
-        eventName: `${pkg.title} (${activeZone.name})`,
-        eventType: pkg.category || "Package",
-        eventDate: new Date(eventDate).toISOString(),
-        location: activeZone.name,
-        budget: zoneAdjustedPrice,
-        grandTotal: zoneAdjustedPrice,
-        subtotal: zoneAdjustedPrice,
-        tax: 0,
-        discount: 0,
-        notes: customerNote || `${pkg.title} - ${activeZone.name} (${guestCount} Guests)`,
-        bookingStatus: "pending",
-        status: "PENDING",
-        createdAt: new Date().toISOString(),
-        customerName,
-        customerPhone,
-        customerEmail,
-      };
-
-      if (typeof window !== "undefined") {
-        try {
-          const stored =
-            localStorage.getItem("customBookings") ||
-            localStorage.getItem("custom_bookings");
-          const list = stored ? JSON.parse(stored) : [];
-          list.unshift(newBookingObj);
-          localStorage.setItem("customBookings", JSON.stringify(list));
-          localStorage.setItem("custom_bookings", JSON.stringify(list));
-          window.dispatchEvent(new CustomEvent("dashboard-data-update"));
-        } catch (e) {}
-      }
-    };
-
     try {
       const payload = {
         title: `${pkg.title} - ${activeZone.name}`,
@@ -418,28 +382,23 @@ export default function PackageDetailsPage() {
         }),
       };
 
-      const res = await fetch("/api/bookings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const res = await apiClient.post("/bookings", payload);
 
-      const result = await res.json().catch(() => ({}));
       const generatedId =
-        result?.data?.id ||
-        result?.id ||
+        res.data?.data?.id ||
+        res.data?.id ||
         "EVENTO-PKG-" + Math.floor(100000 + Math.random() * 900000);
 
-      saveBookingToLocal(generatedId);
       setBookingSuccessId(generatedId);
       setIsBookingModalOpen(false);
       toast.success("🎉 Package Booking Confirmed!");
+      
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("dashboard-data-update"));
+      }
     } catch (err) {
-      const fallbackId = "EVENTO-PKG-" + Math.floor(100000 + Math.random() * 900000);
-      saveBookingToLocal(fallbackId);
-      setBookingSuccessId(fallbackId);
-      setIsBookingModalOpen(false);
-      toast.success("🎉 Package Booking Confirmed!");
+      console.warn("Backend submit fallback:", err);
+      toast.error("Failed to submit booking to server. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

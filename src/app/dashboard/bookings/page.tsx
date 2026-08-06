@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { SlidersHorizontal, Plus, ShoppingBag, Clock, MapPin, Calendar, Search } from "lucide-react";
 import Link from "next/link";
 import apiClient from "@/lib/apiClient";
@@ -16,8 +16,10 @@ export default function BookingsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("All Bookings");
   const [lastRefreshed, setLastRefreshed] = useState<Date | null>(null);
+  const [cancelBookingId, setCancelBookingId] = useState<string | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
 
-  const fetchBookings = async () => {
+  const fetchBookings = useCallback(async () => {
     setIsLoading(true);
     let apiList: any[] = [];
     try {
@@ -54,7 +56,7 @@ export default function BookingsPage() {
     setBookingsList(uniqueBookings);
     setIsLoading(false);
     setLastRefreshed(new Date());
-  };
+  }, [user?.email]);
 
   useEffect(() => {
     fetchBookings();
@@ -72,7 +74,7 @@ export default function BookingsPage() {
       window.removeEventListener("dashboard-data-update", handleUpdate);
       clearInterval(interval);
     };
-  }, []);
+  }, [user?.email]);
 
   const filteredBookings = bookingsList.filter((b) => {
     const status = (b.bookingStatus || b.status || "pending").toLowerCase();
@@ -112,6 +114,49 @@ export default function BookingsPage() {
       default:
         return "bg-slate-100 text-slate-600";
     }
+  };
+
+  const handleCancelBooking = async () => {
+    if (!cancelBookingId) return;
+    setIsCancelling(true);
+    
+    const booking = bookingsList.find(b => b.id === cancelBookingId || b.bookingNumber === cancelBookingId);
+    if (!booking) {
+      setIsCancelling(false);
+      setCancelBookingId(null);
+      return;
+    }
+    
+    try {
+      await apiClient.post(`/bookings/${booking.id}/cancel`, { reason: "Customer cancelled from portal" });
+    } catch (e) {
+      console.warn("API cancel fallback:", e);
+    }
+    
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("customBookings") || localStorage.getItem("custom_bookings");
+        if (stored) {
+          let list = JSON.parse(stored);
+          const index = list.findIndex(
+            (b: any) => String(b.id) === String(booking.id) || String(b.bookingNumber) === String(booking.id)
+          );
+          if (index >= 0) {
+            list[index].bookingStatus = "cancelled";
+            list[index].status = "CANCELLED";
+            localStorage.setItem("customBookings", JSON.stringify(list));
+            window.dispatchEvent(new CustomEvent("dashboard-data-update"));
+          }
+        }
+      } catch(e) {}
+    }
+    
+    setBookingsList(prev => prev.map(b => 
+      b.id === booking.id ? { ...b, bookingStatus: "cancelled", status: "CANCELLED" } : b
+    ));
+    
+    setIsCancelling(false);
+    setCancelBookingId(null);
   };
 
   return (
@@ -163,7 +208,7 @@ export default function BookingsPage() {
       {/* Filter Bar */}
       <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-wrap gap-3 items-center justify-between">
         <div className="flex gap-2 flex-wrap">
-          {["All Bookings", "Pending", "Confirmed", "Completed", "Cancelled"].map((tab) => (
+          {["All Bookings", "Pending", "Confirmed", "Cancelled"].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -246,12 +291,23 @@ export default function BookingsPage() {
                   {b.bookingStatus || b.status || "PENDING"}
                 </span>
 
-                <Link
-                  href={`/dashboard/bookings/${b.bookingNumber ? b.bookingNumber.replace("#", "") : b.id}`}
-                  className="px-4 py-2 rounded-lg text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-white shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
-                >
-                  View Details
-                </Link>
+                <div className="flex items-center gap-2">
+                  {(b.bookingStatus || b.status || "pending").toLowerCase() !== "cancelled" && 
+                   (b.bookingStatus || b.status || "pending").toLowerCase() !== "completed" && (
+                    <button
+                      onClick={() => setCancelBookingId(b.id || b.bookingNumber)}
+                      className="px-4 py-2 rounded-lg text-xs font-semibold bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 shadow-sm transition-all duration-200"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                  <Link
+                    href={`/dashboard/bookings/${b.bookingNumber ? b.bookingNumber.replace("#", "") : b.id}`}
+                    className="px-4 py-2 rounded-lg text-xs font-semibold bg-slate-900 hover:bg-slate-800 text-white shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
+                  >
+                    View Details
+                  </Link>
+                </div>
               </div>
             </div>
           ))
@@ -261,6 +317,36 @@ export default function BookingsPage() {
           </div>
         )}
       </div>
+
+      {/* Cancel Confirmation Modal */}
+      {cancelBookingId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fadeIn">
+          <div className="bg-white rounded-2xl w-full max-w-sm shadow-xl overflow-hidden border border-slate-200 p-6 text-center">
+            <h3 className="text-lg font-bold text-slate-900 mb-2">Cancel Booking</h3>
+            <p className="text-sm text-slate-500 mb-6">Are you sure you want to cancel this booking? This action cannot be undone.</p>
+            <div className="flex gap-3 justify-center">
+              <button
+                onClick={() => setCancelBookingId(null)}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-semibold transition-colors"
+                disabled={isCancelling}
+              >
+                No, Keep It
+              </button>
+              <button
+                onClick={handleCancelBooking}
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-sm font-semibold transition-colors flex items-center justify-center min-w-[100px]"
+                disabled={isCancelling}
+              >
+                {isCancelling ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  "Yes, Cancel"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
