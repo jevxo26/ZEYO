@@ -9,7 +9,7 @@ import {
   Send,
   MessageSquare,
   ArrowRight,
-  CheckCircle2
+  CheckCircle2,
 } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -82,8 +82,9 @@ export default function ContactPage() {
             </h1>
 
             <p className="mx-auto mt-4 max-w-2xl text-sm leading-6 text-slate-600 md:text-base md:leading-7">
-              Have questions about our packages, vendors, or custom planning? 
-              Drop us a message, and our expert event planners will get back to you shortly.
+              Have questions about our packages, vendors, or custom planning?
+              Drop us a message, and our expert event planners will get back to
+              you shortly.
             </p>
           </div>
         </section>
@@ -92,13 +93,15 @@ export default function ContactPage() {
         <section className="relative bg-white py-16 lg:py-24">
           <div className="mx-auto max-w-7xl px-6">
             <div className="grid gap-12 lg:grid-cols-5">
-              
               {/* Left Side: Contact Info Info Cards */}
               <div className="space-y-6 lg:col-span-2">
                 <div className="rounded-2xl bg-black p-6 text-white shadow-md">
-                  <h3 className="text-lg font-bold sm:text-xl">Contact Information</h3>
+                  <h3 className="text-lg font-bold sm:text-xl">
+                    Contact Information
+                  </h3>
                   <p className="mt-2 text-xs text-slate-400">
-                    Fill out the form and our team will guide you to lock the best deals for your celebration.
+                    Fill out the form and our team will guide you to lock the
+                    best deals for your celebration.
                   </p>
                 </div>
 
@@ -116,9 +119,15 @@ export default function ContactPage() {
                             <Icon size={18} />
                           </div>
                           <div>
-                            <h4 className="text-sm font-bold text-slate-900">{detail.title}</h4>
-                            <p className="mt-1 text-xs font-semibold text-amber-700 md:text-sm">{detail.info}</p>
-                            <p className="mt-0.5 text-[11px] text-slate-500">{detail.description}</p>
+                            <h4 className="text-sm font-bold text-slate-900">
+                              {detail.title}
+                            </h4>
+                            <p className="mt-1 text-xs font-semibold text-amber-700 md:text-sm">
+                              {detail.info}
+                            </p>
+                            <p className="mt-0.5 text-[11px] text-slate-500">
+                              {detail.description}
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -134,15 +143,21 @@ export default function ContactPage() {
                     <MessageSquare size={18} />
                   </div>
                   <div>
-                    <h3 className="text-lg font-bold text-slate-900">Send us a Message</h3>
-                    <p className="text-xs text-slate-500">We respond to inquiries real quick!</p>
+                    <h3 className="text-lg font-bold text-slate-900">
+                      Send us a Message
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      We respond to inquiries real quick!
+                    </p>
                   </div>
                 </div>
 
                 <form onSubmit={handleSubmit} className="mt-6 space-y-4">
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div>
-                      <label className="text-xs font-semibold text-slate-700">Full Name</label>
+                      <label className="text-xs font-semibold text-slate-700">
+                        Full Name
+                      </label>
                       <input
                         type="text"
                         required
@@ -153,7 +168,9 @@ export default function ContactPage() {
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-semibold text-slate-700">Email Address</label>
+                      <label className="text-xs font-semibold text-slate-700">
+                        Email Address
+                      </label>
                       <input
                         type="email"
                         required
@@ -166,7 +183,9 @@ export default function ContactPage() {
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-slate-700">Subject</label>
+                    <label className="text-xs font-semibold text-slate-700">
+                      Subject
+                    </label>
                     <input
                       type="text"
                       required
@@ -178,7 +197,9 @@ export default function ContactPage() {
                   </div>
 
                   <div>
-                    <label className="text-xs font-semibold text-slate-700">Message / Event Requirements</label>
+                    <label className="text-xs font-semibold text-slate-700">
+                      Message / Event Requirements
+                    </label>
                     <textarea
                       required
                       rows={4}
@@ -194,26 +215,34 @@ export default function ContactPage() {
                     className="group flex w-full items-center justify-center gap-2 rounded-xl bg-amber-500 px-6 py-3.5 text-sm font-semibold text-black shadow-md transition hover:bg-amber-400 hover:scale-[1.02] active:scale-[0.98]"
                   >
                     <span>Send Message</span>
-                    <Send size={14} className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                    <Send
+                      size={14}
+                      className="transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                    />
                   </button>
                 </form>
               </div>
-
             </div>
           </div>
         </section>
 
         {/* FAQ Quick Banner */}
-        <section className="relative overflow-hidden bg-black py-16 text-white">
+        <section
+          id="faq"
+          className="relative overflow-hidden bg-black py-16 text-white"
+        >
           <div className="absolute inset-0 -z-10">
             <div className="absolute -left-24 top-10 h-80 w-80 rounded-full bg-amber-500/15 blur-3xl" />
             <div className="absolute right-0 bottom-0 h-80 w-80 rounded-full bg-orange-500/10 blur-3xl" />
           </div>
 
           <div className="mx-auto max-w-5xl px-6 text-center">
-            <h3 className="text-xl font-bold sm:text-2xl">Want faster answers?</h3>
+            <h3 className="text-xl font-bold sm:text-2xl">
+              Want faster answers?
+            </h3>
             <p className="mx-auto mt-2 max-w-xl text-xs text-slate-400 md:text-sm">
-              Check out our pre-made event packages or jump straight to planning with verified vendors.
+              Check out our pre-made event packages or jump straight to planning
+              with verified vendors.
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-4">
               <a
@@ -221,7 +250,10 @@ export default function ContactPage() {
                 className="group inline-flex items-center gap-2 rounded-xl bg-amber-500 border border-amber-500 px-5 py-2.5 text-xs font-semibold text-black transition hover:bg-amber-400"
               >
                 View Packages
-                <ArrowRight size={14} className="transition group-hover:translate-x-1" />
+                <ArrowRight
+                  size={14}
+                  className="transition group-hover:translate-x-1"
+                />
               </a>
             </div>
           </div>

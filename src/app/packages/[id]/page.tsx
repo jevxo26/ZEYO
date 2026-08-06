@@ -161,15 +161,55 @@ const SAMPLE_PACKAGES: Record<
   },
 };
 
+import { useDynamicPackages } from "@/hooks/useDynamicPackages";
+
 export default function PackageDetailsPage() {
   const params = useParams();
   const searchParams = useSearchParams();
   const router = useRouter();
 
+  const dynamicPackages = useDynamicPackages();
   const rawId = String(params?.id || "wedding-premium");
-  const pkg =
-    SAMPLE_PACKAGES[rawId] ||
-    SAMPLE_PACKAGES["wedding-premium"];
+
+  const pkg = useMemo(() => {
+    if (SAMPLE_PACKAGES[rawId]) {
+      return SAMPLE_PACKAGES[rawId];
+    }
+    const found = dynamicPackages.find((p: any) => String(p.id) === rawId);
+    if (found) {
+      return {
+        id: found.id,
+        title: found.title,
+        category: found.eventTypeId ? found.eventTypeId.replace("evt-type-", "").toUpperCase() : "Wedding",
+        description: found.subtitle || "Premium all-inclusive event package managed by ZEYO Platform Operations.",
+        basePrice: found.basePrice || 150000,
+        estimatedGuests: found.maxGuests || 300,
+        includedServices: found.included && found.included.length > 0 ? found.included : [
+          "Full Event Photography (High-Res Retouched)",
+          "Cinematic HD Video & Aerial Drone",
+          "Grand Stage Floral Backdrop & Entrance Gate",
+          "Sound System & Ambiance Lighting",
+        ],
+        whatsIncluded: [
+          "Master Event Coordinator on-site throughout the celebration",
+          "100% Protected Escrow Payment Guarantee",
+          "Dedicated technical team and venue setup inspection",
+          "Digital cloud album link with unlimited downloads",
+        ],
+        addons: [
+          { id: "drone", name: "Drone Aerial Cinematography", price: 10000 },
+          { id: "live-stream", name: "Live Streaming Broadcast", price: 8000 },
+          { id: "instant-photo", name: "Instant Photo Printing Stall", price: 7000 },
+        ],
+        gallery: [
+          found.imageUrl || "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=1200&q=80",
+          "https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=800&q=80",
+          "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=800&q=80",
+        ],
+      };
+    }
+    return SAMPLE_PACKAGES["wedding-premium"];
+  }, [rawId, dynamicPackages]);
 
   // Query zone filter
   const initialZone = searchParams.get("zone") || "dhaka";
@@ -212,10 +252,6 @@ export default function PackageDetailsPage() {
   const [bookingSuccessId, setBookingSuccessId] = useState<string | null>(null);
 
   const handleBookPackageClick = () => {
-    if (!isUserLoggedIn) {
-      setIsAuthModalOpen(true);
-      return;
-    }
     if (user) {
       if (!customerName) setCustomerName(user.name || "");
       if (!customerEmail) setCustomerEmail(user.email || "");
@@ -310,7 +346,7 @@ export default function PackageDetailsPage() {
       if (!found) return sum;
       return (
         sum +
-        (found.isPerGuest ? found.price * guestCount : found.price)
+        ((found as any).isPerGuest ? found.price * guestCount : found.price)
       );
     }, 0);
   }, [selectedAddonIds, pkg.addons, guestCount]);
@@ -488,7 +524,7 @@ export default function PackageDetailsPage() {
                   Included Services in This Package
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {pkg.includedServices.map((srv, idx) => (
+                  {pkg.includedServices.map((srv: string, idx: number) => (
                     <div
                       key={idx}
                       className="flex items-start gap-3 p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-800"

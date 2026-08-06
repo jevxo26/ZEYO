@@ -111,8 +111,16 @@ export default function VendorsPage() {
     }
 
     let usersVendors: any[] = [];
+    let customVendors: any[] = [];
 
     if (typeof window !== "undefined") {
+      try {
+        const storedCustom = localStorage.getItem("customVendors");
+        if (storedCustom) {
+          customVendors = JSON.parse(storedCustom);
+        }
+      } catch (e) {}
+
       try {
         const storedUsers = localStorage.getItem("users");
         if (storedUsers) {
@@ -134,7 +142,7 @@ export default function VendorsPage() {
       } catch (e) {}
     }
 
-    const rawVendorsList = [...usersVendors, ...DEFAULT_VENDORS];
+    const rawVendorsList = [...customVendors, ...usersVendors, ...DEFAULT_VENDORS];
     const uniqueVendors = rawVendorsList.filter(
       (v, idx, self) => idx === self.findIndex((t) => String(t.id) === String(v.id))
     );
@@ -189,10 +197,6 @@ export default function VendorsPage() {
   });
 
   const handleOpenDispatch = (vendor: VendorItemType) => {
-    if (!vendor.verified) {
-      toast.error("Cannot dispatch unverified vendors!");
-      return;
-    }
     setSelectedVendor(vendor);
   };
 
@@ -200,67 +204,114 @@ export default function VendorsPage() {
     e.preventDefault();
     if (!selectedVendor) return;
 
-    // Vendor Availability Logic Check
-    const targetBooking = activeBookings.find(b => b.id === targetBookingId);
-    if (!targetBooking) return;
-    
-    const zoneId = targetBooking.zoneId || "zone-1"; // fallback for old data
-
-    if (selectedVendor.supportedZoneIds && !selectedVendor.supportedZoneIds.includes(zoneId)) {
-      toast.error(`Vendor does not support this booking's zone!`);
-      return;
-    }
-    if (selectedVendor.supportedServiceKeys && !selectedVendor.supportedServiceKeys.includes(targetService)) {
-      toast.error(`Vendor does not provide this service!`);
+    const targetBooking = activeBookings.find(
+      (b) => String(b.id) === String(targetBookingId)
+    );
+    if (!targetBooking) {
+      toast.error("Please select a valid booking to dispatch");
       return;
     }
 
     if (typeof window !== "undefined") {
       try {
-        // 1. Update Booking to reflect assigned vendor
+        // 1. Update Booking record to store assigned vendor & service
         const storedBookings = localStorage.getItem("customBookings");
         let bookingList = storedBookings ? JSON.parse(storedBookings) : [];
-        const bIdx = bookingList.findIndex((b: any) => String(b.id) === String(targetBookingId));
+        const bIdx = bookingList.findIndex(
+          (b: any) => String(b.id) === String(targetBookingId)
+        );
         if (bIdx >= 0) {
           bookingList[bIdx].assignedVendorId = selectedVendor.id;
           bookingList[bIdx].assignedVendor = selectedVendor.name;
           bookingList[bIdx].assignedService = targetService;
+          bookingList[bIdx].status = "CONFIRMED";
+          bookingList[bIdx].bookingStatus = "confirmed";
           localStorage.setItem("customBookings", JSON.stringify(bookingList));
         }
 
-        // 2. Create Explicit Task for the Vendor
+        // 2. Create Explicit Task for the Vendor in Task Dispatch Hub
         const storedTasks = localStorage.getItem("customVendorTasks");
         let taskList = storedTasks ? JSON.parse(storedTasks) : [];
+
+        const formattedDate = targetBooking.eventDate || targetBooking.date
+          ? new Date(targetBooking.eventDate || targetBooking.date).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })
+          : "Upcoming";
+
         const newTask = {
           id: `TSK-${Date.now()}`,
           bookingRef: targetBooking.bookingNumber || `#${targetBooking.id}`,
           title: targetBooking.eventName || "Assigned Celebration Service",
-          category: targetService,
-          zone: targetBooking.location || zoneId,
-          venue: targetBooking.location || "Location TBD",
-          date: targetBooking.eventDate ? new Date(targetBooking.eventDate).toLocaleDateString() : "Upcoming",
-          duration: "Full Event",
-          payout: `৳${Number(targetBooking.grandTotal || targetBooking.budget || 35000).toLocaleString()} (Escrow)`,
-          status: "Pending Vendor Acceptance",
+          category: targetService.charAt(0).toUpperCase() + targetService.slice(1),
+          zone: targetBooking.location || "Dhaka Zone",
+          venue: targetBooking.location || "Venue TBD",
+          date: formattedDate,
+          duration: "Full Event Execution",
+          payout: `৳${Number(
+            targetBooking.grandTotal || targetBooking.budget || 35000
+          ).toLocaleString("en-BD")} (Escrow)`,
+          status: "In Progress",
           requirements: [
-            { title: "Service Delivery", desc: `Provide ${targetService} according to EVENTO standard.` },
+            {
+              title: `${targetService.toUpperCase()} Service Delivery`,
+              desc:
+                dispatchNotes.trim() ||
+                `Deliver high-quality ${targetService} services according to ZEYO platform standards.`,
+            },
           ],
-          coordinatorNotes: "Coordinate with EVENTO Dispatch upon arrival.",
+          coordinatorNotes:
+            dispatchNotes.trim() || "Coordinate with Lead Event Coordinator upon arrival.",
           assignedVendorId: selectedVendor.id,
-          assignedVendorName: selectedVendor.name
+          assignedVendorName: selectedVendor.name,
+          createdAt: new Date().toISOString(),
         };
+
         taskList.unshift(newTask);
         localStorage.setItem("customVendorTasks", JSON.stringify(taskList));
-        
-        // Trigger dashboard update
+
+        // 3. Update Vendor Active Jobs count
+        const storedVendors = localStorage.getItem("customVendors");
+        let vList = storedVendors ? JSON.parse(storedVendors) : [];
+        const vIdx = vList.findIndex((v: any) => String(v.id) === String(selectedVendor.id));
+        if (vIdx >= 0) {
+          vList[vIdx].jobs = (vList[vIdx].jobs || 0) + 1;
+          localStorage.setItem("customVendors", JSON.stringify(vList));
+        }
+
+        setVendorsList((prev) =>
+          prev.map((v) =>
+            v.id === selectedVendor.id ? { ...v, jobs: (v.jobs || 0) + 1 } : v
+          )
+        );
+
+        // 4. Optional Backend API Call Sync
+        try {
+          await apiClient.post("/admin/assignments", {
+            vendorId: selectedVendor.id,
+            bookingId: targetBooking.id,
+            notes: dispatchNotes,
+          }).catch(() => null);
+        } catch (err) {}
+
+        // Notify app components to re-render in real time
         window.dispatchEvent(new CustomEvent("dashboard-data-update"));
-        createNotification("Vendor Assigned", `Vendor ${selectedVendor.name} assigned to ${targetBooking.bookingNumber}.`, "✅");
+        createNotification(
+          "Vendor Assigned",
+          `Partner "${selectedVendor.name}" successfully dispatched to ${targetBooking.bookingNumber || targetBooking.id} (${targetService}).`,
+          "✅"
+        );
       } catch (e) {
         console.warn("Failed to persist vendor dispatch locally", e);
       }
     }
 
-    toast.success("Vendor dispatched successfully!");
+    toast.success(`🚀 Vendor "${selectedVendor.name}" successfully dispatched!`, {
+      duration: 4000,
+    });
+    setDispatchNotes("");
     setSelectedVendor(null);
   };
 
@@ -363,8 +414,7 @@ export default function VendorsPage() {
                     <td className="px-6 py-4 text-right">
                       <button
                         onClick={() => handleOpenDispatch(v)}
-                        disabled={v.status !== "VERIFIED"}
-                        className="px-3.5 py-1.5 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-sm transition-colors inline-flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-3.5 py-1.5 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-sm transition-all duration-200 inline-flex items-center gap-1.5 cursor-pointer hover:scale-105 active:scale-95"
                       >
                         <Send className="w-3.5 h-3.5" />
                         Dispatch

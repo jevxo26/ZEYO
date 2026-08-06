@@ -117,7 +117,7 @@ export default function PackagesPage() {
   const [guestCount, setGuestCount] = useState<number>(MAX_GUESTS);
 
   const filteredPackages = useMemo(() => {
-    return packages.filter((p) => {
+    return packages.filter((p: EventPackage) => {
       const matchesEventType =
         selectedEventType === "all" || p.eventTypeId === selectedEventType;
       const matchesGuests = !p.maxGuests || p.maxGuests >= guestCount || guestCount === MAX_GUESTS;
@@ -250,7 +250,7 @@ export default function PackagesPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-                  {filteredPackages.map((pkg) => (
+                  {filteredPackages.map((pkg: EventPackage) => (
                     <PackageCard key={pkg.id} pkg={pkg} />
                   ))}
                 </div>

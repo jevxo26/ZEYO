@@ -8,6 +8,54 @@ import { NewBookingModal } from "@/components/dashboard/NewBookingModal";
 
 const DEFAULT_CUSTOMER_BOOKINGS = [
   {
+    id: "BKG-2026-NUSRAT",
+    bookingNumber: "BKG-2026-NUSRAT",
+    eventName: "Nusrat & Fahim Grand Reception",
+    eventType: "Reception",
+    eventDate: "2026-12-30",
+    location: "Chattogram Grand Ballroom",
+    bookingStatus: "pending",
+    grandTotal: 285000,
+    subtotal: 285000,
+    tax: 0,
+    discount: 0,
+    customerName: "Nusrat Jahan",
+    customerPhone: "+880 1819 776655",
+    customerEmail: "nusrat.reception@gmail.com",
+    createdAt: "2026-08-06T10:09:00Z",
+    notes: "Nusrat & Fahim Grand Reception - Chattogram (300 Guests). Smart Calculator Custom Booking.",
+    services: [
+      { name: "Photography", tier: "Premium Candid Team", price: 15000 },
+      { name: "Videography", tier: "4K Cinematic Teaser & Film", price: 45000 },
+      { name: "Catering", tier: "Royal Reception Banquet", price: 175000 },
+      { name: "Decoration", tier: "Floral Stage & Entry Arch", price: 50000 },
+    ],
+  },
+  {
+    id: "BKG-2026-AHMED",
+    bookingNumber: "BKG-2026-AHMED",
+    eventName: "Ahmed Wedding Gala",
+    eventType: "Wedding",
+    eventDate: "2026-12-24",
+    location: "Radisson Blu, Dhaka North",
+    bookingStatus: "pending",
+    grandTotal: 350000,
+    subtotal: 350000,
+    tax: 0,
+    discount: 0,
+    customerName: "Ahmed Tanvir",
+    customerPhone: "+880 1711 009988",
+    customerEmail: "ahmed.wedding@gmail.com",
+    createdAt: "2026-08-06T10:06:00Z",
+    notes: "Ahmed Wedding - Dhaka North (350 Guests). Calculated & Booked via Smart Calculator.",
+    services: [
+      { name: "Photography", tier: "Luxury Master Team", price: 18000 },
+      { name: "Videography", tier: "4K Cinematic & Drone", price: 40000 },
+      { name: "Catering", tier: "Imperial Grand Menu", price: 220000 },
+      { name: "Decoration", tier: "Royal Floral Stage", price: 72000 },
+    ],
+  },
+  {
     id: "BKG-2026-001",
     bookingNumber: "BKG-2026-001",
     eventName: "Royal Wedding Ceremony",
@@ -63,28 +111,53 @@ export default function BookingsPage() {
     let localCustom: any[] = [];
     if (typeof window !== "undefined") {
       try {
-        const stored = localStorage.getItem("customBookings") || localStorage.getItem("custom_bookings");
-        if (stored) localCustom = JSON.parse(stored);
+        const stored =
+          localStorage.getItem("customBookings") ||
+          localStorage.getItem("custom_bookings");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed)) {
+            localCustom = parsed;
+          }
+        }
       } catch (e) {}
     }
 
+    let apiList: any[] = [];
     try {
-      const response = await apiClient.get("/bookings/my");
-      let apiList: any[] = [];
-      if (response.data && response.data.success !== false) {
+      const response = await apiClient.get("/bookings/my").catch(() => null);
+      if (response && response.data && response.data.success !== false) {
         const rawData = response.data.data;
-        apiList = Array.isArray(rawData) ? rawData : (Array.isArray(rawData?.data) ? rawData.data : []);
+        apiList = Array.isArray(rawData)
+          ? rawData
+          : Array.isArray(rawData?.data)
+          ? rawData.data
+          : [];
       }
-      const combined = [...localCustom, ...apiList];
-      setBookingsList(combined.length > 0 ? combined : DEFAULT_CUSTOMER_BOOKINGS);
-    } catch (error) {
-      console.error("Failed to fetch bookings", error);
-      const combined = [...localCustom, ...DEFAULT_CUSTOMER_BOOKINGS];
-      setBookingsList(combined);
-    } finally {
-      setIsLoading(false);
-      setLastRefreshed(new Date());
-    }
+    } catch (error) {}
+
+    const combinedPool = [...localCustom, ...apiList, ...DEFAULT_CUSTOMER_BOOKINGS];
+    const uniqueBookings = combinedPool.filter(
+      (b, idx, self) =>
+        idx ===
+        self.findIndex(
+          (item) =>
+            String(item.id || item.bookingNumber) ===
+            String(b.id || b.bookingNumber)
+        )
+    );
+
+    // Strict Newest First Order (Latest created booking / highest timestamp first)
+    uniqueBookings.sort((a, b) => {
+      const timeA = new Date(a.createdAt || a.eventDate || 0).getTime();
+      const timeB = new Date(b.createdAt || b.eventDate || 0).getTime();
+      if (timeB !== timeA) return timeB - timeA;
+      return String(b.id || "").localeCompare(String(a.id || ""));
+    });
+
+    setBookingsList(uniqueBookings);
+    setIsLoading(false);
+    setLastRefreshed(new Date());
   };
 
   useEffect(() => {

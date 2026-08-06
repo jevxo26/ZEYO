@@ -91,13 +91,18 @@ export default function Navbar() {
     setClientUser(null);
     setDropdownOpen(false);
     setIsOpen(false);
-    toast.success("✓ Signed out successfully!", { duration: 4000, closeButton: true });
+    toast.success("✓ Signed out successfully!", {
+      duration: 4000,
+      closeButton: true,
+    });
     router.push("/");
   };
 
   const getDashboardHref = () => {
     return "/dashboard";
   };
+
+  const isLinkActive = (href: string) => pathname === href.split("#")[0];
 
   const getRoleBadge = () => {
     if (!activeUser) return null;
@@ -144,10 +149,10 @@ export default function Navbar() {
         {/* Desktop Nav Links */}
         <nav className="hidden md:flex items-center gap-7">
           {NAV_LINKS.map((link) => {
-            const active = pathname === link.href;
+            const active = isLinkActive(link.href);
             return (
               <Link
-                key={link.href}
+                key={link.label}
                 href={link.href}
                 className={`relative text-[13px] font-bold py-2 transition-colors duration-200 group ${
                   active
@@ -285,10 +290,10 @@ export default function Navbar() {
         <div className="md:hidden bg-white border-b border-slate-200 shadow-lg px-6 py-4 space-y-4">
           <nav className="flex flex-col space-y-3">
             {NAV_LINKS.map((link) => {
-              const active = pathname === link.href;
+              const active = isLinkActive(link.href);
               return (
                 <Link
-                  key={link.href}
+                  key={link.label}
                   href={link.href}
                   className={`text-sm font-bold py-1 ${
                     active ? "text-amber-600" : "text-slate-600"

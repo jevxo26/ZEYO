@@ -82,19 +82,19 @@ function SmartCalculatorContent() {
   useEffect(() => {
     const pkgId = searchParams.get("packageId");
     if (pkgId && dynamicPackages.length > 0 && dynamicServices.length > 0 && !hasInitializedPackage) {
-      const pkg = dynamicPackages.find(p => p.id === pkgId);
+      const pkg = dynamicPackages.find((p: any) => p.id === pkgId);
       if (pkg) {
         setSelectedEventTypeId(pkg.eventTypeId);
-        setSelectedServiceKeys(pkg.configuredServices.map(cs => cs.serviceKey));
+        setSelectedServiceKeys(pkg.configuredServices.map((cs: any) => cs.serviceKey));
         
         // Seed configurations
         const initialConfigs: Record<string, ConfiguredServiceState> = {};
-        pkg.configuredServices.forEach(cs => {
-          const srv = dynamicServices.find(s => s.key === cs.serviceKey);
+        pkg.configuredServices.forEach((cs: any) => {
+          const srv = dynamicServices.find((s: any) => s.key === cs.serviceKey);
           if (!srv) return;
           
-          const tier = srv.tiers.find(t => t.id === cs.tierId) || srv.tiers[0];
-          const cov = srv.coverages.find(c => c.id === cs.coverageId) || srv.coverages[0];
+          const tier = srv.tiers.find((t: any) => t.id === cs.tierId) || srv.tiers[0];
+          const cov = srv.coverages.find((c: any) => c.id === cs.coverageId) || srv.coverages[0];
           if (!tier || !cov) return;
           
           const initialPrice = calculateServicePrice(
@@ -111,7 +111,7 @@ function SmartCalculatorContent() {
             coverageName: cov.name,
             coverageMultiplier: cov.multiplier,
             guestCount: srv.isPerGuest ? 300 : 1,
-            selectedAddons: cs.addons.map(a => srv.addons.find(ad => ad.id === a)).filter(Boolean) as any,
+            selectedAddons: cs.addons.map((a: any) => srv.addons.find((ad: any) => ad.id === a)).filter(Boolean) as any,
             calculatedPrice: initialPrice,
           };
         });
