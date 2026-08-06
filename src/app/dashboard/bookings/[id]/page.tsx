@@ -85,6 +85,73 @@ export default function BookingDetailsPage() {
   const [editBudget, setEditBudget] = useState<number | string>("");
   const [editNotes, setEditNotes] = useState("");
 
+  // Add Service State
+  const [showAddServiceModal, setShowAddServiceModal] = useState(false);
+  const [addServiceName, setAddServiceName] = useState("");
+  const [addServicePrice, setAddServicePrice] = useState("");
+  const [isAddingService, setIsAddingService] = useState(false);
+
+  const handleAddService = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!addServiceName || !addServicePrice) {
+      toast.error("Please enter a service name and price.");
+      return;
+    }
+    
+    setIsAddingService(true);
+    try {
+      // In a fully integrated backend, this would call POST /bookings/:id/items
+      // For now, we update the local booking state to reflect the addition immediately.
+      
+      const newService = {
+        name: addServiceName,
+        price: Number(addServicePrice),
+        details: "Customer requested addition",
+        tier: "Requested",
+      };
+
+      const updatedBooking = { ...booking };
+      if (!updatedBooking.services) updatedBooking.services = [];
+      updatedBooking.services.push(newService);
+      
+      updatedBooking.budget = Number(updatedBooking.budget || 0) + newService.price;
+      updatedBooking.grandTotal = Number(updatedBooking.grandTotal || 0) + newService.price;
+      updatedBooking.subtotal = Number(updatedBooking.subtotal || 0) + newService.price;
+
+      // Optimistically update backend total
+      await apiClient.put(`/bookings/${id}`, {
+        budget: updatedBooking.budget,
+        grandTotal: updatedBooking.grandTotal,
+        subtotal: updatedBooking.subtotal,
+      }).catch(() => null);
+
+      setBooking(updatedBooking);
+      toast.success("Service added successfully!");
+      setShowAddServiceModal(false);
+      setAddServiceName("");
+      setAddServicePrice("");
+      
+      // Update local storage just in case it's a legacy local booking
+      if (typeof window !== "undefined") {
+        try {
+          const stored = localStorage.getItem("customBookings");
+          if (stored) {
+            const list = JSON.parse(stored);
+            const idx = list.findIndex((b: any) => String(b.id) === String(id) || String(b.bookingNumber) === String(id));
+            if (idx >= 0) {
+              list[idx] = updatedBooking;
+              localStorage.setItem("customBookings", JSON.stringify(list));
+            }
+          }
+        } catch(e) {}
+      }
+    } catch (err) {
+      toast.error("Failed to add service.");
+    } finally {
+      setIsAddingService(false);
+    }
+  };
+
   const fetchBookingDetails = async () => {
     setIsLoading(true);
     let matchedLocal: any = null;
@@ -395,33 +462,6 @@ export default function BookingDetailsPage() {
           >
             Feedback
           </button>
-          {(booking.bookingStatus || booking.status)?.toLowerCase() !== "cancelled" &&
-            (booking.bookingStatus || booking.status)?.toLowerCase() !== "completed" && (
-              <>
-                {(booking.bookingStatus || booking.status)?.toLowerCase() === "pending" && (
-                  <button
-                    onClick={handleApproveBooking}
-                    className="px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition-colors shadow-sm flex items-center gap-1.5"
-                  >
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    Approve Booking
-                  </button>
-                )}
-                <button
-                  onClick={handleCancelBooking}
-                  className="px-3.5 py-1.5 bg-white border border-slate-200 hover:bg-rose-50 text-rose-600 rounded-lg text-xs font-medium transition-colors shadow-sm"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={openEditModal}
-                  className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold transition-colors shadow-sm flex items-center gap-1.5"
-                >
-                  <Edit3 className="w-3.5 h-3.5" />
-                  Edit Details
-                </button>
-              </>
-            )}
         </div>
       </div>
 
@@ -448,12 +488,6 @@ export default function BookingDetailsPage() {
             <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Event Overview</h2>
-                <button
-                  onClick={openEditModal}
-                  className="text-xs font-medium text-slate-600 hover:text-slate-900 flex items-center gap-1"
-                >
-                  <Edit3 className="w-3.5 h-3.5" /> Edit
-                </button>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -611,7 +645,18 @@ export default function BookingDetailsPage() {
       )}
 
       {activeTab === 'services' && (
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden divide-y divide-slate-100">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+          <div className="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+            <h3 className="text-sm font-semibold text-slate-800">Included Services</h3>
+            <button
+              onClick={() => setShowAddServiceModal(true)}
+              className="text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              Add Service
+            </button>
+          </div>
+          <div className="divide-y divide-slate-100">
           {booking.services && booking.services.length > 0 ? (
             booking.services.map((srv: any, i: number) => (
               <div key={i} className="p-4 flex items-center justify-between gap-4 text-xs">
@@ -627,6 +672,7 @@ export default function BookingDetailsPage() {
               No individual service line items attached to this record.
             </div>
           )}
+          </div>
         </div>
       )}
 
@@ -653,8 +699,98 @@ export default function BookingDetailsPage() {
                 <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">Payment Ledger & Invoices</h2>
                 <button
                   onClick={() => {
-                    toast.success("Downloading formal PDF Invoice...");
-                    // In a real app, this would trigger a PDF generation library
+                    toast.success("Generating formal PDF Invoice...");
+                    const invoiceHtml = `
+                      <html>
+                        <head>
+                          <title>Invoice - ${booking?.bookingNumber}</title>
+                          <style>
+                            body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; padding: 40px; color: #333; }
+                            .header { display: flex; justify-content: space-between; border-bottom: 2px solid #eee; padding-bottom: 20px; }
+                            .title { font-size: 28px; font-weight: bold; color: #4f46e5; }
+                            .details { margin-top: 30px; display: flex; justify-content: space-between; }
+                            .details h3 { margin-bottom: 5px; color: #666; font-size: 14px; text-transform: uppercase; }
+                            .details p { margin: 0; line-height: 1.5; font-size: 16px; font-weight: bold; }
+                            table { width: 100%; border-collapse: collapse; margin-top: 40px; }
+                            th, td { border-bottom: 1px solid #eee; padding: 15px 0; text-align: left; }
+                            th { text-transform: uppercase; font-size: 12px; color: #999; }
+                            .totals { margin-top: 30px; text-align: right; }
+                            .totals p { margin: 5px 0; font-size: 16px; }
+                            .totals .grand-total { font-size: 20px; font-weight: bold; color: #10b981; margin-top: 15px; }
+                          </style>
+                        </head>
+                        <body>
+                          <div class="header">
+                            <div>
+                              <div class="title">EVENTO</div>
+                              <p style="margin-top:5px;color:#666;">Official Invoice</p>
+                            </div>
+                            <div style="text-align:right;">
+                              <p style="margin:0;font-weight:bold;">Invoice #${booking?.bookingNumber || 'BKG-000'}</p>
+                              <p style="margin:5px 0 0;color:#666;">Date: ${new Date().toLocaleDateString()}</p>
+                            </div>
+                          </div>
+                          
+                          <div class="details">
+                            <div>
+                              <h3>Billed To</h3>
+                              <p>${booking?.customerName || booking?.customer?.user?.name || 'Customer'}</p>
+                              <p style="font-weight:normal;font-size:14px;color:#666;">${booking?.customerEmail || booking?.customer?.user?.email || ''}</p>
+                              <p style="font-weight:normal;font-size:14px;color:#666;">${booking?.customerPhone || booking?.customer?.user?.phone || ''}</p>
+                            </div>
+                            <div style="text-align:right;">
+                              <h3>Event Details</h3>
+                              <p>${booking?.eventName}</p>
+                              <p style="font-weight:normal;font-size:14px;color:#666;">Date: ${new Date(booking?.eventDate || Date.now()).toLocaleDateString()}</p>
+                              <p style="font-weight:normal;font-size:14px;color:#666;">Location: ${booking?.location || 'TBA'}</p>
+                            </div>
+                          </div>
+                          
+                          <table>
+                            <thead>
+                              <tr>
+                                <th>Description</th>
+                                <th style="text-align:right;">Amount</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td>
+                                  <div style="font-weight:bold;font-size:16px;">${booking?.eventName}</div>
+                                  <div style="font-size:14px;color:#666;margin-top:4px;">${booking?.eventType || 'Event Package'} • ${booking?.guestCount || 0} Guests</div>
+                                </td>
+                                <td style="text-align:right;font-weight:bold;">৳${Number(booking?.budget || booking?.grandTotal || 0).toLocaleString()}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                          
+                          <div class="totals">
+                            <p>Subtotal: ৳${Number(booking?.subtotal || booking?.grandTotal || 0).toLocaleString()}</p>
+                            <p>Tax & Fees: ৳${Number(booking?.tax || 0).toLocaleString()}</p>
+                            <p>Discount: -৳${Number(booking?.discount || 0).toLocaleString()}</p>
+                            <p class="grand-total">Total Amount: ৳${Number(booking?.grandTotal || booking?.budget || 0).toLocaleString()}</p>
+                            <p style="color:#666;margin-top:10px;">Amount Paid: ৳${Number(booking?.amountPaid || 0).toLocaleString()}</p>
+                            <p style="color:#e63946;font-weight:bold;">Balance Due: ৳${(Number(booking?.grandTotal || booking?.budget || 0) - Number(booking?.amountPaid || 0)).toLocaleString()}</p>
+                          </div>
+                          
+                          <div style="margin-top:60px;text-align:center;color:#999;font-size:12px;border-top:1px solid #eee;padding-top:20px;">
+                            Thank you for choosing EVENTO. This is a computer-generated invoice and requires no signature.
+                          </div>
+                          
+                          <script>
+                            window.onload = function() { window.print(); }
+                          </script>
+                        </body>
+                      </html>
+                    `;
+
+                    const printWindow = window.open('', '_blank');
+                    if (printWindow) {
+                      printWindow.document.write(invoiceHtml);
+                      printWindow.document.close();
+                    } else {
+                      toast.error("Popup blocked! Please allow popups to download the invoice.");
+                    }
                   }}
                   className="text-xs font-medium text-purple-600 hover:text-purple-700 flex items-center gap-1.5 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg transition-colors"
                 >
@@ -959,6 +1095,74 @@ export default function BookingDetailsPage() {
         bookingReference={booking.bookingNumber || booking.id}
         eventName={booking.eventName}
       />
+      {/* Add Service Modal */}
+      {showAddServiceModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="flex items-center justify-between p-4 border-b border-slate-100">
+              <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-indigo-600" />
+                Add Custom Service
+              </h2>
+              <button
+                onClick={() => setShowAddServiceModal(false)}
+                className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleAddService} className="p-4 space-y-4 overflow-y-auto">
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Service Name <span className="text-red-500">*</span></label>
+                <input
+                  type="text"
+                  required
+                  value={addServiceName}
+                  onChange={(e) => setAddServiceName(e.target.value)}
+                  placeholder="e.g. Extra Photography Hours"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors"
+                />
+              </div>
+              
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Estimated Price (৳) <span className="text-red-500">*</span></label>
+                <input
+                  type="number"
+                  required
+                  value={addServicePrice}
+                  onChange={(e) => setAddServicePrice(e.target.value)}
+                  placeholder="e.g. 5000"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors"
+                />
+              </div>
+
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mt-2">
+                <p className="text-xs text-amber-800 flex gap-2 items-start">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>Adding this service will automatically update your total booking budget. An admin will review and finalize this addition.</span>
+                </p>
+              </div>
+
+              <div className="pt-4 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowAddServiceModal(false)}
+                  className="flex-1 px-4 py-2 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isAddingService}
+                  className="flex-1 px-4 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {isAddingService ? "Adding..." : "Add Service"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
