@@ -1,0 +1,20 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// EventSubCategory Model
+// Sub-level categories (Wedding, Engagement, Birthday, Product Launch, etc.)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model EventSubCategory {
+  id           Int           @id @default(autoincrement())
+  categoryId   Int
+  category     EventCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  name         String
+  description  String?
+  displayOrder Int           @default(0)
+  status       String        @default("active")
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([categoryId])
+  @@index([status])
+  @@index([displayOrder])
+}

@@ -1,0 +1,19 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// VendorAcceptance — vendor accepts or rejects an assignment
+// ─────────────────────────────────────────────────────────────────────────────
+
+model VendorAcceptance {
+  id               Int            @id @default(autoincrement())
+  assignmentItemId Int
+  assignmentItem   AssignmentItem @relation(fields: [assignmentItemId], references: [id], onDelete: Cascade)
+  vendorId         Int
+  vendor           Vendor         @relation(fields: [vendorId], references: [id])
+  accepted         Boolean        @default(false)
+  responseMessage  String?
+  acceptedAt       DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([assignmentItemId])
+  @@index([vendorId])
+}

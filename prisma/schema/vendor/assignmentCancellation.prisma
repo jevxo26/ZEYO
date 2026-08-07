@@ -1,0 +1,16 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// AssignmentCancellation — cancellation record per assignment item
+// ─────────────────────────────────────────────────────────────────────────────
+
+model AssignmentCancellation {
+  id               Int            @id @default(autoincrement())
+  assignmentItemId Int            @unique
+  assignmentItem   AssignmentItem @relation(fields: [assignmentItemId], references: [id], onDelete: Cascade)
+  reason           String?
+  cancelledBy      Int?
+  cancelledByUser  User?          @relation("AssignmentCancelledBy", fields: [cancelledBy], references: [id], onDelete: SetNull)
+  cancelledAt      DateTime       @default(now())
+  createdAt        DateTime       @default(now())
+
+  @@index([cancelledBy])
+}

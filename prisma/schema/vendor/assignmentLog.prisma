@@ -1,0 +1,18 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// AssignmentLog — system-level event log per assignment
+// logType: view | update | status_change | vendor_assigned | cancelled
+// ─────────────────────────────────────────────────────────────────────────────
+
+model AssignmentLog {
+  id           Int              @id @default(autoincrement())
+  assignmentId Int
+  assignment   VendorAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  logType      String           @default("update")
+  description  String?
+  deviceInfo   String?
+  ipAddress    String?
+  createdAt    DateTime         @default(now())
+
+  @@index([assignmentId])
+  @@index([logType])
+}

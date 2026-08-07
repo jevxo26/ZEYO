@@ -1,0 +1,19 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// CalculatorStep — tracks wizard progress per calculator
+// Steps: Select Zone → Select Event → Select Services → Configure → Summary
+// ─────────────────────────────────────────────────────────────────────────────
+
+model CalculatorStep {
+  id           Int                  @id @default(autoincrement())
+  calculatorId Int
+  calculator   SmartEventCalculator @relation(fields: [calculatorId], references: [id], onDelete: Cascade)
+  stepNumber   Int
+  stepName     String
+  isCompleted  Boolean              @default(false)
+  completedAt  DateTime?
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@unique([calculatorId, stepNumber])
+  @@index([calculatorId])
+}

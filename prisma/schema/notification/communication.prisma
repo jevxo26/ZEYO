@@ -1,0 +1,113 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Communication — Chat, Reminders, Announcements, Broadcasts
+// ─────────────────────────────────────────────────────────────────────────────
+
+model BroadcastNotification {
+  id             Int       @id @default(autoincrement())
+  title          String
+  message        String
+  targetAudience String // e.g., ALL, ZONE_SPECIFIC, VENDORS
+  zoneId         Int?
+  zone           Zone?     @relation("zoneBroadcasts", fields: [zoneId], references: [id], onDelete: SetNull)
+  status         String    @default("draft") // draft, published, archived
+  publishedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([zoneId])
+}
+
+model Reminder {
+  id           Int      @id @default(autoincrement())
+  customerId   Int
+  customer     Customer @relation("customerReminders", fields: [customerId], references: [id], onDelete: Cascade)
+  bookingId    Int?
+  booking      Booking? @relation("bookingReminders", fields: [bookingId], references: [id], onDelete: SetNull)
+  title        String
+  reminderDate DateTime
+  reminderTime String?
+  status       String   @default("pending") // pending, sent, cancelled
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([customerId])
+  @@index([bookingId])
+  @@index([reminderDate])
+}
+
+model Announcement {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String
+  banner      String?
+  startDate   DateTime?
+  endDate     DateTime?
+  status      String    @default("active")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Conversation {
+  id         Int      @id @default(autoincrement())
+  bookingId  Int?
+  booking    Booking? @relation("bookingConversations", fields: [bookingId], references: [id], onDelete: SetNull)
+  customerId Int
+  customer   Customer @relation("customerConversations", fields: [customerId], references: [id], onDelete: Cascade)
+  adminId    Int?
+  admin      User?    @relation("adminConversations", fields: [adminId], references: [id], onDelete: SetNull)
+  status     String   @default("open") // open, closed, archived
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  messages         Message[]
+  communicationLog CommunicationLog[]
+
+  @@index([bookingId])
+  @@index([customerId])
+  @@index([adminId])
+}
+
+model Message {
+  id             Int          @id @default(autoincrement())
+  conversationId Int
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       Int // Can be Customer ID or User ID (Admin)
+  senderType     String // 'customer' or 'admin'
+  message        String
+  messageType    String       @default("text") // text, image, file
+  status         String       @default("sent") // sent, delivered, read
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  attachments MessageAttachment[]
+
+  @@index([conversationId])
+  @@index([senderId, senderType])
+}
+
+model MessageAttachment {
+  id        Int      @id @default(autoincrement())
+  messageId Int
+  message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  fileName  String
+  fileType  String
+  fileUrl   String
+  createdAt DateTime @default(now())
+
+  @@index([messageId])
+}
+
+model CommunicationLog {
+  id             Int           @id @default(autoincrement())
+  customerId     Int?
+  customer       Customer?     @relation("customerCommunicationLogs", fields: [customerId], references: [id], onDelete: SetNull)
+  conversationId Int?
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  channel        String // e.g., CHAT, EMAIL, CALL
+  action         String // e.g., CREATED, CLOSED, REPLIED
+  description    String?
+  createdAt      DateTime      @default(now())
+
+  @@index([customerId])
+  @@index([conversationId])
+}

@@ -1,0 +1,12 @@
+model CustomerActivity {
+  id           Int      @id @default(autoincrement())
+  customerId   Int
+  customer     Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  activityType String
+  description  String
+  ipAddress    String?
+  deviceId     String?
+  createdAt    DateTime @default(now())
+
+  @@index([customerId])
+}

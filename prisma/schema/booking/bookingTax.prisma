@@ -1,0 +1,16 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// BookingTax — taxes applied to this booking
+// ─────────────────────────────────────────────────────────────────────────────
+
+model BookingTax {
+  id        Int      @id @default(autoincrement())
+  bookingId Int
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  taxName   String
+  taxRate   Decimal  @db.Decimal(6, 4)
+  taxAmount Decimal  @db.Decimal(14, 2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([bookingId])
+}

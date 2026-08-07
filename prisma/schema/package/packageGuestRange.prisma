@@ -1,0 +1,12 @@
+model PackageGuestRange {
+  id               Int      @id @default(autoincrement())
+  packageId        Int
+  package          Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  minimumGuest     Int
+  maximumGuest     Int
+  recommendedGuest Int?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([packageId])
+}

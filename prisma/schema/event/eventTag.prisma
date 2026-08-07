@@ -1,0 +1,17 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// EventTag Model
+// Searchable tags for events (Wedding, Luxury, Outdoor, Indoor, Family, etc.)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model EventTag {
+  id        Int      @id @default(autoincrement())
+  eventId   Int
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tag       String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([eventId, tag])
+  @@index([eventId])
+  @@index([tag])
+}

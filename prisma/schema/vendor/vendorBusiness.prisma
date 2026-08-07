@@ -1,0 +1,14 @@
+model VendorBusiness {
+  id                  Int      @id @default(autoincrement())
+  vendorId            Int      @unique
+  vendor              Vendor   @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+  businessType        String?
+  businessCategory    String?
+  tradeLicense        String?
+  tinNumber           String?
+  binNumber           String?
+  companyRegistration String?
+  businessAddress     String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}

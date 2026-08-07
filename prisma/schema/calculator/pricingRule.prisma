@@ -1,0 +1,19 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// PricingRule — zone/weekend/holiday pricing rules applied to this calculator
+// ruleType: zone | weekend | holiday | custom
+// ─────────────────────────────────────────────────────────────────────────────
+
+model PricingRule {
+  id           Int                  @id @default(autoincrement())
+  calculatorId Int
+  calculator   SmartEventCalculator @relation(fields: [calculatorId], references: [id], onDelete: Cascade)
+  ruleName     String
+  ruleType     String               @default("zone")
+  ruleValue    Decimal              @db.Decimal(10, 4)
+  description  String?
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@index([calculatorId])
+  @@index([ruleType])
+}

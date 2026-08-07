@@ -7,11 +7,30 @@ const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
 
-const client = twilio(accountSid, authToken);
+let client: ReturnType<typeof twilio> | null = null;
+
+const getTwilioClient = () => {
+  if (client) {
+    return client;
+  }
+
+  if (!accountSid || !authToken || !twilioPhoneNumber || !accountSid.startsWith('AC')) {
+    return null;
+  }
+
+  client = twilio(accountSid, authToken);
+  return client;
+};
 
 export const sendSMS = async (to: string, body: string) => {
   try {
-    const message = await client.messages.create({
+    const twilioClient = getTwilioClient();
+
+    if (!twilioClient) {
+      throw new Error('Twilio SMS is not configured');
+    }
+
+    const message = await twilioClient.messages.create({
       body,
       from: twilioPhoneNumber,
       to,

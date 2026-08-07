@@ -1,0 +1,19 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// EstimateSummary — final pre-booking summary (one-to-one per calculator)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model EstimateSummary {
+  id              Int                  @id @default(autoincrement())
+  calculatorId    Int                  @unique
+  calculator      SmartEventCalculator @relation(fields: [calculatorId], references: [id], onDelete: Cascade)
+  totalServices   Int                  @default(0)
+  estimatedBudget Decimal              @default(0) @db.Decimal(14, 2)
+  totalAddonCost  Decimal              @default(0) @db.Decimal(14, 2)
+  totalTax        Decimal              @default(0) @db.Decimal(14, 2)
+  totalDiscount   Decimal              @default(0) @db.Decimal(14, 2)
+  finalAmount     Decimal              @default(0) @db.Decimal(14, 2)
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  @@index([calculatorId])
+}

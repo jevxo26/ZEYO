@@ -1,0 +1,16 @@
+model VendorPricing {
+  id              Int           @id @default(autoincrement())
+  vendorServiceId Int
+  vendorService   VendorService @relation(fields: [vendorServiceId], references: [id], onDelete: Cascade)
+  zoneId          Int
+  zone            Zone          @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  basePrice       Float
+  minimumPrice    Float?
+  maximumPrice    Float?
+  priceType       String // e.g. flat | hourly | daily | per_person
+  status          String        @default("active") // active | inactive
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([vendorServiceId])
+}

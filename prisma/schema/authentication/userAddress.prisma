@@ -1,0 +1,54 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// UserAddress Model
+// Stores multiple saved addresses per user (shipping, billing, etc.)
+// One user can have many addresses. One can be marked as default.
+//
+// NOTE: countryId, divisionId, districtId, cityId, areaId, zoneId are raw
+// integer references to a future location lookup table. When location models
+// are added to the schema, add FK relations here.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model UserAddress {
+  id     Int @id @default(autoincrement())
+  userId Int
+
+  // ── Relation ───────────────────────────────────────────────────────────────
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // ── Label & Receiver Info ──────────────────────────────────────────────────
+  label         String? // e.g. "Home", "Office"
+  receiverName  String
+  receiverPhone String
+
+  // ── Location Relations & IDs ────────────────────────────────────────────────
+  countryId  Int
+  country    Country   @relation(fields: [countryId], references: [id])
+  divisionId Int?
+  division   Division? @relation(fields: [divisionId], references: [id])
+  districtId Int?
+  district   District? @relation(fields: [districtId], references: [id])
+  cityId     Int?
+  city       City?     @relation(fields: [cityId], references: [id])
+  areaId     Int?
+  area       Area?     @relation(fields: [areaId], references: [id])
+  zoneId     Int?
+  zone       Zone?     @relation(fields: [zoneId], references: [id])
+
+  // ── Address Text ───────────────────────────────────────────────────────────
+  addressLine1 String
+  addressLine2 String?
+  postalCode   String?
+
+  // ── Geo Coordinates ────────────────────────────────────────────────────────
+  latitude  Float?
+  longitude Float?
+
+  // ── Flags ──────────────────────────────────────────────────────────────────
+  isDefault Boolean @default(false)
+
+  // ── Timestamps ─────────────────────────────────────────────────────────────
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}

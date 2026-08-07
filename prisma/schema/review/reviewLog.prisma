@@ -1,0 +1,16 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// ReviewLog — system event log per review
+// logType: created | updated | published | moderated | reported
+// ─────────────────────────────────────────────────────────────────────────────
+
+model ReviewLog {
+  id          Int      @id @default(autoincrement())
+  reviewId    Int
+  review      Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  logType     String   @default("created")
+  description String?
+  createdAt   DateTime @default(now())
+
+  @@index([reviewId])
+  @@index([logType])
+}

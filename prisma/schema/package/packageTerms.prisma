@@ -1,0 +1,13 @@
+model PackageTerms {
+  id            Int      @id @default(autoincrement())
+  packageId     Int
+  package       Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  title         String
+  description   String
+  version       String   @default("1.0")
+  effectiveDate DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([packageId])
+}

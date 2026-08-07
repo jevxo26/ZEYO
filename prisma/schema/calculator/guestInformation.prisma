@@ -1,0 +1,17 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// GuestInformation — guest breakdown per calculator (one-to-one)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model GuestInformation {
+  id           Int                  @id @default(autoincrement())
+  calculatorId Int                  @unique
+  calculator   SmartEventCalculator @relation(fields: [calculatorId], references: [id], onDelete: Cascade)
+  adultGuest   Int                  @default(0)
+  childGuest   Int                  @default(0)
+  vipGuest     Int                  @default(0)
+  totalGuest   Int                  @default(0)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@index([calculatorId])
+}

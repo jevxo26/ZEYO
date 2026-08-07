@@ -1,0 +1,24 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// SelectedEvent — stores the event/date/zone chosen in Step 2
+// venueType: indoor | outdoor | both
+// ─────────────────────────────────────────────────────────────────────────────
+
+model SelectedEvent {
+  id           Int                  @id @default(autoincrement())
+  calculatorId Int                  @unique
+  calculator   SmartEventCalculator @relation(fields: [calculatorId], references: [id], onDelete: Cascade)
+  eventId      Int
+  event        Event                @relation(fields: [eventId], references: [id])
+  zoneId       Int
+  zone         Zone                 @relation(fields: [zoneId], references: [id])
+  guestCount   Int?
+  eventDate    DateTime?
+  eventTime    String?
+  venueType    String?              @default("indoor")
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@index([calculatorId])
+  @@index([eventId])
+  @@index([zoneId])
+}
