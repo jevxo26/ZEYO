@@ -18,7 +18,7 @@ export function TransactionRow({ transaction }: TransactionRowProps) {
   const isCredit = transaction.type === 'credit';
 
   return (
-    <div className="flex items-center justify-between border-b border-gray-50 px-4 py-3 last:border-0">
+    <div className="flex items-center justify-between border-b border-gray-50 px-4 py-3 last:border-0 transition-colors hover:bg-gray-50/80">
       <div className="flex items-center gap-3">
         <span
           className={cn(

@@ -26,7 +26,7 @@ export function SettingsRow({
     <button
       onClick={onClick}
       className={cn(
-        'flex w-full items-center justify-between border-b border-gray-50 px-4 py-3 text-left last:border-0',
+        'flex w-full items-center justify-between border-b border-gray-50 px-4 py-3 text-left last:border-0 transition-colors hover:bg-gray-50/80',
         className
       )}
     >

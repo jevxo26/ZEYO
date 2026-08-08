@@ -24,7 +24,7 @@ export function WithdrawMethodRow({
       onClick={onClick}
       className={cn(
         'flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left',
-        selected ? 'border-teal-900 bg-teal-50' : 'border-gray-100 bg-white'
+        selected ? 'border-teal-900 bg-teal-50' : 'border-gray-100 bg-white hover:border-teal-200 hover:bg-teal-50/40'
       )}
     >
       <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-50 text-gray-600">

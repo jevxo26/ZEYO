@@ -20,7 +20,7 @@ export function BookingRow({ booking, onClick }: BookingRowProps) {
   return (
     <button
       onClick={() => onClick?.(booking)}
-      className="flex w-full items-center justify-between border-b border-gray-50 px-4 py-3 text-left last:border-0"
+      className="flex w-full items-center justify-between border-b border-gray-50 px-4 py-3 text-left last:border-0 transition-colors hover:bg-gray-50/80"
     >
       <div className="min-w-0">
         <p className="truncate text-sm font-medium text-gray-900">{booking.customerName}</p>

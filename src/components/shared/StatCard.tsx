@@ -12,7 +12,7 @@ export function StatCard({ label, value, valueClassName, className }: StatCardPr
   return (
     <div
       className={cn(
-        'flex flex-1 flex-col items-start gap-1 rounded-xl border border-gray-100 bg-white px-3 py-3',
+        'flex flex-1 flex-col items-start gap-1 rounded-xl border border-gray-100 bg-white px-3 py-3 transition-all hover:-translate-y-0.5 hover:border-gray-200 hover:shadow-sm',
         className
       )}
     >
