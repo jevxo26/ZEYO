@@ -1,3 +1,4 @@
+// app/vendor/profile/page.tsx
 'use client';
 
 import { useState } from 'react';
@@ -12,13 +13,13 @@ import {
   Star,
   Mail,
   Phone,
-  MapPin
+  MapPin,
+  ArrowRight
 } from 'lucide-react';
 import { PageContainer } from '@/components/layout/PageContainer';
 import { TopBar } from '@/components/layout/TopBar';
 import type { NavKey } from '@/components/layout/BottomNav';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
-import { StatGroup } from '@/components/shared/StatCard';
 import { SettingsRow } from '@/components/shared/SettingsRow';
 import { Card } from '@/components/ui/card';
 
@@ -27,9 +28,7 @@ const navRoutes: Record<NavKey, string> = {
   bookings: '/vendor/bookings',
   wallet: '/vendor/wallet',
   profile: '/vendor/profile',
-  
 };
-
 
 export default function VendorProfilePage() {
   const router = useRouter();
@@ -41,7 +40,6 @@ export default function VendorProfilePage() {
   };
 
   const handleLogout = () => {
-    // Logout logic here
     console.log('Logging out...');
   };
 
@@ -131,12 +129,14 @@ export default function VendorProfilePage() {
             tone="purple"
             label="Help & Support"
             description="FAQs and contact support team"
+            onClick={() => router.push('/vendor/help')}
           />
           <SettingsRow
             icon={<FileText className="h-4 w-4" />}
             tone="amber"
             label="Terms & Policies"
             description="Vendor agreement and guidelines"
+            onClick={() => router.push('/vendor/terms')}
           />
           <div className="border-t border-gray-100">
             <SettingsRow
