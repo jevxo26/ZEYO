@@ -18,11 +18,7 @@ const navRoutes: Record<NavKey, string> = {
   profile: '/vendor/profile',
 };
 
-/**
- * Vendor Profile page — ProfileHeader (avatar+verified badge+contact),
- * StatGroup (bookings/earnings/rating), tarpor menu list (Settings,
- * Help & Support, Terms & Policies).
- */
+
 export default function VendorProfilePage() {
   const router = useRouter();
   const [active, setActive] = useState<NavKey>('profile');
