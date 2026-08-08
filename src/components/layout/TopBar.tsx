@@ -10,15 +10,15 @@ interface TopBarProps {
 export function TopBar({ balance, unreadCount = 0, onNotificationClick }: TopBarProps) {
   return (
     <header className="flex items-center justify-between px-4 py-3">
-      {/* Logo - Desktop/Tablet এ hidden, Mobile এ visible */}
+      {/* Logo - Mobile */}
       <div className="flex items-center gap-2 md:hidden">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-950 text-sm font-bold text-white">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500 text-sm font-bold text-white">
           Z
         </div>
-        <span className="text-sm font-semibold tracking-wide text-black">ZEYO</span>
+        <span className="text-sm font-semibold tracking-wide text-amber-500">ZEYO</span>
       </div>
 
-      {/* Desktop/Tablet - Logo hidden, empty space */}
+      {/* Desktop Logo - hidden */}
       <div className="hidden md:block">
         {/* ডেস্কটপে কিছু দেখাবে না */}
       </div>

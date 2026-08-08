@@ -15,7 +15,7 @@ const navItems: { key: NavKey; label: string; icon: typeof LayoutGrid }[] = [
   { key: 'dashboard', label: 'Dashboard', icon: LayoutGrid },
   { key: 'bookings', label: 'Bookings', icon: CalendarCheck },
   { key: 'wallet', label: 'Wallet', icon: Wallet },
-  
+  { key: 'profile', label: 'Profile', icon: User },
 ];
 
 export function Sidebar({ 
@@ -27,10 +27,10 @@ export function Sidebar({
     <aside className="hidden w-60 flex-shrink-0 flex-col justify-between bg-white px-4 py-6 text-black md:flex">
       <div>
         <div className="mb-8 flex items-center gap-2 px-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-black text-sm font-bold text-white">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500 text-sm font-bold text-white">
             Z
           </div>
-          <span className="text-sm font-semibold tracking-wide text-black">ZEYO</span>
+          <span className="text-sm font-semibold tracking-wide text-amber-500">ZEYO</span>
         </div>
 
         <nav className="space-y-1">

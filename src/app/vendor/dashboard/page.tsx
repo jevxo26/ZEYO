@@ -23,7 +23,6 @@ const navRoutes: Record<NavKey, string> = {
   profile: '/vendor/profile',
 };
 
-
 export default function VendorDashboardPage() {
   const router = useRouter();
   const [active, setActive] = useState<NavKey>('dashboard');
