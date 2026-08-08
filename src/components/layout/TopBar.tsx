@@ -7,7 +7,6 @@ interface TopBarProps {
   unreadCount?: number;
   onNotificationClick?: () => void;
   onSearch?: (query: string) => void;
-  title?: string;
 }
 
 export function TopBar({ 
@@ -15,7 +14,6 @@ export function TopBar({
   unreadCount = 0, 
   onNotificationClick,
   onSearch,
-  title = 'Dashboard'
 }: TopBarProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -53,10 +51,9 @@ export function TopBar({
         </div>
       </div>
 
-      {/* Mobile - Dashboard Title & Search Bar (Next line) */}
-      <div className="mt-3 flex items-center gap-3 md:hidden">
-        <h1 className="text-lg font-semibold text-black whitespace-nowrap">{title}</h1>
-        <div className="relative flex-1">
+      {/* Mobile - Search Bar (Next line) */}
+      <div className="mt-3 md:hidden">
+        <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
@@ -68,20 +65,17 @@ export function TopBar({
         </div>
       </div>
 
-      {/* Desktop/Tablet Layout - Dashboard & Search Bar in one row */}
+      {/* Desktop/Tablet Layout - Search Bar only */}
       <div className="hidden md:flex md:items-center md:justify-between">
-        <div className="flex items-center gap-4 flex-1">
-          <h1 className="text-lg font-semibold text-black md:text-xl whitespace-nowrap">{title}</h1>
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={handleSearch}
-              className="w-full rounded-lg border border-gray-200 bg-gray-50 py-1.5 pl-9 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 md:py-2"
-            />
-          </div>
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Search..."
+            value={searchQuery}
+            onChange={handleSearch}
+            className="w-full rounded-lg border border-gray-200 bg-gray-50 py-1.5 pl-9 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 md:py-2"
+          />
         </div>
 
         <div className="flex items-center gap-3">
