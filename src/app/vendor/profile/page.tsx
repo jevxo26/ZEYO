@@ -27,6 +27,7 @@ const navRoutes: Record<NavKey, string> = {
   bookings: '/vendor/bookings',
   wallet: '/vendor/wallet',
   profile: '/vendor/profile',
+  
 };
 
 
