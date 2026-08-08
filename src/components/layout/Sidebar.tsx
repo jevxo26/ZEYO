@@ -1,23 +1,28 @@
 'use client';
 
-import { LayoutGrid, CalendarCheck, Wallet, User, Settings } from 'lucide-react';
-import { cn, formatCurrency } from '@/lib/utils';
+import { LayoutGrid, CalendarCheck, Wallet, User } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import type { NavKey } from './BottomNav';
+import { Avatar } from '@/components/ui/avatar';
 
 interface SidebarProps {
   active: NavKey;
   onNavigate: (key: NavKey) => void;
-  balance?: number;
+  vendorName?: string;
 }
 
 const navItems: { key: NavKey; label: string; icon: typeof LayoutGrid }[] = [
   { key: 'dashboard', label: 'Dashboard', icon: LayoutGrid },
   { key: 'bookings', label: 'Bookings', icon: CalendarCheck },
   { key: 'wallet', label: 'Wallet', icon: Wallet },
-  { key: 'profile', label: 'Profile', icon: User },
+  
 ];
 
-export function Sidebar({ active, onNavigate, balance = 125000 }: SidebarProps) {
+export function Sidebar({ 
+  active, 
+  onNavigate, 
+  vendorName = 'Rahim Ahmed' 
+}: SidebarProps) {
   return (
     <aside className="hidden w-60 flex-shrink-0 flex-col justify-between bg-white px-4 py-6 text-black md:flex">
       <div>
@@ -53,16 +58,18 @@ export function Sidebar({ active, onNavigate, balance = 125000 }: SidebarProps) 
         </nav>
       </div>
 
-      <div className="space-y-3">
-        <button className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs text-gray-600 transition-colors hover:bg-black/5 hover:text-black">
-          <Settings className="h-4 w-4" />
-          Settings
+      {/* Bottom - Profile with Avatar */}
+      <div className="border-t border-gray-200 pt-4">
+        <button 
+          onClick={() => onNavigate('profile')}
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-black/5"
+        >
+          <Avatar name={vendorName} size="md" />
+          <div className="flex flex-1 flex-col items-start">
+            <span className="text-sm font-medium text-black">{vendorName}</span>
+            <span className="text-xs text-gray-500">Vendor</span>
+          </div>
         </button>
-
-        <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 transition-colors hover:bg-gray-100">
-          <p className="text-[10px] text-gray-500">Available Balance</p>
-          <p className="text-sm font-semibold text-amber-500">{formatCurrency(balance)}</p>
-        </div>
       </div>
     </aside>
   );

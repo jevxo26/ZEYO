@@ -14,7 +14,6 @@ const sizeClasses = {
   lg: 'h-20 w-20 text-2xl',
 };
 
-
 export function Avatar({ name, src, size = 'md', className }: AvatarProps) {
   const initial = name?.trim()?.[0]?.toUpperCase() ?? '?';
 
@@ -24,7 +23,11 @@ export function Avatar({ name, src, size = 'md', className }: AvatarProps) {
       <img
         src={src}
         alt={name}
-        className={cn('rounded-full object-cover', sizeClasses[size], className)}
+        className={cn(
+          'rounded-full object-cover ring-2 ring-orange-400 ring-offset-2 ring-offset-white',
+          sizeClasses[size],
+          className
+        )}
       />
     );
   }
@@ -32,7 +35,7 @@ export function Avatar({ name, src, size = 'md', className }: AvatarProps) {
   return (
     <div
       className={cn(
-        'flex items-center justify-center rounded-full bg-teal-900 font-semibold text-white',
+        'flex items-center justify-center rounded-full bg-black font-semibold text-white ring-2 ring-orange-400 ring-offset-2 ring-offset-white',
         sizeClasses[size],
         className
       )}
