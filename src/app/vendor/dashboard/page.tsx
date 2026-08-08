@@ -23,12 +23,7 @@ const navRoutes: Record<NavKey, string> = {
   profile: '/vendor/profile',
 };
 
-/**
- * Vendor Dashboard page.
- * Mobile e single column, md+ (tablet/desktop) e "Recent Bookings" ar
- * "This Week" pashapashi 2-column grid e boshe — chhoto screen e content
- * stack hoye jay, boro screen e space best-use hoy.
- */
+
 export default function VendorDashboardPage() {
   const router = useRouter();
   const [active, setActive] = useState<NavKey>('dashboard');

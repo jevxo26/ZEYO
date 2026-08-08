@@ -7,12 +7,20 @@ interface TopBarProps {
   onNotificationClick?: () => void;
 }
 
-
 export function TopBar({ balance, unreadCount = 0, onNotificationClick }: TopBarProps) {
   return (
     <header className="flex items-center justify-between px-4 py-3">
-      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-950 text-sm font-bold text-white">
-        Z
+      {/* Logo - Desktop/Tablet এ hidden, Mobile এ visible */}
+      <div className="flex items-center gap-2 md:hidden">
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-950 text-sm font-bold text-white">
+          Z
+        </div>
+        <span className="text-sm font-semibold tracking-wide text-black">ZEYO</span>
+      </div>
+
+      {/* Desktop/Tablet - Logo hidden, empty space */}
+      <div className="hidden md:block">
+        {/* ডেস্কটপে কিছু দেখাবে না */}
       </div>
 
       <div className="flex items-center gap-3">
