@@ -8,7 +8,6 @@ interface FilterTabsProps<T extends string> {
   onChange: (key: T) => void;
 }
 
-
 export function FilterTabs<T extends string>({ tabs, active, onChange }: FilterTabsProps<T>) {
   return (
     <div className="flex gap-2 overflow-x-auto px-4 pb-2">

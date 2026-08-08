@@ -10,11 +10,11 @@ import { BookingRow, type Booking } from '@/components/shared/BookingRow';
 import { Card } from '@/components/ui/card';
 
 const allBookings: Booking[] = [
-  { id: '1', customerName: 'Farhan Islam', eventType: 'Wedding', date: '2024-05-19', amount: 65000, status: 'confirmed' },
-  { id: '2', customerName: 'Nasima Begum', eventType: 'Birthday', date: '2024-05-13', amount: 35000, status: 'pending' },
-  { id: '3', customerName: 'Kabir Hossain', eventType: 'Corporate', date: '2024-05-10', amount: 120000, status: 'completed' },
-  { id: '4', customerName: 'Tasnim Rahman', eventType: 'Wedding', date: '2024-05-05', amount: 95000, status: 'pending' },
-  { id: '5', customerName: 'Jamil Khan', eventType: 'Corporate', date: '2024-04-28', amount: 65000, status: 'cancelled' },
+  { id: '1', customerName: 'Farhan Islam', eventType: 'Wedding', location: 'Bashundhara, Dhaka', date: '2024-05-19', time: '10:00 AM', amount: 65000, status: 'confirmed' },
+  { id: '2', customerName: 'Nasima Begum', eventType: 'Birthday', location: 'Dhanmondi, Dhaka', date: '2024-05-13', time: '4:00 PM', amount: 35000, status: 'pending' },
+  { id: '3', customerName: 'Kabir Hossain', eventType: 'Corporate', location: 'Uttara, Dhaka', date: '2024-05-10', time: '9:00 AM', amount: 120000, status: 'completed' },
+  { id: '4', customerName: 'Tasnim Rahman', eventType: 'Wedding', location: 'Mirpur, Dhaka', date: '2024-05-05', time: '6:00 PM', amount: 95000, status: 'pending' },
+  { id: '5', customerName: 'Jamil Khan', eventType: 'Corporate', location: 'Gulshan, Dhaka', date: '2024-04-28', time: '11:00 AM', amount: 65000, status: 'cancelled' },
 ];
 
 type FilterKey = 'all' | 'confirmed' | 'pending' | 'completed';
@@ -33,6 +33,10 @@ const navRoutes: Record<NavKey, string> = {
   profile: '/vendor/profile',
 };
 
+/**
+ * Vendor Bookings page — FilterTabs + BookingRow shared component diye
+ * compose kora. Real app e "allBookings" React Query theke ashbe.
+ */
 export default function VendorBookingsPage() {
   const router = useRouter();
   const [active, setActive] = useState<NavKey>('bookings');
