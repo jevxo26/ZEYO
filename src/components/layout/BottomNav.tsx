@@ -43,7 +43,7 @@ export function BottomNav({ active, onNavigate, onFabClick }: BottomNavProps) {
   );
 
   return (
-    <nav className="flex items-center justify-between border-t border-gray-100 bg-white px-2 py-1">
+    <nav className="flex items-center justify-between border-t border-gray-100 bg-white px-2 py-1 md:hidden">
       {left.map(renderItem)}
 
       <button
