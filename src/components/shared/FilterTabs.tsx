@@ -19,8 +19,8 @@ export function FilterTabs<T extends string>({ tabs, active, onChange }: FilterT
           className={cn(
             'whitespace-nowrap rounded-full px-4 py-1.5 text-xs font-medium transition-colors',
             active === tab.key
-              ? 'bg-teal-900 text-white'
-              : 'bg-gray-100 text-gray-500'
+              ? 'bg-amber-500 text-white'
+              : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
           )}
         >
           {tab.label}
