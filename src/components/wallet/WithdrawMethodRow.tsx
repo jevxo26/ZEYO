@@ -11,7 +11,7 @@ interface WithdrawMethodRowProps {
   onClick?: () => void;
 }
 
-/** Wallet page er "Bank Transfer / Mobile Banking" selectable row */
+
 export function WithdrawMethodRow({
   icon,
   label,
