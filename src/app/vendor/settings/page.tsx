@@ -70,7 +70,7 @@ export default function VendorSettingsPage() {
               <p className="px-4 pt-4 pb-2 text-sm font-semibold text-foreground">Preferences</p>
               <SettingsRow
                 icon={<Bell className="h-4 w-4" />}
-                label="Push Notifications"
+                label=" Notifications"
                 trailing={<Switch checked={pushEnabled} onChange={setPushEnabled} />}
               />
               <SettingsRow icon={<Globe className="h-4 w-4" />} label="Language" value="English" />
