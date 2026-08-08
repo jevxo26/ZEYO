@@ -17,16 +17,15 @@ const navItems: { key: NavKey; label: string; icon: typeof LayoutGrid }[] = [
   { key: 'profile', label: 'Profile', icon: User },
 ];
 
-
 export function Sidebar({ active, onNavigate, balance = 125000 }: SidebarProps) {
   return (
-    <aside className="hidden w-60 flex-shrink-0 flex-col justify-between bg-teal-950 px-4 py-6 text-white md:flex">
+    <aside className="hidden w-60 flex-shrink-0 flex-col justify-between bg-white px-4 py-6 text-black md:flex">
       <div>
         <div className="mb-8 flex items-center gap-2 px-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-sm font-bold text-teal-950">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-black text-sm font-bold text-white">
             Z
           </div>
-          <span className="text-sm font-semibold tracking-wide">ZEYO</span>
+          <span className="text-sm font-semibold tracking-wide text-black">ZEYO</span>
         </div>
 
         <nav className="space-y-1">
@@ -37,32 +36,32 @@ export function Sidebar({ active, onNavigate, balance = 125000 }: SidebarProps) 
               className={cn(
                 'group flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors',
                 active === key
-                  ? 'bg-white/10 font-medium text-white'
-                  : 'text-teal-200/70 hover:bg-white/5 hover:text-white'
+                  ? 'bg-black/5 font-medium text-black'
+                  : 'text-gray-600 hover:bg-black/5 hover:text-black'
               )}
             >
               <Icon
                 className={cn(
                   'h-4 w-4 transition-transform group-hover:scale-110',
-                  active === key ? 'text-amber-400' : 'text-teal-200/70 group-hover:text-amber-400'
+                  active === key ? 'text-amber-500' : 'text-gray-500 group-hover:text-amber-500'
                 )}
               />
               {label}
-              {active === key && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-amber-400" />}
+              {active === key && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-amber-500" />}
             </button>
           ))}
         </nav>
       </div>
 
       <div className="space-y-3">
-        <button className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs text-teal-200/70 transition-colors hover:bg-white/5 hover:text-white">
+        <button className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs text-gray-600 transition-colors hover:bg-black/5 hover:text-black">
           <Settings className="h-4 w-4" />
           Settings
         </button>
 
-        <div className="rounded-xl bg-white/5 px-3 py-2.5 transition-colors hover:bg-white/10">
-          <p className="text-[10px] text-teal-200/60">Available Balance</p>
-          <p className="text-sm font-semibold text-amber-400">{formatCurrency(balance)}</p>
+        <div className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 transition-colors hover:bg-gray-100">
+          <p className="text-[10px] text-gray-500">Available Balance</p>
+          <p className="text-sm font-semibold text-amber-500">{formatCurrency(balance)}</p>
         </div>
       </div>
     </aside>
